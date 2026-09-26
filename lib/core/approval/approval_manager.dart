@@ -97,14 +97,20 @@ class ApprovalManager {
 
     _pending = request;
     _completer = Completer<ApprovalDecision>();
-    _controller.add(request);
+    _emit(request);
 
     final decision = await _completer!.future;
     _applyDecision(request, decision);
     _pending = null;
     _completer = null;
-    _controller.add(null);
+    _emit(null);
     return decision;
+  }
+
+  /// Publishes to [pendingChanges] unless the controller was already closed
+  /// (e.g. [dispose] unblocked a waiting request as it tore down).
+  void _emit(ApprovalRequest? request) {
+    if (!_controller.isClosed) _controller.add(request);
   }
 
   void _applyDecision(ApprovalRequest request, ApprovalDecision decision) {
