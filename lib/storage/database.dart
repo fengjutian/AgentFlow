@@ -1,0 +1,114 @@
+/// SQLite persistence via Drift (design doc §26).
+///
+/// Tables mirror the core entities: workspace → session → message, plus provider
+/// configs, approvals/artifacts metadata and long-term memory. Generated row
+/// classes are suffixed `Row` so they never collide with the domain models or
+/// core types (`ModelConfig`, `MemoryEntry`) that the rest of the app uses.
+library;
+
+import 'package:drift/drift.dart';
+import 'package:drift_flutter/drift_flutter.dart';
+
+part 'database.g.dart';
+
+@DataClassName('WorkspaceRow')
+class Workspaces extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get rootDirectory => text()();
+
+  /// Which [Runtime] this workspace uses: `local`, `termux`, ...
+  TextColumn get runtimeId => text().withDefault(const Constant('local'))();
+  DateTimeColumn get createdAt => dateTime()();
+
+  /// Per-workspace JSON settings (enabled tools, approval policy, ...).
+  TextColumn get settingsJson => text().withDefault(const Constant('{}'))();
+
+  @override
+  Set<Column> get primaryKey => <Column>{id};
+}
+
+@DataClassName('SessionRow')
+class Sessions extends Table {
+  TextColumn get id => text()();
+  TextColumn get workspaceId =>
+      text().references(Workspaces, #id, onDelete: KeyAction.cascade)();
+  TextColumn get title => text().withDefault(const Constant('New session'))();
+  TextColumn get status => text().withDefault(const Constant('idle'))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => <Column>{id};
+}
+
+@DataClassName('MessageRow')
+class Messages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get sessionId =>
+      text().references(Sessions, #id, onDelete: KeyAction.cascade)();
+
+  /// Ordering within a session.
+  IntColumn get seq => integer()();
+  TextColumn get role => text()();
+  TextColumn get content => text().withDefault(const Constant(''))();
+
+  /// JSON-encoded `List<ToolCall>` for assistant messages.
+  TextColumn get toolCallsJson => text().nullable()();
+  TextColumn get toolCallId => text().nullable()();
+  TextColumn get name => text().nullable()();
+  BoolColumn get isError => boolean().withDefault(const Constant(false))();
+
+  /// JSON-encoded structured tool payload (diffs, exit codes, file lists).
+  TextColumn get dataJson => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+@DataClassName('ProviderRow')
+class ProviderConfigs extends Table {
+  TextColumn get id => text()();
+  TextColumn get label => text()();
+  TextColumn get provider => text()();
+  TextColumn get model => text()();
+  TextColumn get baseUrl => text()();
+  TextColumn get apiKey => text().withDefault(const Constant(''))();
+  RealColumn get temperature => real().withDefault(const Constant(0.2))();
+  IntColumn get maxTokens => integer().withDefault(const Constant(4096))();
+  IntColumn get contextWindow =>
+      integer().withDefault(const Constant(128000))();
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => <Column>{id};
+}
+
+@DataClassName('MemoryRow')
+class MemoryNotes extends Table {
+  TextColumn get id => text()();
+  TextColumn get workspaceId => text()();
+  TextColumn get content => text()();
+  TextColumn get tagsJson => text().withDefault(const Constant('[]'))();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => <Column>{id};
+}
+
+@DriftDatabase(
+  tables: <Type>[Workspaces, Sessions, Messages, ProviderConfigs, MemoryNotes],
+)
+class AppDatabase extends _$AppDatabase {
+  /// Opens (and creates if needed) the on-device database.
+  AppDatabase() : super(driftDatabase(name: 'agentflow'));
+
+  /// Wrap any [QueryExecutor] — used by tests with `NativeDatabase.memory()`.
+  AppDatabase.connect(super.executor);
+
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (Migrator m) => m.createAll(),
+      );
+}
