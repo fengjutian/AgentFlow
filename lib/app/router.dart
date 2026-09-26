@@ -1,0 +1,76 @@
+/// Application routing (design doc §17).
+///
+/// A single [GoRouter] with a [StatefulShellRoute.indexedStack] over the four
+/// tabs. `indexedStack` keeps each branch alive so an in-progress agent run in
+/// the Chat tab is not torn down when the user peeks at Files or Terminal.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../ui/chat/chat_page.dart';
+import '../ui/files/files_page.dart';
+import '../ui/settings/settings_page.dart';
+import '../ui/terminal/terminal_page.dart';
+import 'shell/app_shell.dart';
+
+final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
+  return GoRouter(
+    initialLocation: '/chat',
+    debugLogDiagnostics: false,
+    routes: <RouteBase>[
+      StatefulShellRoute.indexedStack(
+        builder: (BuildContext context, GoRouterState state,
+                StatefulNavigationShell navigationShell) =>
+            AppShell(navigationShell: navigationShell),
+        branches: <StatefulShellBranch>[
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/chat',
+                name: 'chat',
+                builder: (BuildContext context, GoRouterState state) =>
+                    const ChatPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/files',
+                name: 'files',
+                builder: (BuildContext context, GoRouterState state) =>
+                    const FilesPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/terminal',
+                name: 'terminal',
+                builder: (BuildContext context, GoRouterState state) =>
+                    const TerminalPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/settings',
+                name: 'settings',
+                builder: (BuildContext context, GoRouterState state) =>
+                    const SettingsPage(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+    errorBuilder: (BuildContext context, GoRouterState state) => Scaffold(
+      appBar: AppBar(title: const Text('Not found')),
+      body: Center(child: Text('No route for ${state.uri}')),
+    ),
+  );
+});
