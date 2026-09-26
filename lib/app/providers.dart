@@ -156,6 +156,16 @@ final Provider<Workspace?> currentWorkspaceProvider = Provider<Workspace?>((Ref 
 // Runtime resolution
 // ---------------------------------------------------------------------------
 
+/// The [Runtime] for the currently selected workspace, resolved reactively.
+///
+/// Recomputes whenever the active workspace changes. `null` when no workspace is
+/// selected. The Files and Terminal tabs watch this to browse and run commands.
+final FutureProvider<Runtime?> runtimeProvider = FutureProvider<Runtime?>((Ref ref) async {
+  final workspace = ref.watch(currentWorkspaceProvider);
+  if (workspace == null) return null;
+  return resolveRuntime(workspace);
+});
+
 /// Picks the best [Runtime] for a workspace: the Kotlin/Termux bridge on Android
 /// when available, otherwise the local `dart:io` runtime. The Agent Core is
 /// oblivious to which one it got.

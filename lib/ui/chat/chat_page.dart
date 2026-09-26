@@ -10,12 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
 import '../../app/session_controller.dart';
-import '../../app/theme.dart';
-import '../../core/agent/agent_state.dart';
 import '../../core/approval/approval_manager.dart';
-import '../../core/model/model_provider.dart';
 import '../../data/models.dart';
-import '../../storage/repositories.dart';
 import '../workspace/workspace_sheet.dart';
 import 'widgets/activity_panel.dart';
 import 'widgets/approval_card.dart';
@@ -130,6 +126,46 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       showDragHandle: true,
       isScrollControlled: true,
       builder: (BuildContext context) => _SessionsSheet(workspaceId: workspaceId),
+    );
+  }
+}
+
+/// Full-screen prompt shown when no workspace is selected yet.
+class _EmptyWorkspaceHint extends ConsumerWidget {
+  const _EmptyWorkspaceHint();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(Icons.folder_off_outlined, size: 56, color: scheme.outline),
+            const SizedBox(height: 16),
+            Text('No workspace selected',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 6),
+            Text(
+              'A workspace is the project folder the agent reads and edits. '
+              'Pick an existing one or create a new one to begin.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: scheme.outline),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: () => showWorkspacePicker(context),
+              icon: const Icon(Icons.folder_open),
+              label: const Text('Select or create a workspace'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -400,7 +436,3 @@ class _SessionsSheet extends ConsumerWidget {
   }
 }
 
-/// Convenience so the analyzer sees AppTheme is used where intended.
-extension on ModelConfig {
-  String get shortLabel => provider == 'mock' ? 'Demo' : model;
-}
