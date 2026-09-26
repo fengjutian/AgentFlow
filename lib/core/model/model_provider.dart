@@ -7,7 +7,7 @@
 /// engine.
 library;
 
-import 'message.dart';
+import '../message.dart';
 
 /// Runtime configuration for a provider endpoint.
 class ModelConfig {

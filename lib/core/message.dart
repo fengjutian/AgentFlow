@@ -96,14 +96,14 @@ class ToolResult {
 
 /// A single message in a conversation.
 class ChatMessage {
-  const ChatMessage({
+  ChatMessage({
     required this.role,
     this.content = '',
     this.toolCalls = const <ToolCall>[],
     this.toolCallId,
     this.name,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? _epoch;
+  }) : createdAt = createdAt ?? DateTime.now();
 
   final MessageRole role;
   final String content;
@@ -115,8 +115,6 @@ class ChatMessage {
   final String? toolCallId;
   final String? name;
   final DateTime createdAt;
-
-  static final DateTime _epoch = DateTime.fromMillisecondsSinceEpoch(0);
 
   bool get hasToolCalls => toolCalls.isNotEmpty;
 
