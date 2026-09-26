@@ -59,7 +59,7 @@ class ApprovalManager {
 
   ApprovalRequest? get pending => _pending;
 
-  bool hasPending => _pending != null;
+  bool get hasPending => _pending != null;
 
   set autoApprove(bool value) => _autoApprove = value;
 
@@ -81,7 +81,7 @@ class ApprovalManager {
     }
 
     final request = ApprovalRequest(
-      id: '${toolName}-${_counter++}',
+      id: '$toolName-${_counter++}',
       toolName: toolName,
       summary: summary,
       risk: risk,

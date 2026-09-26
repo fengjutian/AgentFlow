@@ -88,6 +88,15 @@ class AssistantTextEvent extends AgentEvent {
   final bool isFinal;
 }
 
+/// A complete assistant turn (content and/or tool calls) ready to be appended to
+/// the transcript and persisted.
+class AssistantMessageEvent extends AgentEvent {
+  const AssistantMessageEvent(this.message);
+  final ChatMessage message;
+
+  bool get hasToolCalls => message.hasToolCalls;
+}
+
 /// A new Activity row was added or updated.
 class ActivityUpdatedEvent extends AgentEvent {
   const ActivityUpdatedEvent(this.item);

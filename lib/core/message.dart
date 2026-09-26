@@ -87,6 +87,14 @@ class ToolResult {
   final bool isError;
   final Map<String, dynamic>? data;
 
+  ToolResult copyWith({String? toolCallId, String? name}) => ToolResult(
+        toolCallId: toolCallId ?? this.toolCallId,
+        name: name ?? this.name,
+        content: content,
+        isError: isError,
+        data: data,
+      );
+
   Map<String, dynamic> toOpenAiJson() => <String, dynamic>{
         'role': 'tool',
         'tool_call_id': toolCallId,

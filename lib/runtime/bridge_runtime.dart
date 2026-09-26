@@ -20,6 +20,7 @@ class BridgeRuntime implements Runtime {
   /// Channel name shared with the Kotlin `RuntimeManager`.
   static const String channelName = 'agentflow/runtime';
 
+  @override
   final String id;
   final MethodChannel _channel;
   final String rootDirectory;
@@ -56,7 +57,7 @@ class BridgeRuntime implements Runtime {
           'command': command,
           'cwd': workingDirectory ?? rootDirectory,
           'timeoutMillis': timeoutMillis,
-          if (environment != null) 'env': environment,
+          'env': ?environment,
         },
       );
       final map = result ?? const <dynamic, dynamic>{};

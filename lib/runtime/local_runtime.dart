@@ -14,9 +14,10 @@ import 'package:path/path.dart' as p;
 import 'runtime.dart';
 
 class LocalRuntime implements Runtime {
-  LocalRuntime({required this.rootDirectory, this.id = 'local'})
+  LocalRuntime({required String rootDirectory, this.id = 'local'})
       : _root = p.normalize(p.absolute(rootDirectory));
 
+  @override
   final String id;
   final String _root;
 
