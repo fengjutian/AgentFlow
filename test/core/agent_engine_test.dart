@@ -152,6 +152,38 @@ void main() {
     expect(finished.result.data?['diff'], isNotNull);
   });
 
+  test('write approval includes a diff before the file is touched', () async {
+    ApprovalRequest? captured;
+    final approval = ApprovalManager(resolver: (ApprovalRequest request) {
+      captured = request;
+      expect(File('${tmp.path}${Platform.pathSeparator}preview.txt').existsSync(),
+          isFalse);
+      return ApprovalDecision.deny;
+    });
+    addTearDown(approval.dispose);
+    final mock = MockModelProvider(
+      script: <ModelResponse>[
+        MockModelProvider.toolCall(
+          id: 'call_preview',
+          name: 'write_file',
+          arguments: <String, dynamic>{
+            'path': 'preview.txt',
+            'content': 'proposed\n',
+          },
+        ),
+      ],
+      finalText: 'The proposed change was rejected.',
+    );
+    final run = buildEngine(_ScriptedFactory(mock), approval)
+        .runTurn(request('write preview.txt'));
+    await run.events.toList();
+    await run.done;
+
+    expect(captured?.previewData?['diff'], isNotNull);
+    expect(File('${tmp.path}${Platform.pathSeparator}preview.txt').existsSync(),
+        isFalse);
+  });
+
   test('an unknown tool call yields an error result and keeps looping', () async {
     final approval = ApprovalManager(autoApprove: true);
     addTearDown(approval.dispose);

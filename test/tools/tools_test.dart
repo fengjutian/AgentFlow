@@ -97,6 +97,45 @@ void main() {
       expect(result.content, contains('Updated'));
       expect(result.data!['isNewFile'], isFalse);
     });
+
+    test('preview does not touch disk and committed change can be undone', () async {
+      final tool = WriteFileTool();
+      final preview = await tool.preview(
+        <String, dynamic>{'path': 'hello.txt', 'content': 'replacement\n'},
+        ctx,
+      );
+      expect(File('${tmp.path}${Platform.pathSeparator}hello.txt').readAsStringSync(),
+          'Hello world\nsecond line\n');
+      expect(preview.data['diff'], isNotNull);
+
+      final result = await tool.executePrepared(
+        <String, dynamic>{'path': 'hello.txt', 'content': 'replacement\n'},
+        ctx,
+        preview,
+      );
+      expect(File('${tmp.path}${Platform.pathSeparator}hello.txt').readAsStringSync(),
+          'replacement\n');
+      final message =
+          await fileChangeJournal.undo(result.data!['transactionId'] as String);
+      expect(message, contains('Undid'));
+      expect(File('${tmp.path}${Platform.pathSeparator}hello.txt').readAsStringSync(),
+          'Hello world\nsecond line\n');
+    });
+
+    test('undo refuses to overwrite a later manual edit', () async {
+      final result = await WriteFileTool().execute(
+        <String, dynamic>{'path': 'hello.txt', 'content': 'agent edit\n'},
+        ctx,
+      );
+      File('${tmp.path}${Platform.pathSeparator}hello.txt')
+          .writeAsStringSync('manual edit\n');
+      expect(
+        () => fileChangeJournal.undo(result.data!['transactionId'] as String),
+        throwsA(isA<ToolExecutionException>()),
+      );
+      expect(File('${tmp.path}${Platform.pathSeparator}hello.txt').readAsStringSync(),
+          'manual edit\n');
+    });
   });
 
   group('search_code', () {

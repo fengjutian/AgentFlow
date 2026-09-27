@@ -149,7 +149,7 @@ class FileChangeJournal {
   final Map<String, _CommittedWrite> _entries = <String, _CommittedWrite>{};
   int _sequence = 0;
 
-  String record(_WriteSnapshot snapshot, Runtime runtime) {
+  String _record(_WriteSnapshot snapshot, Runtime runtime) {
     final id = '${DateTime.now().microsecondsSinceEpoch}-${_sequence++}';
     _entries[id] = _CommittedWrite(snapshot, runtime);
     return id;
@@ -282,7 +282,7 @@ class WriteFileTool extends MutatingTool implements PreviewableTool {
     final diff = FileDiff.fromJson(
       (preview.data['diff'] as Map).cast<String, dynamic>(),
     );
-    final transactionId = fileChangeJournal.record(snapshot, context.runtime);
+    final transactionId = fileChangeJournal._record(snapshot, context.runtime);
     final action = !snapshot.existed
         ? 'Created'
         : (diff.isEmpty ? 'Wrote (no change)' : 'Updated');
