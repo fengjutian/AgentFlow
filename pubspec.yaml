@@ -48,6 +48,9 @@ dependencies:
   collection: ^1.19.1
   crypto: ^3.0.7
   flutter_secure_storage: ^10.0.0
+  syncfusion_flutter_pdf: ^28.1.36
+  archive: ^3.6.1
+  xml: ^6.5.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

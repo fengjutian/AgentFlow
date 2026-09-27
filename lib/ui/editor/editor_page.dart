@@ -7,7 +7,6 @@ import '../../app/providers.dart';
 import '../../app/theme.dart';
 import '../../core/editor/editor_document.dart';
 import '../../l10n/l10n.dart';
-import '../../runtime/runtime.dart';
 
 class EditorPage extends ConsumerStatefulWidget {
   const EditorPage({super.key, required this.path, required this.name});
@@ -57,7 +56,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
     });
     try {
       final runtime = await ref.read(runtimeProvider.future);
-      if (runtime == null) throw StateError(context.l10n.runtimeUnavailable);
+      if (runtime == null) throw StateError('Runtime unavailable.');
       final document = EditorDocument(path: widget.path, runtime: runtime);
       final content = await document.load();
       if (!mounted) return;
@@ -182,7 +181,9 @@ class _EditorPageState extends ConsumerState<EditorPage> {
     return PopScope<Object?>(
       canPop: !_dirty,
       onPopInvokedWithResult: (didPop, result) async {
-        if (didPop || !await _confirmDiscard() || !mounted) return;
+        if (didPop) return;
+        final discard = await _confirmDiscard();
+        if (!context.mounted || !discard) return;
         Navigator.of(context).pop();
       },
       child: Scaffold(
