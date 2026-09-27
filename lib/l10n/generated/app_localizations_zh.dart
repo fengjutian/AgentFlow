@@ -408,4 +408,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get done => '完成';
+
+  @override
+  String get search => '查找';
+
+  @override
+  String get replace => '替换';
+
+  @override
+  String get replaceAll => '全部替换';
+
+  @override
+  String get previousMatch => '上一个匹配';
+
+  @override
+  String get nextMatch => '下一个匹配';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get noMatches => '0 个结果';
+
+  @override
+  String matchPosition(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
+  String replacedOccurrences(int count) {
+    return '已替换 $count 处';
+  }
+
+  @override
+  String get goToLine => '跳转到行';
+
+  @override
+  String get lineNumber => '行号';
+
+  @override
+  String lineRange(int count) {
+    return '1–$count';
+  }
+
+  @override
+  String get go => '跳转';
+
+  @override
+  String get invalidLineNumber => '行号超出当前文件范围';
 }

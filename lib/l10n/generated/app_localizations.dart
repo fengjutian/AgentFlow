@@ -841,6 +841,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'done'**
   String get done;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Find'**
+  String get search;
+
+  /// No description provided for @replace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get replace;
+
+  /// No description provided for @replaceAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace all'**
+  String get replaceAll;
+
+  /// No description provided for @previousMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous match'**
+  String get previousMatch;
+
+  /// No description provided for @nextMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Next match'**
+  String get nextMatch;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @noMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'0 results'**
+  String get noMatches;
+
+  /// No description provided for @matchPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{total}'**
+  String matchPosition(int current, int total);
+
+  /// No description provided for @replacedOccurrences.
+  ///
+  /// In en, this message translates to:
+  /// **'Replaced {count} occurrences'**
+  String replacedOccurrences(int count);
+
+  /// No description provided for @goToLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to line'**
+  String get goToLine;
+
+  /// No description provided for @lineNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Line number'**
+  String get lineNumber;
+
+  /// No description provided for @lineRange.
+  ///
+  /// In en, this message translates to:
+  /// **'1–{count}'**
+  String lineRange(int count);
+
+  /// No description provided for @go.
+  ///
+  /// In en, this message translates to:
+  /// **'Go'**
+  String get go;
+
+  /// No description provided for @invalidLineNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Line number is outside this file'**
+  String get invalidLineNumber;
 }
 
 class _AppLocalizationsDelegate

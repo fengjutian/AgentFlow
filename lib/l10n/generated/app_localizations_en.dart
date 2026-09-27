@@ -418,4 +418,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get done => 'done';
+
+  @override
+  String get search => 'Find';
+
+  @override
+  String get replace => 'Replace';
+
+  @override
+  String get replaceAll => 'Replace all';
+
+  @override
+  String get previousMatch => 'Previous match';
+
+  @override
+  String get nextMatch => 'Next match';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get noMatches => '0 results';
+
+  @override
+  String matchPosition(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
+  String replacedOccurrences(int count) {
+    return 'Replaced $count occurrences';
+  }
+
+  @override
+  String get goToLine => 'Go to line';
+
+  @override
+  String get lineNumber => 'Line number';
+
+  @override
+  String lineRange(int count) {
+    return '1–$count';
+  }
+
+  @override
+  String get go => 'Go';
+
+  @override
+  String get invalidLineNumber => 'Line number is outside this file';
 }

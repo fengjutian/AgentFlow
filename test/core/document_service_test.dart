@@ -53,6 +53,37 @@ class _MemoryDocumentStore implements DocumentStore {
     documents.remove(id);
     sectionData.remove(id);
   }
+
+  @override
+  Future<List<DocumentSearchHit>> search(
+    String documentId,
+    String query, {
+    int limit = 10,
+  }) async {
+    final sections = await this.sections(documentId);
+    final needle = query.toLowerCase();
+    final hits = <DocumentSearchHit>[];
+    for (final section in sections) {
+      final lower = section.plainText.toLowerCase();
+      final offset = lower.indexOf(needle);
+      if (offset < 0) continue;
+      final start = (offset - 100).clamp(0, section.plainText.length);
+      final end = (offset + query.length + 180).clamp(
+        start,
+        section.plainText.length,
+      );
+      hits.add(
+        DocumentSearchHit(
+          index: section.index,
+          title: section.title,
+          locator: section.locator,
+          snippet: section.plainText.substring(start, end).trim(),
+        ),
+      );
+      if (hits.length >= limit) break;
+    }
+    return hits;
+  }
 }
 
 class _FakeEpubParser implements DocumentParser {
