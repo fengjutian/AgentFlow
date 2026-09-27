@@ -77,7 +77,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         ],
       ),
       body: workspace == null
-          ? const _TerminalHint(
+          ? _TerminalHint(
               message: context.l10n.selectWorkspaceForTerminal,
             )
           : runtime == null
@@ -283,7 +283,7 @@ class _Prompt extends StatelessWidget {
                 style: AppTheme.code,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => onSubmit(),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   isDense: true,
                   hintText: context.l10n.commandHint,
                   border: InputBorder.none,

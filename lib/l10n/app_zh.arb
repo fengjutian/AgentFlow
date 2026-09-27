@@ -70,6 +70,8 @@
   "model": "模型",
   "baseUrl": "接口地址",
   "apiKey": "API Key",
+  "requiredField": "必填",
+  "maxTokens": "最大输出 Token",
   "temperatureValue": "温度：{value}",
   "approveAction": "批准此操作",
   "confirmHighRisk": "确认高风险操作",

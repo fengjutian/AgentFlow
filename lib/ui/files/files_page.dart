@@ -72,7 +72,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
       body: Builder(
         builder: (BuildContext context) {
           if (workspace == null) {
-            return const _FilesHint(
+            return _FilesHint(
               icon: Icons.folder_off_outlined,
               message: context.l10n.selectWorkspaceForFiles,
             );
@@ -82,7 +82,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
             return const Center(child: CircularProgressIndicator());
           }
           if (runtime == null) {
-            return const _FilesHint(
+            return _FilesHint(
               icon: Icons.link_off,
               message: context.l10n.runtimeUnavailable,
             );
@@ -112,7 +112,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_entries.isEmpty) {
-      return const _FilesHint(
+      return _FilesHint(
         icon: Icons.folder_open,
         message: context.l10n.emptyFolder,
       );

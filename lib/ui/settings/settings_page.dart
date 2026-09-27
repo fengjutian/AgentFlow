@@ -276,7 +276,7 @@ class _ProviderTile extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-            const PopupMenuItem<String>(
+            PopupMenuItem<String>(
                 value: 'default', child: Text(context.l10n.setAsDefault)),
             PopupMenuItem<String>(
                 value: 'delete', child: Text(context.l10n.delete)),
@@ -584,31 +584,33 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _label,
-                  decoration: const InputDecoration(
-                    labelText: 'Label',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.providerLabel,
                     hintText: 'DeepSeek (personal)',
                   ),
                   validator: (String? v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      (v == null || v.trim().isEmpty)
+                          ? context.l10n.requiredField
+                          : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _model,
-                  decoration: const InputDecoration(
-                    labelText: 'Model',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.model,
                     hintText: 'gpt-4o-mini / deepseek-chat',
                   ),
                   enabled: !isMock,
                   validator: (String? v) => !isMock &&
                           (v == null || v.trim().isEmpty)
-                      ? 'Required'
+                      ? context.l10n.requiredField
                       : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _baseUrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Base URL',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.baseUrl,
                     hintText: 'https://api.example.com/v1',
                   ),
                   enabled: !isMock,
@@ -620,7 +622,7 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                   obscureText: _obscureKey,
                   enabled: !isMock,
                   decoration: InputDecoration(
-                    labelText: 'API key',
+                    labelText: context.l10n.apiKey,
                     suffixIcon: IconButton(
                       icon: Icon(_obscureKey
                           ? Icons.visibility_outlined
@@ -651,7 +653,8 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                 const SizedBox(height: 4),
                 TextFormField(
                   controller: _maxTokens,
-                  decoration: const InputDecoration(labelText: 'Max tokens'),
+                  decoration:
+                      InputDecoration(labelText: context.l10n.maxTokens),
                   keyboardType: TextInputType.number,
                 ),
               ],

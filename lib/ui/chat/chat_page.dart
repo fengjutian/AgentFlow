@@ -319,10 +319,10 @@ class _InputBar extends StatelessWidget {
                 maxLines: 5,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => isRunning ? null : onSubmit(),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: context.l10n.describeTask,
                   contentPadding:
-                      EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
               ),
             ),
@@ -384,8 +384,8 @@ class _SessionsSheet extends ConsumerWidget {
               error: (Object e, _) => Text(context.l10n.failedToLoad(e)),
               data: (List<Session> list) {
                 if (list.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Text(context.l10n.noSessions),
                   );
                 }

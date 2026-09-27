@@ -78,6 +78,8 @@
   "model": "Model",
   "baseUrl": "Base URL",
   "apiKey": "API Key",
+  "requiredField": "Required",
+  "maxTokens": "Max tokens",
   "temperatureValue": "Temperature: {value}",
   "@temperatureValue": {"placeholders": {"value": {"type": "String"}}},
   "approveAction": "Approve this action",
