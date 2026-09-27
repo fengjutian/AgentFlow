@@ -27,8 +27,8 @@ class ModelConfig {
   final String id;
   final String label;
 
-  /// Vendor family: `openai`, `deepseek`, `qwen`, `gemini`, `openai-compatible`,
-  /// `local`, `mock`.
+  /// Vendor family: `minimax`, `deepseek`, `qwen`, `kimi`, `openai`,
+  /// `openai-compatible`, `local`, `mock`.
   final String provider;
   final String model;
 
@@ -52,45 +52,44 @@ class ModelConfig {
     int? maxTokens,
     int? contextWindow,
     bool? isDefault,
-  }) =>
-      ModelConfig(
-        id: id,
-        label: label ?? this.label,
-        provider: provider ?? this.provider,
-        model: model ?? this.model,
-        baseUrl: baseUrl ?? this.baseUrl,
-        apiKey: apiKey ?? this.apiKey,
-        temperature: temperature ?? this.temperature,
-        maxTokens: maxTokens ?? this.maxTokens,
-        contextWindow: contextWindow ?? this.contextWindow,
-        isDefault: isDefault ?? this.isDefault,
-      );
+  }) => ModelConfig(
+    id: id,
+    label: label ?? this.label,
+    provider: provider ?? this.provider,
+    model: model ?? this.model,
+    baseUrl: baseUrl ?? this.baseUrl,
+    apiKey: apiKey ?? this.apiKey,
+    temperature: temperature ?? this.temperature,
+    maxTokens: maxTokens ?? this.maxTokens,
+    contextWindow: contextWindow ?? this.contextWindow,
+    isDefault: isDefault ?? this.isDefault,
+  );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'label': label,
-        'provider': provider,
-        'model': model,
-        'baseUrl': baseUrl,
-        'apiKey': apiKey,
-        'temperature': temperature,
-        'maxTokens': maxTokens,
-        'contextWindow': contextWindow,
-        'isDefault': isDefault,
-      };
+    'id': id,
+    'label': label,
+    'provider': provider,
+    'model': model,
+    'baseUrl': baseUrl,
+    'apiKey': apiKey,
+    'temperature': temperature,
+    'maxTokens': maxTokens,
+    'contextWindow': contextWindow,
+    'isDefault': isDefault,
+  };
 
   factory ModelConfig.fromJson(Map<String, dynamic> json) => ModelConfig(
-        id: json['id'] as String,
-        label: (json['label'] ?? '') as String,
-        provider: (json['provider'] ?? 'openai-compatible') as String,
-        model: (json['model'] ?? '') as String,
-        baseUrl: (json['baseUrl'] ?? '') as String,
-        apiKey: (json['apiKey'] ?? '') as String,
-        temperature: (json['temperature'] as num?)?.toDouble() ?? 0.2,
-        maxTokens: (json['maxTokens'] as num?)?.toInt() ?? 4096,
-        contextWindow: (json['contextWindow'] as num?)?.toInt() ?? 128000,
-        isDefault: (json['isDefault'] ?? false) as bool,
-      );
+    id: json['id'] as String,
+    label: (json['label'] ?? '') as String,
+    provider: (json['provider'] ?? 'openai-compatible') as String,
+    model: (json['model'] ?? '') as String,
+    baseUrl: (json['baseUrl'] ?? '') as String,
+    apiKey: (json['apiKey'] ?? '') as String,
+    temperature: (json['temperature'] as num?)?.toDouble() ?? 0.2,
+    maxTokens: (json['maxTokens'] as num?)?.toInt() ?? 4096,
+    contextWindow: (json['contextWindow'] as num?)?.toInt() ?? 128000,
+    isDefault: (json['isDefault'] ?? false) as bool,
+  );
 }
 
 /// A tool exposed to the model, in JSON-schema form.
@@ -108,13 +107,13 @@ class ToolSpec {
   final Map<String, dynamic> parameters;
 
   Map<String, dynamic> toOpenAiJson() => <String, dynamic>{
-        'type': 'function',
-        'function': <String, dynamic>{
-          'name': name,
-          'description': description,
-          'parameters': parameters,
-        },
-      };
+    'type': 'function',
+    'function': <String, dynamic>{
+      'name': name,
+      'description': description,
+      'parameters': parameters,
+    },
+  };
 }
 
 /// Everything the engine hands to the model on one loop iteration.
@@ -153,10 +152,10 @@ class ModelResponse {
   bool get isFinal => !hasToolCalls && finishReason != FinishReason.error;
 
   factory ModelResponse.text(String content) => ModelResponse(
-        content: content,
-        toolCalls: const <ToolCall>[],
-        finishReason: FinishReason.stop,
-      );
+    content: content,
+    toolCalls: const <ToolCall>[],
+    finishReason: FinishReason.stop,
+  );
 }
 
 /// Thrown when a provider call fails (network, auth, malformed response).

@@ -13,19 +13,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
 import '../../l10n/l10n.dart';
 import '../../core/model/model_provider.dart';
+import '../../core/model/provider_catalog.dart';
 import '../../runtime/bridge_runtime.dart';
 import '../../runtime/runtime.dart';
-
-/// Known vendor presets: choosing one prefills a sensible base URL.
-const Map<String, String> _providerPresets = <String, String>{
-  'openai': 'https://api.openai.com/v1',
-  'deepseek': 'https://api.deepseek.com/v1',
-  'qwen': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-  'gemini': 'https://generativelanguage.googleapis.com/v1beta/openai',
-  'openai-compatible': '',
-  'local': 'http://localhost:1234/v1',
-  'mock': '',
-};
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -391,8 +381,11 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _kv(context, context.l10n.workspace,
-                widget.workspaceName ?? '— ${context.l10n.none} —'),
+            _kv(
+              context,
+              context.l10n.workspace,
+              widget.workspaceName ?? '— ${context.l10n.none} —',
+            ),
             const SizedBox(height: 6),
             _kv(context, context.l10n.directory, widget.rootDirectory ?? '—'),
             const SizedBox(height: 6),
@@ -524,11 +517,10 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
     super.initState();
     final c = widget.existing;
     _provider = c?.provider ?? 'openai-compatible';
+    final preset = providerPresetById(_provider);
     _label = TextEditingController(text: c?.label ?? '');
     _model = TextEditingController(text: c?.model ?? '');
-    _baseUrl = TextEditingController(
-      text: c?.baseUrl ?? _providerPresets[_provider] ?? '',
-    );
+    _baseUrl = TextEditingController(text: c?.baseUrl ?? preset?.baseUrl ?? '');
     _apiKey = TextEditingController(text: c?.apiKey ?? '');
     _maxTokens = TextEditingController(text: '${c?.maxTokens ?? 4096}');
     _temperature = c?.temperature ?? 0.2;
@@ -547,13 +539,21 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
   void _onProviderChanged(String value) {
     setState(() {
       _provider = value;
-      final preset = _providerPresets[value];
-      // Only overwrite the URL if it is empty or matches another preset.
-      if (preset != null &&
-          (_baseUrl.text.isEmpty ||
-              _providerPresets.containsValue(_baseUrl.text))) {
-        _baseUrl.text = preset;
+      final preset = providerPresetById(value);
+      if (preset == null) return;
+      final knownUrls = providerCatalog.map((item) => item.baseUrl);
+      final knownModels = providerCatalog.map((item) => item.defaultModel);
+      final knownLabels = providerCatalog.map((item) => item.displayName);
+      if (_baseUrl.text.isEmpty || knownUrls.contains(_baseUrl.text)) {
+        _baseUrl.text = preset.baseUrl;
       }
+      if (_model.text.isEmpty || knownModels.contains(_model.text)) {
+        _model.text = preset.defaultModel;
+      }
+      if (_label.text.isEmpty || knownLabels.contains(_label.text)) {
+        _label.text = preset.displayName;
+      }
+      _maxTokens.text = '${preset.maxTokens}';
     });
   }
 
@@ -569,7 +569,10 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
       apiKey: _apiKey.text.trim(),
       temperature: _temperature,
       maxTokens: int.tryParse(_maxTokens.text.trim()) ?? 4096,
-      contextWindow: existing?.contextWindow ?? 128000,
+      contextWindow:
+          existing?.contextWindow ??
+          providerPresetById(_provider)?.contextWindow ??
+          128000,
       isDefault: existing?.isDefault ?? false,
     );
     Navigator.of(context).pop(config);
@@ -597,10 +600,12 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                   decoration: InputDecoration(
                     labelText: context.l10n.providerType,
                   ),
-                  items: _providerPresets.keys
+                  items: providerCatalog
                       .map(
-                        (String p) =>
-                            DropdownMenuItem<String>(value: p, child: Text(p)),
+                        (ProviderPreset preset) => DropdownMenuItem<String>(
+                          value: preset.id,
+                          child: Text(preset.displayName),
+                        ),
                       )
                       .toList(),
                   onChanged: (String? v) {
