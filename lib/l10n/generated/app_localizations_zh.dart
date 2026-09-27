@@ -456,4 +456,41 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get invalidLineNumber => '行号超出当前文件范围';
+
+  @override
+  String get newFile => '新建文件';
+
+  @override
+  String get newFolder => '新建文件夹';
+
+  @override
+  String get name => '名称';
+
+  @override
+  String get edit => '编辑';
+
+  @override
+  String get rename => '重命名';
+
+  @override
+  String get invalidFileName => '请输入不包含 / 或 \\ 的有效名称';
+
+  @override
+  String get entryAlreadyExists => '已存在同名文件或文件夹。';
+
+  @override
+  String fileOperationFailed(Object error) {
+    return '文件操作失败：$error';
+  }
+
+  @override
+  String deleteEntryTitle(String name) {
+    return '删除“$name”？';
+  }
+
+  @override
+  String get deleteFileDescription => '此文件将被永久删除。';
+
+  @override
+  String get deleteFolderDescription => '此文件夹及其中的所有内容将被永久删除。';
 }

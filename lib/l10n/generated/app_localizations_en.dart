@@ -466,4 +466,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidLineNumber => 'Line number is outside this file';
+
+  @override
+  String get newFile => 'New file';
+
+  @override
+  String get newFolder => 'New folder';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get rename => 'Rename';
+
+  @override
+  String get invalidFileName => 'Enter a valid name without / or \\';
+
+  @override
+  String get entryAlreadyExists => 'An entry with this name already exists.';
+
+  @override
+  String fileOperationFailed(Object error) {
+    return 'File operation failed: $error';
+  }
+
+  @override
+  String deleteEntryTitle(String name) {
+    return 'Delete \"$name\"?';
+  }
+
+  @override
+  String get deleteFileDescription => 'This file will be permanently deleted.';
+
+  @override
+  String get deleteFolderDescription =>
+      'This folder and all of its contents will be permanently deleted.';
 }

@@ -243,7 +243,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
           ? context.l10n.newFile
           : context.l10n.newFolder,
     );
-    if (name == null) return;
+    if (!mounted || name == null) return;
     final runtime = ref.read(runtimeProvider).value;
     if (runtime == null) return;
     final path = _childPath(name);
@@ -258,12 +258,10 @@ class _FilesPageState extends ConsumerState<FilesPage> {
       }
       await _load();
       if (kind == _CreateKind.file && mounted) {
-        await _openFile(
-          FileEntry(name: name, path: path, isDirectory: false),
-        );
+        await _openFile(FileEntry(name: name, path: path, isDirectory: false));
       }
     } catch (error) {
-      _snack(context.l10n.fileOperationFailed(error));
+      if (mounted) _snack(context.l10n.fileOperationFailed(error));
     }
   }
 
@@ -272,14 +270,14 @@ class _FilesPageState extends ConsumerState<FilesPage> {
       title: context.l10n.rename,
       initialValue: entry.name,
     );
-    if (name == null || name == entry.name) return;
+    if (!mounted || name == null || name == entry.name) return;
     final runtime = ref.read(runtimeProvider).value;
     if (runtime == null) return;
     try {
       await runtime.renameEntry(entry.path, _childPath(name));
       await _load();
     } catch (error) {
-      _snack(context.l10n.fileOperationFailed(error));
+      if (mounted) _snack(context.l10n.fileOperationFailed(error));
     }
   }
 
@@ -305,14 +303,14 @@ class _FilesPageState extends ConsumerState<FilesPage> {
         ],
       ),
     );
-    if (confirmed != true) return;
+    if (!mounted || confirmed != true) return;
     final runtime = ref.read(runtimeProvider).value;
     if (runtime == null) return;
     try {
       await runtime.deleteEntry(entry.path);
       await _load();
     } catch (error) {
-      _snack(context.l10n.fileOperationFailed(error));
+      if (mounted) _snack(context.l10n.fileOperationFailed(error));
     }
   }
 
@@ -367,14 +365,16 @@ class _FilesPageState extends ConsumerState<FilesPage> {
   String? _nameError(String value) {
     final name = value.trim();
     if (name.isEmpty) return context.l10n.requiredField;
-    if (name == '.' || name == '..' || name.contains('/') || name.contains('\\')) {
+    if (name == '.' ||
+        name == '..' ||
+        name.contains('/') ||
+        name.contains('\\')) {
       return context.l10n.invalidFileName;
     }
     return null;
   }
 
   String _childPath(String name) => _path.isEmpty ? name : '$_path/$name';
-  }
 
   void _snack(String message) {
     if (!mounted) return;

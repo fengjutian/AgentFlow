@@ -925,6 +925,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Line number is outside this file'**
   String get invalidLineNumber;
+
+  /// No description provided for @newFile.
+  ///
+  /// In en, this message translates to:
+  /// **'New file'**
+  String get newFile;
+
+  /// No description provided for @newFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder'**
+  String get newFolder;
+
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @rename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get rename;
+
+  /// No description provided for @invalidFileName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid name without / or \\'**
+  String get invalidFileName;
+
+  /// No description provided for @entryAlreadyExists.
+  ///
+  /// In en, this message translates to:
+  /// **'An entry with this name already exists.'**
+  String get entryAlreadyExists;
+
+  /// No description provided for @fileOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'File operation failed: {error}'**
+  String fileOperationFailed(Object error);
+
+  /// No description provided for @deleteEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String deleteEntryTitle(String name);
+
+  /// No description provided for @deleteFileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This file will be permanently deleted.'**
+  String get deleteFileDescription;
+
+  /// No description provided for @deleteFolderDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder and all of its contents will be permanently deleted.'**
+  String get deleteFolderDescription;
 }
 
 class _AppLocalizationsDelegate
