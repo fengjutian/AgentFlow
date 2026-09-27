@@ -140,6 +140,12 @@ class BridgeRuntime implements Runtime {
   }
 
   @override
+  Future<void> deleteFile(String path) => _channel.invokeMethod<void>(
+        'deleteFile',
+        <String, dynamic>{'path': _abs(path)},
+      );
+
+  @override
   Future<bool> fileExists(String path) async {
     final exists = await _channel.invokeMethod<bool>(
       'fileExists',

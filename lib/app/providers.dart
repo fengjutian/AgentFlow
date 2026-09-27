@@ -22,6 +22,7 @@ import '../runtime/local_runtime.dart';
 import '../runtime/runtime.dart';
 import '../storage/database.dart';
 import '../storage/repositories.dart';
+import '../storage/secret_store.dart';
 import '../tools/default_tools.dart';
 import '../tools/tool_registry.dart';
 
@@ -57,9 +58,16 @@ final Provider<SessionRepository> sessionRepositoryProvider =
     Provider<SessionRepository>(
         (Ref ref) => SessionRepository(ref.watch(databaseProvider)));
 
+final Provider<SecretStore> secretStoreProvider = Provider<SecretStore>(
+  (Ref ref) => PlatformSecretStore(),
+);
+
 final Provider<ProviderRepository> providerRepositoryProvider =
     Provider<ProviderRepository>(
-        (Ref ref) => ProviderRepository(ref.watch(databaseProvider)));
+        (Ref ref) => ProviderRepository(
+              ref.watch(databaseProvider),
+              ref.watch(secretStoreProvider),
+            ));
 
 final Provider<MemoryManager> memoryManagerProvider = Provider<MemoryManager>(
     (Ref ref) => MemoryManager(store: DriftMemoryStore(ref.watch(databaseProvider))));

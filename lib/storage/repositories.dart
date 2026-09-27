@@ -15,6 +15,7 @@ import '../core/message.dart';
 import '../core/model/model_provider.dart';
 import '../data/models.dart';
 import 'database.dart';
+import 'secret_store.dart';
 
 /// CRUD for workspaces.
 class WorkspaceRepository {
@@ -170,12 +171,27 @@ class SessionRepository {
 
 /// Persists model provider configurations (Settings).
 class ProviderRepository {
-  ProviderRepository(this._db);
+  ProviderRepository(this._db, this._secrets);
   final AppDatabase _db;
+  final SecretStore _secrets;
+
+  String _secretKey(String id) => 'model-provider/$id/api-key';
 
   Future<List<ModelConfig>> all() async {
     final rows = await _db.select(_db.providerConfigs).get();
-    final list = rows.map(_toDomain).toList();
+    final list = <ModelConfig>[];
+    for (final row in rows) {
+      var apiKey = await _secrets.read(_secretKey(row.id)) ?? '';
+      // One-time migration from releases that stored credentials in SQLite.
+      if (apiKey.isEmpty && row.apiKey.isNotEmpty) {
+        await _secrets.write(_secretKey(row.id), row.apiKey);
+        apiKey = row.apiKey;
+        await (_db.update(_db.providerConfigs)
+              ..where((table) => table.id.equals(row.id)))
+            .write(const ProviderConfigsCompanion(apiKey: Value('')));
+      }
+      list.add(_toDomain(row, apiKey));
+    }
     list.sort((ModelConfig a, ModelConfig b) => a.label.compareTo(b.label));
     return list;
   }
@@ -189,14 +205,22 @@ class ProviderRepository {
     );
   }
 
-  Future<void> upsert(ModelConfig config) =>
-      _db.into(_db.providerConfigs).insert(
-            _toRow(config),
-            mode: InsertMode.insertOrReplace,
-          );
+  Future<void> upsert(ModelConfig config) async {
+    if (config.apiKey.isEmpty) {
+      await _secrets.delete(_secretKey(config.id));
+    } else {
+      await _secrets.write(_secretKey(config.id), config.apiKey);
+    }
+    await _db.into(_db.providerConfigs).insert(
+          _toRow(config),
+          mode: InsertMode.insertOrReplace,
+        );
+  }
 
-  Future<void> delete(String id) =>
-      (_db.delete(_db.providerConfigs)..where((t) => t.id.equals(id))).go();
+  Future<void> delete(String id) async {
+    await _secrets.delete(_secretKey(id));
+    await (_db.delete(_db.providerConfigs)..where((t) => t.id.equals(id))).go();
+  }
 
   /// Marks [id] as the default, clearing the flag on all others.
   Future<void> setDefault(String id) async {
@@ -214,20 +238,22 @@ class ProviderRepository {
         provider: c.provider,
         model: c.model,
         baseUrl: c.baseUrl,
-        apiKey: Value(c.apiKey),
+        // Keep the legacy column empty. It remains only for a safe migration of
+        // existing installations and can be dropped in a later schema version.
+        apiKey: const Value(''),
         temperature: Value(c.temperature),
         maxTokens: Value(c.maxTokens),
         contextWindow: Value(c.contextWindow),
         isDefault: Value(c.isDefault),
       );
 
-  ModelConfig _toDomain(ProviderRow row) => ModelConfig(
+  ModelConfig _toDomain(ProviderRow row, String apiKey) => ModelConfig(
         id: row.id,
         label: row.label,
         provider: row.provider,
         model: row.model,
         baseUrl: row.baseUrl,
-        apiKey: row.apiKey,
+        apiKey: apiKey,
         temperature: row.temperature,
         maxTokens: row.maxTokens,
         contextWindow: row.contextWindow,

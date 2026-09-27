@@ -97,6 +97,8 @@ abstract class Runtime {
 
   Future<void> writeFile(String path, String content);
 
+  Future<void> deleteFile(String path);
+
   Future<bool> fileExists(String path);
 
   Future<List<FileEntry>> listFiles(String path);

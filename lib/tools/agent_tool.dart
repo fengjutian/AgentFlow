@@ -96,3 +96,23 @@ abstract class MutatingTool extends AgentTool {
   @override
   ToolRisk get risk => ToolRisk.confirm;
 }
+
+/// A mutating tool that calculates its exact effect before approval.
+abstract class PreviewableTool extends AgentTool {
+  Future<ToolPreview> preview(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  );
+
+  Future<ToolResult> executePrepared(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+    ToolPreview preview,
+  );
+}
+
+class ToolPreview {
+  const ToolPreview({required this.data, this.state});
+  final Map<String, dynamic> data;
+  final Object? state;
+}

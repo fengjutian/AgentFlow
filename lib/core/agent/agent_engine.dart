@@ -246,6 +246,28 @@ class AgentEngine {
       status = ActivityStatus.error;
       detail = 'unknown tool';
     } else {
+      ToolPreview? preview;
+      if (tool is PreviewableTool) {
+        try {
+          preview = await tool.preview(call.arguments, toolContext);
+        } on ToolExecutionException catch (e) {
+          result = ToolResult(
+            toolCallId: call.id,
+            name: tool.name,
+            content: e.message,
+            isError: true,
+          );
+          sink.add(ActivityUpdatedEvent(
+            base.copyWith(status: ActivityStatus.error, detail: e.message),
+          ));
+          sink.add(ToolFinishedEvent(
+            toolCallId: call.id,
+            toolName: call.name,
+            result: result,
+          ));
+          return result;
+        }
+      }
       // Approval gate for anything above read-only risk (design doc §3.3).
       if (tool.risk != ToolRisk.auto) {
         setPhase(AgentPhase.waitingApproval);
@@ -254,6 +276,7 @@ class AgentEngine {
           risk: tool.risk,
           summary: label,
           arguments: call.arguments,
+          previewData: preview?.data,
         );
         if (decision == ApprovalDecision.deny) {
           result = ToolResult(
@@ -289,7 +312,9 @@ class AgentEngine {
       } else {
         setPhase(AgentPhase.executing);
         try {
-          final executed = await tool.execute(call.arguments, toolContext);
+          final executed = tool is PreviewableTool && preview != null
+              ? await tool.executePrepared(call.arguments, toolContext, preview)
+              : await tool.execute(call.arguments, toolContext);
           result = executed.copyWith(toolCallId: call.id, name: tool.name);
           status = result.isError ? ActivityStatus.error : ActivityStatus.done;
           detail = _firstLine(result.content);

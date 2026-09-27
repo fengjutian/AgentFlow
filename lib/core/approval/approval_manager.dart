@@ -21,6 +21,7 @@ class ApprovalRequest {
     required this.summary,
     required this.risk,
     required this.arguments,
+    this.previewData,
   });
 
   final String id;
@@ -28,6 +29,7 @@ class ApprovalRequest {
   final String summary;
   final ToolRisk risk;
   final Map<String, dynamic> arguments;
+  final Map<String, dynamic>? previewData;
 
   bool get isStrong => risk == ToolRisk.strong;
 }
@@ -72,6 +74,7 @@ class ApprovalManager {
     required ToolRisk risk,
     required String summary,
     Map<String, dynamic> arguments = const <String, dynamic>{},
+    Map<String, dynamic>? previewData,
   }) async {
     if (risk == ToolRisk.auto || _autoApprove) {
       return ApprovalDecision.allow;
@@ -86,6 +89,7 @@ class ApprovalManager {
       summary: summary,
       risk: risk,
       arguments: arguments,
+      previewData: previewData,
     );
 
     final resolver = _resolver;

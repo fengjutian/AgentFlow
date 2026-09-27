@@ -136,6 +136,12 @@ class LocalRuntime implements Runtime {
   }
 
   @override
+  Future<void> deleteFile(String path) async {
+    final file = File(resolve(path));
+    if (file.existsSync()) await file.delete();
+  }
+
+  @override
   Future<bool> fileExists(String path) async => File(resolve(path)).existsSync();
 
   @override
