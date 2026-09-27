@@ -28,6 +28,19 @@ void main() {
     if (tmp.existsSync()) tmp.deleteSync(recursive: true);
   });
 
+  test('local runtime reports command output through callbacks', () async {
+    final streamed = StringBuffer();
+
+    final result = await runtime.execute(
+      'echo streamed-output',
+      onStdout: streamed.write,
+    );
+
+    expect(result.exitCode, 0);
+    expect(streamed.toString(), contains('streamed-output'));
+    expect(result.stdout, contains('streamed-output'));
+  });
+
   group('list_files', () {
     test('enumerates entries and marks directories', () async {
       final result = await ListFilesTool().execute(<String, dynamic>{
