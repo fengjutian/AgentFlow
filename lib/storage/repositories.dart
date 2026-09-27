@@ -310,3 +310,50 @@ Map<String, dynamic> _decodeMap(String? source) {
   }
   return <String, dynamic>{};
 }
+
+/// CRUD for non-secret runtime connection settings.
+class RuntimeConfigRepository {
+  RuntimeConfigRepository(this._db);
+
+  final AppDatabase _db;
+
+  Future<List<RuntimeConfig>> all() async {
+    final rows = await (_db.select(_db.runtimeConfigs)
+          ..orderBy([(table) => OrderingTerm.asc(table.label)]))
+        .get();
+    return rows.map(_toDomain).toList(growable: false);
+  }
+
+  Future<RuntimeConfig?> byId(String id) async {
+    final row = await (_db.select(_db.runtimeConfigs)
+          ..where((table) => table.id.equals(id)))
+        .getSingleOrNull();
+    return row == null ? null : _toDomain(row);
+  }
+
+  Future<void> upsert(RuntimeConfig config) =>
+      _db.into(_db.runtimeConfigs).insert(
+            RuntimeConfigsCompanion.insert(
+              id: config.id,
+              label: config.label,
+              kind: config.kind,
+              optionsJson: Value(jsonEncode(config.options)),
+              createdAt: config.createdAt,
+              updatedAt: config.updatedAt,
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
+
+  Future<void> delete(String id) => (_db.delete(_db.runtimeConfigs)
+        ..where((table) => table.id.equals(id)))
+      .go();
+
+  RuntimeConfig _toDomain(RuntimeConfigRow row) => RuntimeConfig(
+        id: row.id,
+        label: row.label,
+        kind: row.kind,
+        options: _decodeMap(row.optionsJson),
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      );
+}

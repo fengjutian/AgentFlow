@@ -32,11 +32,11 @@ class _DynamicTool extends ReadOnlyTool {
 }
 
 void main() {
-  const workspace = Workspace(
+  final workspace = Workspace(
     id: 'workspace',
     name: 'Workspace',
     rootDirectory: '.',
-    createdAt: _createdAt,
+    createdAt: DateTime.utc(2026),
     settings: <String, dynamic>{
       'disabledTools': <String>['read_file'],
     },
@@ -62,5 +62,3 @@ void main() {
     expect(registry.lookup('mcp_example_lookup'), isNotNull);
   });
 }
-
-const DateTime _createdAt = DateTime.utc(2026);

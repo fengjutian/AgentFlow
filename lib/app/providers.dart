@@ -60,6 +60,11 @@ final Provider<SessionRepository> sessionRepositoryProvider =
       (Ref ref) => SessionRepository(ref.watch(databaseProvider)),
     );
 
+final Provider<RuntimeConfigRepository> runtimeConfigRepositoryProvider =
+    Provider<RuntimeConfigRepository>(
+      (Ref ref) => RuntimeConfigRepository(ref.watch(databaseProvider)),
+    );
+
 final Provider<SecretStore> secretStoreProvider = Provider<SecretStore>(
   (Ref ref) => PlatformSecretStore(),
 );
@@ -117,6 +122,11 @@ final sessionsProvider = FutureProvider.family<List<Session>, String>(
   (Ref ref, String workspaceId) =>
       ref.watch(sessionRepositoryProvider).forWorkspace(workspaceId),
 );
+
+final FutureProvider<List<RuntimeConfig>> runtimeConfigsProvider =
+    FutureProvider<List<RuntimeConfig>>(
+      (Ref ref) => ref.watch(runtimeConfigRepositoryProvider).all(),
+    );
 
 final FutureProvider<List<ModelConfig>> modelConfigsProvider =
     FutureProvider<List<ModelConfig>>(

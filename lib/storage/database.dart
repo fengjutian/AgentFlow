@@ -94,8 +94,105 @@ class MemoryNotes extends Table {
   Set<Column> get primaryKey => <Column>{id};
 }
 
+@DataClassName('RuntimeConfigRow')
+class RuntimeConfigs extends Table {
+  TextColumn get id => text()();
+  TextColumn get label => text()();
+  TextColumn get kind => text()();
+  TextColumn get optionsJson => text().withDefault(const Constant('{}'))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => <Column>{id};
+}
+
+@DataClassName('DocumentRow')
+class Documents extends Table {
+  TextColumn get id => text()();
+  TextColumn get workspaceId =>
+      text().references(Workspaces, #id, onDelete: KeyAction.cascade)();
+  TextColumn get displayName => text()();
+  TextColumn get sourceUri => text()();
+  TextColumn get localPath => text()();
+  TextColumn get type => text()();
+  TextColumn get mimeType => text().withDefault(const Constant(''))();
+  IntColumn get fileSize => integer().withDefault(const Constant(0))();
+  TextColumn get contentHash => text().withDefault(const Constant(''))();
+  TextColumn get title => text().withDefault(const Constant(''))();
+  TextColumn get author => text().withDefault(const Constant(''))();
+  TextColumn get language => text().withDefault(const Constant(''))();
+  IntColumn get pageCount => integer().withDefault(const Constant(0))();
+  IntColumn get sectionCount => integer().withDefault(const Constant(0))();
+  TextColumn get parseStatus => text().withDefault(const Constant('pending'))();
+  TextColumn get parseError => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => <Column>{id};
+}
+
+@DataClassName('DocumentSectionRow')
+class DocumentSections extends Table {
+  TextColumn get id => text()();
+  TextColumn get documentId =>
+      text().references(Documents, #id, onDelete: KeyAction.cascade)();
+  IntColumn get sectionIndex => integer()();
+  TextColumn get parentSectionId => text().nullable()();
+  TextColumn get kind => text()();
+  TextColumn get title => text().withDefault(const Constant(''))();
+  TextColumn get locator => text()();
+  TextColumn get plainText => text().withDefault(const Constant(''))();
+  IntColumn get charCount => integer().withDefault(const Constant(0))();
+  TextColumn get metadataJson => text().withDefault(const Constant('{}'))();
+
+  @override
+  Set<Column> get primaryKey => <Column>{id};
+
+  @override
+  List<Set<Column>> get uniqueKeys => <Set<Column>>[
+        <Column>{documentId, sectionIndex},
+      ];
+}
+
+@DataClassName('McpServerRow')
+class McpServers extends Table {
+  TextColumn get id => text()();
+  TextColumn get workspaceId =>
+      text().references(Workspaces, #id, onDelete: KeyAction.cascade)();
+  TextColumn get name => text()();
+  TextColumn get transport => text()();
+  TextColumn get endpoint => text().withDefault(const Constant(''))();
+  TextColumn get command => text().withDefault(const Constant(''))();
+  TextColumn get argumentsJson => text().withDefault(const Constant('[]'))();
+  TextColumn get environmentJson => text().withDefault(const Constant('{}'))();
+  TextColumn get headersJson => text().withDefault(const Constant('{}'))();
+  TextColumn get runtimeConfigId => text().nullable()();
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+  BoolColumn get autoConnect => boolean().withDefault(const Constant(true))();
+  IntColumn get connectionTimeoutMs =>
+      integer().withDefault(const Constant(10000))();
+  IntColumn get toolTimeoutMs => integer().withDefault(const Constant(60000))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => <Column>{id};
+}
+
 @DriftDatabase(
-  tables: <Type>[Workspaces, Sessions, Messages, ProviderConfigs, MemoryNotes],
+  tables: <Type>[
+    Workspaces,
+    Sessions,
+    Messages,
+    ProviderConfigs,
+    MemoryNotes,
+    RuntimeConfigs,
+    Documents,
+    DocumentSections,
+    McpServers,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   /// Opens (and creates if needed) the on-device database.
@@ -105,10 +202,18 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.connect(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) => m.createAll(),
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 2) {
+            await m.createTable(runtimeConfigs);
+            await m.createTable(documents);
+            await m.createTable(documentSections);
+            await m.createTable(mcpServers);
+          }
+        },
       );
 }

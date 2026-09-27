@@ -9,6 +9,47 @@ library;
 
 import '../core/message.dart';
 
+/// A persisted execution environment that can be attached to a workspace.
+///
+/// Credentials are deliberately absent: passwords, tokens and private keys are
+/// addressed by this configuration's [id] and live in [SecretStore].
+class RuntimeConfig {
+  const RuntimeConfig({
+    required this.id,
+    required this.label,
+    required this.kind,
+    required this.createdAt,
+    required this.updatedAt,
+    this.options = const <String, dynamic>{},
+  });
+
+  final String id;
+  final String label;
+
+  /// `local`, `termux`, `ssh`, or a future runtime kind.
+  final String kind;
+
+  /// Non-secret transport settings such as host, port and remote root.
+  final Map<String, dynamic> options;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  RuntimeConfig copyWith({
+    String? label,
+    String? kind,
+    Map<String, dynamic>? options,
+    DateTime? updatedAt,
+  }) =>
+      RuntimeConfig(
+        id: id,
+        label: label ?? this.label,
+        kind: kind ?? this.kind,
+        options: options ?? this.options,
+        createdAt: createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+}
+
 /// A connected project the agent operates on (design doc §18).
 class Workspace {
   const Workspace({
