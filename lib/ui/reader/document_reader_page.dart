@@ -10,7 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../app/router.dart';
 import '../../core/document/document.dart';
+import 'reader_context.dart';
 
 class DocumentReaderPage extends ConsumerStatefulWidget {
   const DocumentReaderPage({super.key, required this.documentId});
@@ -128,7 +130,7 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
             )
           : null,
       floatingActionButton: FloatingActionButton.small(
-        onPressed: _askAgent,
+        onPressed: _showAgentActions,
         tooltip: 'Ask Agent about this section',
         child: const Icon(Icons.smart_toy_outlined),
       ),
@@ -221,16 +223,71 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
     );
   }
 
-  void _askAgent() {
-    // Copy current section text to clipboard for pasting into chat,
-    // or navigate to chat with context. For now, show a snackbar.
-    final section = _sections[_currentIndex];
-    final locator = section.locator;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Section "$locator" context ready for Agent.'),
-        duration: const Duration(seconds: 2),
+  void _showAgentActions() {
+    final docTitle = _document!.title.isEmpty
+        ? _document!.displayName
+        : _document!.title;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.smart_toy_outlined),
+              title: const Text('Ask about this section'),
+              subtitle: const Text('Send section text to the Agent'),
+              onTap: () {
+                Navigator.pop(context);
+                _sendToChat(
+                  docTitle: docTitle,
+                  instruction: 'Please explain this section.',
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.summarize_outlined),
+              title: const Text('Summarize this section'),
+              onTap: () {
+                Navigator.pop(context);
+                _sendToChat(
+                  docTitle: docTitle,
+                  instruction: 'Please summarize this section concisely.',
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.lightbulb_outline),
+              title: const Text('Extract key concepts'),
+              onTap: () {
+                Navigator.pop(context);
+                _sendToChat(
+                  docTitle: docTitle,
+                  instruction:
+                      'Extract the key concepts and terms from this section.',
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _sendToChat({required String docTitle, required String instruction}) {
+    final section = _sections[_currentIndex];
+    final text = section.plainText.length > 4000
+        ? '${section.plainText.substring(0, 4000)}…'
+        : section.plainText;
+    final ctx = ReaderContext(
+      documentTitle: docTitle,
+      sectionLocator: section.locator,
+      sectionTitle: section.title,
+      text: text,
+    );
+    ref.read(readerContextProvider.notifier).set(ctx);
+    // Navigate to the chat tab.
+    final router = ref.read(routerProvider);
+    router.go('/chat');
   }
 }

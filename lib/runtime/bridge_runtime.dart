@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/services.dart';
 
+import 'bridge_process_session.dart';
 import 'runtime.dart';
 
 class BridgeRuntime implements Runtime {
@@ -122,6 +123,15 @@ class BridgeRuntime implements Runtime {
         workingDirectory: workingDirectory ?? rootDirectory,
       );
     }
+  }
+
+  @override
+  Future<ProcessSession> startProcess(ProcessConfig config) async {
+    return BridgeProcessSession.start(
+      config,
+      rootDirectory,
+      processChannel: _channel,
+    );
   }
 
   @override

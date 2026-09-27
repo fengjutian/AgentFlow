@@ -13,6 +13,7 @@ import '../../app/session_controller.dart';
 import '../../core/approval/approval_manager.dart';
 import '../../data/models.dart';
 import '../../l10n/l10n.dart';
+import '../reader/reader_context.dart';
 import '../workspace/workspace_sheet.dart';
 import 'widgets/activity_panel.dart';
 import 'widgets/approval_card.dart';
@@ -52,6 +53,17 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     ) {
       if (previous != next) {
         ref.read(sessionControllerProvider.notifier).startNewSession();
+      }
+    });
+
+    // When the Reader sets a pending context, pre-fill the input with the
+    // section text and scroll to the bottom.
+    ref.listen<ReaderContext?>(readerContextProvider, (prev, ctx) {
+      if (ctx != null) {
+        final prompt = ctx.renderPrompt();
+        _input.text = '$prompt\n\n';
+        _input.selection = TextSelection.collapsed(offset: _input.text.length);
+        ref.read(readerContextProvider.notifier).consume();
       }
     });
 

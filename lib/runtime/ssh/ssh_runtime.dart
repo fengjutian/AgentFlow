@@ -13,6 +13,7 @@ import 'package:dartssh2/dartssh2.dart';
 
 import '../runtime.dart';
 import 'ssh_host_key_store.dart';
+import 'ssh_process_session.dart';
 
 /// SSH connection configuration.
 class SshConfig {
@@ -77,6 +78,13 @@ class SshRuntime implements Runtime {
   SSHClient? _client;
   SftpClient? _sftp;
   Future<void>? _connecting;
+
+  /// Whether the underlying SSH client has been disconnected.
+  ///
+  /// Returns `true` if the client was closed or the SSH transport was dropped
+  /// (e.g. network interrupt). The connection pool uses this to transparently
+  /// replace stale connections.
+  bool get isDisconnected => _client == null || _client!.isClosed;
 
   @override
   String get id => config.id;
@@ -177,6 +185,13 @@ class SshRuntime implements Runtime {
   }
 
   @override
+  Future<ProcessSession> startProcess(ProcessConfig config) async {
+    await _ensureConnected();
+    final client = _client!;
+    return SshProcessSession.start(config, client);
+  }
+
+  @override
   Future<String> readFile(String path) async {
     await _ensureConnected();
     final sftp = await _getSftp();
@@ -196,16 +211,24 @@ class SshRuntime implements Runtime {
     await _ensureConnected();
     final sftp = await _getSftp();
     final remote = resolvePath(path);
+    // Atomic write: write to a temp file then rename to avoid partial writes.
+    final tmpPath = '$remote.tmp.${DateTime.now().microsecondsSinceEpoch}';
     try {
       final file = await sftp.open(
-        remote,
+        tmpPath,
         mode: SftpFileOpenMode.create |
             SftpFileOpenMode.write |
             SftpFileOpenMode.truncate,
       );
       await file.writeBytes(Uint8List.fromList(utf8.encode(content)));
       await file.close();
+      // Rename temp to final destination (atomic on most POSIX systems).
+      await sftp.rename(tmpPath, remote);
     } catch (e) {
+      // Clean up temp file on failure.
+      try {
+        await sftp.remove(tmpPath);
+      } catch (_) {/* best effort */}
       throw StateError('SFTP write failed for $remote: $e');
     }
   }
@@ -481,6 +504,9 @@ Future<void> _rmdirRecursive(SftpClient sftp, String path) async {
 String _shellEscape(String s) => "'${s.replaceAll("'", "'\\''")}'";
 
 /// SSH connection pool for reusing authenticated connections across runtimes.
+///
+/// Detects network interrupts via the SSH client's `done` future and
+/// automatically invalidates stale connections on next access.
 class SshConnectionPool {
   SshConnectionPool({
     this.maxIdle = 3,
@@ -492,21 +518,39 @@ class SshConnectionPool {
 
   final Map<String, _PooledRuntime> _pool = {};
 
+  /// Gets an existing connection or creates a new one.
+  ///
+  /// If the existing connection has been dropped (detected via the client's
+  /// `done` future or idle timeout), it is transparently replaced.
   SshRuntime getOrConnect(SshConfig config, SshHostKeyStore hostKeyStore) {
     final key = '${config.host}:${config.port}';
     final existing = _pool[key];
-    if (existing != null && !existing.isExpired(idleTimeout)) {
-      existing.lastUsed = DateTime.now();
-      return existing.runtime;
-    }
     if (existing != null) {
-      existing.runtime.dispose();
-      _pool.remove(key);
+      // Check idle timeout.
+      if (existing.isExpired(idleTimeout)) {
+        existing.runtime.dispose();
+        _pool.remove(key);
+      }
+      // Check if connection was dropped (network interrupt).
+      else if (existing.runtime.isDisconnected) {
+        existing.runtime.dispose();
+        _pool.remove(key);
+      } else {
+        existing.lastUsed = DateTime.now();
+        return existing.runtime;
+      }
     }
     final runtime = SshRuntime(config: config, hostKeyStore: hostKeyStore);
     _pool[key] = _PooledRuntime(runtime);
     _evictIfNeeded();
     return runtime;
+  }
+
+  /// Removes and disposes a specific connection (e.g. after an error).
+  void invalidate(String host, int port) {
+    final key = '$host:$port';
+    final entry = _pool.remove(key);
+    entry?.runtime.dispose();
   }
 
   void closeAll() {

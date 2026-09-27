@@ -11,6 +11,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import 'local_process_session.dart';
 import 'runtime.dart';
 
 class LocalRuntime implements Runtime {
@@ -132,6 +133,20 @@ class LocalRuntime implements Runtime {
         workingDirectory: cwd,
       );
     }
+  }
+
+  @override
+  Future<ProcessSession> startProcess(ProcessConfig config) async {
+    final cwd = config.workingDirectory == null
+        ? _root
+        : resolve(config.workingDirectory!);
+    final processConfig = ProcessConfig(
+      command: config.command,
+      arguments: config.arguments,
+      workingDirectory: cwd,
+      environment: config.environment,
+    );
+    return LocalProcessSession.start(processConfig);
   }
 
   @override

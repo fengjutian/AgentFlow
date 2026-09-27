@@ -93,12 +93,18 @@ class McpHttpClient {
     required this.endpoint,
     this.headers = const <String, String>{},
     this.timeout = const Duration(seconds: 30),
+    this.maxResponseSize = 10 * 1024 * 1024, // 10 MB
     http.Client? httpClient,
   }) : _client = httpClient ?? http.Client();
 
   final String endpoint;
   final Map<String, String> headers;
   final Duration timeout;
+
+  /// Maximum response body size in bytes. Responses exceeding this limit are
+  /// rejected to prevent memory exhaustion.
+  final int maxResponseSize;
+
   final http.Client _client;
 
   int _nextId = 1;
@@ -215,7 +221,30 @@ class McpHttpClient {
       );
     }
 
-    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    // Enforce response size limit.
+    if (response.contentLength != null &&
+        response.contentLength! > maxResponseSize) {
+      throw JsonRpcError(
+        id: request.id,
+        code: -32000,
+        message:
+            'Response too large: ${response.contentLength} bytes '
+            '(limit: $maxResponseSize)',
+      );
+    }
+
+    final responseBody = response.body;
+    if (responseBody.length > maxResponseSize) {
+      throw JsonRpcError(
+        id: request.id,
+        code: -32000,
+        message:
+            'Response too large: ${responseBody.length} bytes '
+            '(limit: $maxResponseSize)',
+      );
+    }
+
+    final json = jsonDecode(responseBody) as Map<String, dynamic>;
     return JsonRpcMessage.fromJson(json);
   }
 

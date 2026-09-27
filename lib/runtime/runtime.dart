@@ -73,6 +73,53 @@ class FileEntry {
 /// command runs on-device, in Termux or on a remote host.
 enum RuntimeKind { local, termux, ssh, docker }
 
+/// A long-lived bidirectional process session.
+///
+/// Unlike [Runtime.execute], which runs a command to completion and returns
+/// the captured output, a [ProcessSession] keeps stdin open for writing while
+/// exposing stdout and stderr as asynchronous streams. This is required for
+/// interactive protocols such as stdio MCP and streaming terminal output.
+///
+/// Implementations: [LocalProcessSession], [BridgeProcessSession],
+/// [SshProcessSession].
+abstract class ProcessSession {
+  /// Stream of stdout chunks as they arrive.
+  Stream<String> get stdout;
+
+  /// Stream of stderr chunks as they arrive.
+  Stream<String> get stderr;
+
+  /// Writes data to the process's stdin.
+  ///
+  /// The data is written as-is; callers are responsible for adding newlines
+  /// if the protocol requires them.
+  Future<void> writeStdin(String data);
+
+  /// Waits for the process to exit and returns its exit code.
+  Future<int> waitForExit();
+
+  /// Sends a termination signal to the process.
+  Future<void> terminate();
+
+  /// Whether the process has already exited.
+  bool get isAlive;
+}
+
+/// Configuration for starting a long-lived process.
+class ProcessConfig {
+  const ProcessConfig({
+    required this.command,
+    this.arguments = const <String>[],
+    this.workingDirectory,
+    this.environment = const <String, String>{},
+  });
+
+  final String command;
+  final List<String> arguments;
+  final String? workingDirectory;
+  final Map<String, String> environment;
+}
+
 /// Filesystem + process capabilities available to tools.
 abstract class Runtime {
   /// Stable id, persisted alongside workspaces.
@@ -97,6 +144,13 @@ abstract class Runtime {
     OutputCallback? onStdout,
     OutputCallback? onStderr,
   });
+
+  /// Starts a long-lived process with bidirectional stdin/stdout.
+  ///
+  /// Used for stdio MCP servers and streaming terminal sessions. The caller
+  /// owns the returned [ProcessSession] and must call [ProcessSession.terminate]
+  /// when done.
+  Future<ProcessSession> startProcess(ProcessConfig config);
 
   Future<String> readFile(String path);
 

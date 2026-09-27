@@ -10,21 +10,35 @@ import '../../core/message.dart';
 import '../agent_tool.dart';
 import '../tool_args.dart';
 
+/// Signature for calling an MCP tool, abstracting over HTTP and stdio clients.
+typedef McpCallTool = Future<McpToolResult> Function(
+    String name, Map<String, dynamic> arguments);
+
 /// Creates AgentTool wrappers for a list of MCP tools from a specific server.
 List<AgentTool> mcpTools(
   String serverId,
   String serverName,
   List<McpTool> tools,
-  McpHttpClient client,
+  McpCallTool callTool,
 ) {
   return tools
       .map((tool) => McpToolAdapter(
             serverId: serverId,
             serverName: serverName,
             mcpTool: tool,
-            client: client,
+            callTool: callTool,
           ))
       .toList(growable: false);
+}
+
+/// Creates AgentTool wrappers using an HTTP client.
+List<AgentTool> mcpToolsHttp(
+  String serverId,
+  String serverName,
+  List<McpTool> tools,
+  McpHttpClient client,
+) {
+  return mcpTools(serverId, serverName, tools, client.callTool);
 }
 
 /// An MCP tool exposed as an AgentTool.
@@ -33,13 +47,13 @@ class McpToolAdapter extends AgentTool {
     required this.serverId,
     required this.serverName,
     required this.mcpTool,
-    required this.client,
+    required this.callTool,
   });
 
   final String serverId;
   final String serverName;
   final McpTool mcpTool;
-  final McpHttpClient client;
+  final McpCallTool callTool;
 
   @override
   String get name => 'mcp_${_sanitize(serverId)}_${_sanitize(mcpTool.name)}';
@@ -66,7 +80,7 @@ class McpToolAdapter extends AgentTool {
     ToolContext context,
   ) async {
     try {
-      final result = await client.callTool(mcpTool.name, arguments);
+      final result = await callTool(mcpTool.name, arguments);
       final text = result.text;
       return ToolResult(
         toolCallId: '',
