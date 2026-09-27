@@ -193,6 +193,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyFile => '(empty file)';
 
   @override
+  String get fileSaved => 'File saved';
+
+  @override
+  String failedToSave(Object error) {
+    return 'Failed to save: $error';
+  }
+
+  @override
+  String get fileChangedTitle => 'File changed on disk';
+
+  @override
+  String get fileChangedDescription =>
+      'The agent or another program changed this file after it was opened. Reload the disk version or overwrite it with your edits.';
+
+  @override
+  String get reload => 'Reload';
+
+  @override
+  String get overwrite => 'Overwrite';
+
+  @override
+  String get unsavedChangesTitle => 'Discard unsaved changes?';
+
+  @override
+  String get unsavedChangesDescription => 'Your edits have not been saved.';
+
+  @override
+  String get discard => 'Discard';
+
+  @override
   String get selectWorkspaceForTerminal =>
       'Select a workspace to open a shell in its directory.';
 

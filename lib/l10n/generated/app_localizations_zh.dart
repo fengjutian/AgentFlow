@@ -186,6 +186,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emptyFile => '（空文件）';
 
   @override
+  String get fileSaved => '文件已保存';
+
+  @override
+  String failedToSave(Object error) {
+    return '保存失败：$error';
+  }
+
+  @override
+  String get fileChangedTitle => '磁盘文件已发生变化';
+
+  @override
+  String get fileChangedDescription =>
+      '智能体或其他程序在文件打开后修改了它。请选择重新加载磁盘版本，或使用当前编辑内容覆盖。';
+
+  @override
+  String get reload => '重新加载';
+
+  @override
+  String get overwrite => '覆盖';
+
+  @override
+  String get unsavedChangesTitle => '放弃未保存的修改？';
+
+  @override
+  String get unsavedChangesDescription => '当前编辑内容尚未保存。';
+
+  @override
+  String get discard => '放弃修改';
+
+  @override
   String get selectWorkspaceForTerminal => '请选择工作区以在其目录中打开终端。';
 
   @override

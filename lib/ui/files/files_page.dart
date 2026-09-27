@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../l10n/l10n.dart';
@@ -90,13 +91,13 @@ class _FilesPageState extends ConsumerState<FilesPage> {
           if (!_loading && _entries.isEmpty && _error == null) {
             WidgetsBinding.instance.addPostFrameCallback((_) => _load());
           }
-          return _buildListing(runtime);
+          return _buildListing();
         },
       ),
     );
   }
 
-  Widget _buildListing(Runtime runtime) {
+  Widget _buildListing() {
     if (_error != null) {
       return _FilesHint(
         icon: Icons.error_outline,
@@ -133,9 +134,8 @@ class _FilesPageState extends ConsumerState<FilesPage> {
           final entry = _entries[index - 1];
           return _FileTile(
             entry: entry,
-            onTap: () => entry.isDirectory
-                ? _navigateInto(entry)
-                : _openFile(runtime, entry),
+            onTap: () =>
+                entry.isDirectory ? _navigateInto(entry) : _openFile(entry),
           );
         },
       ),
@@ -197,7 +197,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
     _load();
   }
 
-  Future<void> _openFile(Runtime runtime, FileEntry entry) async {
+  Future<void> _openFile(FileEntry entry) async {
     if (entry.size > _maxPreviewBytes) {
       _snack(
         '${entry.name} is too large to preview '
@@ -205,15 +205,9 @@ class _FilesPageState extends ConsumerState<FilesPage> {
       );
       return;
     }
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (BuildContext context) => _FileViewer(
-        name: entry.name,
-        path: entry.path,
-        loader: () => runtime.readFile(entry.path),
-      ),
+    await context.pushNamed<void>(
+      'editor',
+      queryParameters: <String, String>{'path': entry.path, 'name': entry.name},
     );
   }
 
@@ -343,88 +337,6 @@ class _Crumb extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Bottom sheet that loads and shows a file's text content.
-class _FileViewer extends StatefulWidget {
-  const _FileViewer({
-    required this.name,
-    required this.path,
-    required this.loader,
-  });
-
-  final String name;
-  final String path;
-  final Future<String> Function() loader;
-
-  @override
-  State<_FileViewer> createState() => _FileViewerState();
-}
-
-class _FileViewerState extends State<_FileViewer> {
-  late final Future<String> _future = widget.loader();
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.7,
-      maxChildSize: 0.95,
-      builder: (BuildContext context, ScrollController scrollController) {
-        return Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
-              child: Row(
-                children: <Widget>[
-                  const Icon(Icons.insert_drive_file_outlined, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: FutureBuilder<String>(
-                future: _future,
-                builder:
-                    (BuildContext context, AsyncSnapshot<String> snapshot) {
-                      if (snapshot.connectionState != ConnectionState.done) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Text(context.l10n.cannotOpen(snapshot.error!)),
-                        );
-                      }
-                      final text = snapshot.data ?? '';
-                      if (text.trim().isEmpty) {
-                        return Center(child: Text(context.l10n.emptyFile));
-                      }
-                      return SingleChildScrollView(
-                        controller: scrollController,
-                        padding: const EdgeInsets.all(16),
-                        child: SelectableText(text, style: AppTheme.code),
-                      );
-                    },
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }

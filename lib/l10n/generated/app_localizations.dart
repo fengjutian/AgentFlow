@@ -422,6 +422,60 @@ abstract class AppLocalizations {
   /// **'(empty file)'**
   String get emptyFile;
 
+  /// No description provided for @fileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'File saved'**
+  String get fileSaved;
+
+  /// No description provided for @failedToSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save: {error}'**
+  String failedToSave(Object error);
+
+  /// No description provided for @fileChangedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'File changed on disk'**
+  String get fileChangedTitle;
+
+  /// No description provided for @fileChangedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The agent or another program changed this file after it was opened. Reload the disk version or overwrite it with your edits.'**
+  String get fileChangedDescription;
+
+  /// No description provided for @reload.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload'**
+  String get reload;
+
+  /// No description provided for @overwrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite'**
+  String get overwrite;
+
+  /// No description provided for @unsavedChangesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard unsaved changes?'**
+  String get unsavedChangesTitle;
+
+  /// No description provided for @unsavedChangesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your edits have not been saved.'**
+  String get unsavedChangesDescription;
+
+  /// No description provided for @discard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discard;
+
   /// No description provided for @selectWorkspaceForTerminal.
   ///
   /// In en, this message translates to:
