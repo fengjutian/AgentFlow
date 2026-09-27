@@ -90,6 +90,8 @@ class BridgeRuntime implements Runtime {
     String? workingDirectory,
     int timeoutMillis = 60000,
     Map<String, String>? environment,
+    OutputCallback? onStdout,
+    OutputCallback? onStderr,
   }) async {
     try {
       final result = await _channel.invokeMethod<Map<dynamic, dynamic>>(

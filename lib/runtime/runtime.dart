@@ -5,6 +5,9 @@
 /// (Kotlin/Termux) or a future `SshRuntime` requires no changes above this line.
 library;
 
+/// Receives a chunk of output while a command is still running.
+typedef OutputCallback = void Function(String chunk);
+
 /// Result of running a shell command through a [Runtime].
 class CommandResult {
   const CommandResult({
@@ -91,6 +94,8 @@ abstract class Runtime {
     String? workingDirectory,
     int timeoutMillis = 60000,
     Map<String, String>? environment,
+    OutputCallback? onStdout,
+    OutputCallback? onStderr,
   });
 
   Future<String> readFile(String path);

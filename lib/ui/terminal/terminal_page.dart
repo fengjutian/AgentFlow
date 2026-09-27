@@ -141,22 +141,39 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     }
 
     setState(() => _running = true);
+    _append(_LineKind.info, '(running…)');
+    var streamedStdout = false;
+    var streamedStderr = false;
+    final stopwatch = Stopwatch()..start();
     try {
       final result = await runtime.execute(
         command,
         workingDirectory: _cwd.isEmpty ? null : _cwd,
         timeoutMillis: 120000,
+        onStdout: (String chunk) {
+          streamedStdout = true;
+          if (mounted) _append(_LineKind.stdout, chunk.trimRight());
+        },
+        onStderr: (String chunk) {
+          streamedStderr = true;
+          if (mounted) _append(_LineKind.stderr, chunk.trimRight());
+        },
       );
-      if (result.stdout.trim().isNotEmpty) {
+      if (!streamedStdout && result.stdout.trim().isNotEmpty) {
         _append(_LineKind.stdout, result.stdout.trimRight());
       }
-      if (result.stderr.trim().isNotEmpty) {
+      if (!streamedStderr && result.stderr.trim().isNotEmpty) {
         _append(_LineKind.stderr, result.stderr.trimRight());
       }
       if (result.timedOut) {
         _append(_LineKind.info, '(timed out)');
       } else if (result.exitCode != 0) {
         _append(_LineKind.info, '(exit ${result.exitCode})');
+      } else {
+        _append(
+          _LineKind.info,
+          '(finished in ${_formatElapsed(stopwatch.elapsed)})',
+        );
       }
     } catch (e) {
       _append(_LineKind.stderr, 'Error: $e');
@@ -164,6 +181,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       if (mounted) setState(() => _running = false);
       _scrollToBottom();
     }
+  }
+
+  String _formatElapsed(Duration elapsed) {
+    if (elapsed.inSeconds < 1) return '${elapsed.inMilliseconds} ms';
+    return '${(elapsed.inMilliseconds / 1000).toStringAsFixed(1)} s';
   }
 
   /// Resolves a `cd` argument against the current relative working directory.

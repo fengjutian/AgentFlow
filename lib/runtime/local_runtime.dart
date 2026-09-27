@@ -54,6 +54,8 @@ class LocalRuntime implements Runtime {
     String? workingDirectory,
     int timeoutMillis = 60000,
     Map<String, String>? environment,
+    OutputCallback? onStdout,
+    OutputCallback? onStderr,
   }) async {
     final cwd = workingDirectory == null ? _root : resolve(workingDirectory);
     final dir = Directory(cwd);
@@ -83,30 +85,39 @@ class LocalRuntime implements Runtime {
 
       final stdoutFuture = process.stdout
           .transform(const SystemEncoding().decoder)
+          .map((String chunk) {
+            onStdout?.call(chunk);
+            return chunk;
+          })
           .join();
       final stderrFuture = process.stderr
           .transform(const SystemEncoding().decoder)
+          .map((String chunk) {
+            onStderr?.call(chunk);
+            return chunk;
+          })
           .join();
 
-      final exitCode = await process.exitCode
-          .timeout(Duration(milliseconds: timeoutMillis));
+      late final int exitCode;
+      var timedOut = false;
+      try {
+        exitCode = await process.exitCode.timeout(
+          Duration(milliseconds: timeoutMillis),
+        );
+      } on TimeoutException {
+        timedOut = true;
+        process.kill();
+        exitCode = await process.exitCode;
+      }
       final out = await stdoutFuture;
       final err = await stderrFuture;
       return CommandResult(
-        exitCode: exitCode,
+        exitCode: timedOut ? 124 : exitCode,
         stdout: out,
         stderr: err,
         command: command,
         workingDirectory: cwd,
-      );
-    } on TimeoutException {
-      return CommandResult(
-        exitCode: 124,
-        stdout: '',
-        stderr: 'Command timed out after ${timeoutMillis}ms',
-        command: command,
-        workingDirectory: cwd,
-        timedOut: true,
+        timedOut: timedOut,
       );
     } on ProcessException catch (e) {
       return CommandResult(
