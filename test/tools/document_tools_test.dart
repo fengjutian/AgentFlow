@@ -24,10 +24,8 @@ class _DocumentStore implements DocumentStore {
       id == document.id ? document : null;
 
   @override
-  Future<AgentDocument?> byHash(
-    String workspaceId,
-    String contentHash,
-  ) async => null;
+  Future<AgentDocument?> byHash(String workspaceId, String contentHash) async =>
+      null;
 
   @override
   Future<List<DocumentSection>> sections(String documentId) async =>
@@ -103,20 +101,18 @@ void main() {
   AgentTool tool(String name) => tools.singleWhere((tool) => tool.name == name);
 
   test('lists workspace documents with structured metadata', () async {
-    final result = await tool('list_documents').execute(
-      <String, dynamic>{'query': 'guide'},
-      context,
-    );
+    final result = await tool(
+      'list_documents',
+    ).execute(<String, dynamic>{'query': 'guide'}, context);
 
     expect(result.content, contains('Agent Guide'));
     expect(result.data!['documents'], hasLength(1));
   });
 
   test('returns document outline with locators', () async {
-    final result = await tool('get_document_info').execute(
-      <String, dynamic>{'document_id': 'guide'},
-      context,
-    );
+    final result = await tool(
+      'get_document_info',
+    ).execute(<String, dynamic>{'document_id': 'guide'}, context);
 
     expect(result.content, contains('intro.xhtml'));
     expect(result.data!['sections'], hasLength(2));
@@ -124,11 +120,7 @@ void main() {
 
   test('reads an inclusive section range with source markers', () async {
     final result = await tool('read_document_section').execute(
-      <String, dynamic>{
-        'document_id': 'guide',
-        'start': 1,
-        'end': 1,
-      },
+      <String, dynamic>{'document_id': 'guide', 'start': 1, 'end': 1},
       context,
     );
 
@@ -137,13 +129,10 @@ void main() {
   });
 
   test('searches case-insensitively and returns source locators', () async {
-    final result = await tool('search_document').execute(
-      <String, dynamic>{
-        'document_id': 'guide',
-        'query': 'SOURCE LOCATOR',
-      },
-      context,
-    );
+    final result = await tool('search_document').execute(<String, dynamic>{
+      'document_id': 'guide',
+      'query': 'SOURCE LOCATOR',
+    }, context);
 
     expect(result.content, contains('[tools.xhtml]'));
     expect(result.data!['matches'], hasLength(1));
@@ -157,12 +146,10 @@ void main() {
     );
 
     await expectLater(
-      tool('get_document_info').execute(
-        <String, dynamic>{'document_id': 'guide'},
-        otherContext,
-      ),
+      tool(
+        'get_document_info',
+      ).execute(<String, dynamic>{'document_id': 'guide'}, otherContext),
       throwsA(isA<ToolExecutionException>()),
     );
   });
 }
-

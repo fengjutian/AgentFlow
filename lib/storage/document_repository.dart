@@ -84,7 +84,9 @@ class DriftDocumentStore implements DocumentStore {
     await (_db.delete(
       _db.documentSections,
     )..where((table) => table.documentId.equals(id))).go();
-    await (_db.delete(_db.documents)..where((table) => table.id.equals(id))).go();
+    await (_db.delete(
+      _db.documents,
+    )..where((table) => table.id.equals(id))).go();
   });
 
   DocumentsCompanion _documentToCompanion(AgentDocument document) =>

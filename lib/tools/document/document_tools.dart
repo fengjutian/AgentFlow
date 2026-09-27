@@ -71,13 +71,15 @@ class ListDocumentsTool extends _DocumentTool {
     final query = optionalString(arguments, 'query').trim().toLowerCase();
     final type = optionalString(arguments, 'type').trim().toLowerCase();
     final all = await store.forWorkspace(workspaceId(context));
-    final documents = all.where((document) {
-      if (type.isNotEmpty && document.type.name != type) return false;
-      if (query.isEmpty) return true;
-      return document.displayName.toLowerCase().contains(query) ||
-          document.title.toLowerCase().contains(query) ||
-          document.author.toLowerCase().contains(query);
-    }).toList(growable: false);
+    final documents = all
+        .where((document) {
+          if (type.isNotEmpty && document.type.name != type) return false;
+          if (query.isEmpty) return true;
+          return document.displayName.toLowerCase().contains(query) ||
+              document.title.toLowerCase().contains(query) ||
+              document.author.toLowerCase().contains(query);
+        })
+        .toList(growable: false);
     final data = documents.map(_documentSummary).toList(growable: false);
     final lines = documents
         .map(
@@ -323,4 +325,3 @@ Map<String, dynamic> _sectionSummary(DocumentSection section) =>
       'locator': section.locator,
       'characters': section.charCount,
     };
-
