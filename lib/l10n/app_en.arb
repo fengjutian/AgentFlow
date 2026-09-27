@@ -152,5 +152,18 @@
   "lineRange": "1–{count}",
   "@lineRange": {"placeholders": {"count": {"type": "int"}}},
   "go": "Go",
-  "invalidLineNumber": "Line number is outside this file"
+  "invalidLineNumber": "Line number is outside this file",
+  "newFile": "New file",
+  "newFolder": "New folder",
+  "name": "Name",
+  "edit": "Edit",
+  "rename": "Rename",
+  "invalidFileName": "Enter a valid name without / or \\",
+  "entryAlreadyExists": "An entry with this name already exists.",
+  "fileOperationFailed": "File operation failed: {error}",
+  "@fileOperationFailed": {"placeholders": {"error": {"type": "Object"}}},
+  "deleteEntryTitle": "Delete \"{name}\"?",
+  "@deleteEntryTitle": {"placeholders": {"name": {"type": "String"}}},
+  "deleteFileDescription": "This file will be permanently deleted.",
+  "deleteFolderDescription": "This folder and all of its contents will be permanently deleted."
 }

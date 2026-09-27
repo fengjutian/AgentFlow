@@ -105,12 +105,6 @@ $ncxNavPoints
   return Uint8List.fromList(ZipEncoder().encode(archive)!);
 }
 
-class _Chapter {
-  const _Chapter(this.title, this.body);
-  final String title;
-  final String body;
-}
-
 void main() {
   late Directory tempDir;
   late EpubDocumentParser parser;
@@ -136,10 +130,10 @@ void main() {
       title: 'My Book',
       author: 'Jane Doe',
       language: 'en',
-      chapters: const <_Chapter>[
-        _Chapter('Introduction', 'Welcome to the book.'),
-        _Chapter('Chapter One', 'This is the first chapter content.'),
-        _Chapter('Conclusion', 'Thank you for reading.'),
+      chapters: const <({String title, String body})>[
+        (title: 'Introduction', body: 'Welcome to the book.'),
+        (title: 'Chapter One', body: 'This is the first chapter content.'),
+        (title: 'Conclusion', body: 'Thank you for reading.'),
       ],
     );
 
@@ -179,8 +173,8 @@ void main() {
   test('handles EPUB without NCX TOC gracefully', () async {
     final epubBytes = buildTestEpub(
       title: 'No TOC Book',
-      chapters: const <_Chapter>[
-        _Chapter('Solo Chapter', 'Only chapter here.'),
+      chapters: const <({String title, String body})>[
+        (title: 'Solo Chapter', body: 'Only chapter here.'),
       ],
       includeNcx: false,
     );

@@ -42,6 +42,34 @@ class _DocumentStore implements DocumentStore {
 
   @override
   Future<void> delete(String id) async {}
+
+  @override
+  Future<List<DocumentSearchHit>> search(
+    String documentId,
+    String query, {
+    int limit = 10,
+  }) async {
+    final sections = await this.sections(documentId);
+    final needle = query.toLowerCase();
+    final hits = <DocumentSearchHit>[];
+    for (final section in sections) {
+      final offset = section.plainText.toLowerCase().indexOf(needle);
+      if (offset < 0) continue;
+      hits.add(
+        DocumentSearchHit(
+          index: section.index,
+          title: section.title,
+          locator: section.locator,
+          snippet: section.plainText.substring(
+            (offset - 40).clamp(0, section.plainText.length),
+            (offset + query.length + 80).clamp(0, section.plainText.length),
+          ).trim(),
+        ),
+      );
+      if (hits.length >= limit) break;
+    }
+    return hits;
+  }
 }
 
 void main() {

@@ -41,6 +41,29 @@ void main() {
     expect(result.stdout, contains('streamed-output'));
   });
 
+  test('local runtime manages files and folders inside the workspace', () async {
+    await runtime.createDirectory('notes/drafts');
+    expect(Directory('${tmp.path}${Platform.pathSeparator}notes${Platform.pathSeparator}drafts').existsSync(), isTrue);
+
+    await runtime.writeFile('notes/drafts/todo.txt', 'todo');
+    await runtime.renameEntry('notes/drafts/todo.txt', 'notes/drafts/done.txt');
+    expect(await runtime.fileExists('notes/drafts/done.txt'), isTrue);
+
+    await runtime.deleteEntry('notes');
+    expect(Directory('${tmp.path}${Platform.pathSeparator}notes').existsSync(), isFalse);
+  });
+
+  test('local runtime rejects paths outside the workspace', () async {
+    expect(
+      () => runtime.writeFile('../outside.txt', 'nope'),
+      throwsA(isA<FileSystemException>()),
+    );
+    expect(
+      () => runtime.deleteEntry(''),
+      throwsA(isA<FileSystemException>()),
+    );
+  });
+
   group('list_files', () {
     test('enumerates entries and marks directories', () async {
       final result = await ListFilesTool().execute(<String, dynamic>{

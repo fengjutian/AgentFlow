@@ -62,6 +62,28 @@ class _FilesPageState extends ConsumerState<FilesPage> {
                 child: _Breadcrumb(path: _path, onCrumb: _navigateTo),
               ),
         actions: <Widget>[
+          PopupMenuButton<_CreateKind>(
+            tooltip: context.l10n.create,
+            enabled: workspace != null,
+            onSelected: _createEntry,
+            itemBuilder: (context) => <PopupMenuEntry<_CreateKind>>[
+              PopupMenuItem(
+                value: _CreateKind.file,
+                child: ListTile(
+                  leading: const Icon(Icons.note_add_outlined),
+                  title: Text(context.l10n.newFile),
+                ),
+              ),
+              PopupMenuItem(
+                value: _CreateKind.folder,
+                child: ListTile(
+                  leading: const Icon(Icons.create_new_folder_outlined),
+                  title: Text(context.l10n.newFolder),
+                ),
+              ),
+            ],
+            icon: const Icon(Icons.add),
+          ),
           IconButton(
             tooltip: context.l10n.refresh,
             icon: const Icon(Icons.refresh),
@@ -136,6 +158,9 @@ class _FilesPageState extends ConsumerState<FilesPage> {
             entry: entry,
             onTap: () =>
                 entry.isDirectory ? _navigateInto(entry) : _openFile(entry),
+            onEdit: entry.isDirectory ? null : () => _openFile(entry),
+            onRename: () => _renameEntry(entry),
+            onDelete: () => _deleteEntry(entry),
           );
         },
       ),
@@ -209,6 +234,146 @@ class _FilesPageState extends ConsumerState<FilesPage> {
       'editor',
       queryParameters: <String, String>{'path': entry.path, 'name': entry.name},
     );
+    if (mounted) await _load();
+  }
+
+  Future<void> _createEntry(_CreateKind kind) async {
+    final name = await _askForName(
+      title: kind == _CreateKind.file
+          ? context.l10n.newFile
+          : context.l10n.newFolder,
+    );
+    if (name == null) return;
+    final runtime = ref.read(runtimeProvider).value;
+    if (runtime == null) return;
+    final path = _childPath(name);
+    try {
+      if (kind == _CreateKind.folder) {
+        await runtime.createDirectory(path);
+      } else {
+        if (await runtime.fileExists(path)) {
+          throw StateError(context.l10n.entryAlreadyExists);
+        }
+        await runtime.writeFile(path, '');
+      }
+      await _load();
+      if (kind == _CreateKind.file && mounted) {
+        await _openFile(
+          FileEntry(name: name, path: path, isDirectory: false),
+        );
+      }
+    } catch (error) {
+      _snack(context.l10n.fileOperationFailed(error));
+    }
+  }
+
+  Future<void> _renameEntry(FileEntry entry) async {
+    final name = await _askForName(
+      title: context.l10n.rename,
+      initialValue: entry.name,
+    );
+    if (name == null || name == entry.name) return;
+    final runtime = ref.read(runtimeProvider).value;
+    if (runtime == null) return;
+    try {
+      await runtime.renameEntry(entry.path, _childPath(name));
+      await _load();
+    } catch (error) {
+      _snack(context.l10n.fileOperationFailed(error));
+    }
+  }
+
+  Future<void> _deleteEntry(FileEntry entry) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.l10n.deleteEntryTitle(entry.name)),
+        content: Text(
+          entry.isDirectory
+              ? context.l10n.deleteFolderDescription
+              : context.l10n.deleteFileDescription,
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(context.l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(context.l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final runtime = ref.read(runtimeProvider).value;
+    if (runtime == null) return;
+    try {
+      await runtime.deleteEntry(entry.path);
+      await _load();
+    } catch (error) {
+      _snack(context.l10n.fileOperationFailed(error));
+    }
+  }
+
+  Future<String?> _askForName({
+    required String title,
+    String initialValue = '',
+  }) async {
+    final controller = TextEditingController(text: initialValue);
+    String? errorText;
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: context.l10n.name,
+              errorText: errorText,
+            ),
+            onSubmitted: (value) {
+              final error = _nameError(value);
+              if (error == null) Navigator.pop(context, value.trim());
+              if (error != null) setDialogState(() => errorText = error);
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(context.l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final error = _nameError(controller.text);
+                if (error == null) {
+                  Navigator.pop(context, controller.text.trim());
+                } else {
+                  setDialogState(() => errorText = error);
+                }
+              },
+              child: Text(context.l10n.create),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
+    return result;
+  }
+
+  String? _nameError(String value) {
+    final name = value.trim();
+    if (name.isEmpty) return context.l10n.requiredField;
+    if (name == '.' || name == '..' || name.contains('/') || name.contains('\\')) {
+      return context.l10n.invalidFileName;
+    }
+    return null;
+  }
+
+  String _childPath(String name) => _path.isEmpty ? name : '$_path/$name';
   }
 
   void _snack(String message) {
@@ -220,10 +385,19 @@ class _FilesPageState extends ConsumerState<FilesPage> {
 }
 
 class _FileTile extends StatelessWidget {
-  const _FileTile({required this.entry, required this.onTap});
+  const _FileTile({
+    required this.entry,
+    required this.onTap,
+    required this.onRename,
+    required this.onDelete,
+    this.onEdit,
+  });
 
   final FileEntry entry;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback onRename;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +414,36 @@ class _FileTile extends StatelessWidget {
               _humanSize(entry.size),
               style: Theme.of(context).textTheme.bodySmall,
             ),
-      trailing: entry.isDirectory ? const Icon(Icons.chevron_right) : null,
+      trailing: PopupMenuButton<_EntryAction>(
+        onSelected: (action) {
+          switch (action) {
+            case _EntryAction.edit:
+              onEdit?.call();
+              return;
+            case _EntryAction.rename:
+              onRename();
+              return;
+            case _EntryAction.delete:
+              onDelete();
+              return;
+          }
+        },
+        itemBuilder: (context) => <PopupMenuEntry<_EntryAction>>[
+          if (onEdit != null)
+            PopupMenuItem(
+              value: _EntryAction.edit,
+              child: Text(context.l10n.edit),
+            ),
+          PopupMenuItem(
+            value: _EntryAction.rename,
+            child: Text(context.l10n.rename),
+          ),
+          PopupMenuItem(
+            value: _EntryAction.delete,
+            child: Text(context.l10n.delete),
+          ),
+        ],
+      ),
       onTap: onTap,
     );
   }
@@ -267,6 +470,10 @@ class _FileTile extends StatelessWidget {
     return Icons.insert_drive_file_outlined;
   }
 }
+
+enum _CreateKind { file, folder }
+
+enum _EntryAction { edit, rename, delete }
 
 /// Clickable path breadcrumb, e.g. `root / lib / ui`.
 class _Breadcrumb extends StatelessWidget {

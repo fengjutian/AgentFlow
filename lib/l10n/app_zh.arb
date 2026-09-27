@@ -141,5 +141,18 @@
   "lineRange": "1–{count}",
   "@lineRange": {"placeholders": {"count": {"type": "int"}}},
   "go": "跳转",
-  "invalidLineNumber": "行号超出当前文件范围"
+  "invalidLineNumber": "行号超出当前文件范围",
+  "newFile": "新建文件",
+  "newFolder": "新建文件夹",
+  "name": "名称",
+  "edit": "编辑",
+  "rename": "重命名",
+  "invalidFileName": "请输入不包含 / 或 \\ 的有效名称",
+  "entryAlreadyExists": "已存在同名文件或文件夹。",
+  "fileOperationFailed": "文件操作失败：{error}",
+  "@fileOperationFailed": {"placeholders": {"error": {"type": "Object"}}},
+  "deleteEntryTitle": "删除“{name}”？",
+  "@deleteEntryTitle": {"placeholders": {"name": {"type": "String"}}},
+  "deleteFileDescription": "此文件将被永久删除。",
+  "deleteFolderDescription": "此文件夹及其中的所有内容将被永久删除。"
 }
