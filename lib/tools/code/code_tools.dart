@@ -1,13 +1,4 @@
-/// Code tool: search_code.
-///
-/// Recursive content search across the workspace, implemented on top of the
-/// [Runtime] file API so it works identically for local, Termux and (future)
-/// remote runtimes. Common dependency/build directories are skipped and large or
-/// binary files are ignored.
-///
-/// Note: the design doc lists ripgrep as the eventual backend for very large
-/// repos. This walker is the portable MVP implementation; swapping in an
-/// `rg --json` backend only changes [SearchCodeTool.execute].
+/// Portable code-search tools for local, Termux and future SSH runtimes.
 library;
 
 import '../../core/message.dart';
@@ -15,13 +6,25 @@ import '../../runtime/runtime.dart';
 import '../agent_tool.dart';
 import '../tool_args.dart';
 
-class SearchCodeTool extends ReadOnlyTool {
-  SearchCodeTool({this.maxFileSizeBytes = 512 * 1024, this.maxResults = 100});
+class CodeSearchHit {
+  const CodeSearchHit(this.path, this.line, this.text);
+  final String path;
+  final int line;
+  final String text;
 
+  String get display => '$path:$line: $text';
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'path': path,
+    'line': line,
+    'text': text,
+  };
+}
+
+class CodeSearchService {
+  const CodeSearchService({this.maxFileSizeBytes = 512 * 1024});
   final int maxFileSizeBytes;
-  final int maxResults;
 
-  static const Set<String> _ignoredDirs = <String>{
+  static const _ignoredDirs = <String>{
     '.git',
     '.dart_tool',
     '.idea',
@@ -36,45 +39,173 @@ class SearchCodeTool extends ReadOnlyTool {
     '.venv',
     '__pycache__',
   };
-
-  static const Set<String> _binaryExtensions = <String>{
-    '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.pdf', '.zip', '.gz',
-    '.tar', '.jar', '.apk', '.so', '.dll', '.exe', '.woff', '.woff2', '.ttf',
-    '.mp3', '.mp4', '.mov', '.class', '.lock',
+  static const _binaryExtensions = <String>{
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.webp',
+    '.ico',
+    '.pdf',
+    '.zip',
+    '.gz',
+    '.tar',
+    '.jar',
+    '.apk',
+    '.so',
+    '.dll',
+    '.exe',
+    '.woff',
+    '.woff2',
+    '.ttf',
+    '.mp3',
+    '.mp4',
+    '.mov',
+    '.class',
+    '.lock',
   };
+
+  Future<List<CodeSearchHit>> search({
+    required Runtime runtime,
+    required String root,
+    required RegExp regex,
+    String fileGlob = '',
+    int limit = 100,
+  }) async {
+    final hits = <CodeSearchHit>[];
+    await _walk(
+      runtime,
+      root,
+      regex,
+      _normalizeGlob(fileGlob),
+      limit.clamp(1, 1000),
+      hits,
+    );
+    return hits;
+  }
+
+  Future<void> _walk(
+    Runtime runtime,
+    String directory,
+    RegExp regex,
+    String? extension,
+    int limit,
+    List<CodeSearchHit> hits,
+  ) async {
+    if (hits.length >= limit) return;
+    final List<FileEntry> entries;
+    try {
+      entries = await runtime.listFiles(directory);
+    } catch (_) {
+      return;
+    }
+    for (final entry in entries) {
+      if (hits.length >= limit) return;
+      if (entry.isDirectory) {
+        if (!_ignoredDirs.contains(entry.name)) {
+          await _walk(runtime, entry.path, regex, extension, limit, hits);
+        }
+        continue;
+      }
+      if (extension != null && !entry.name.toLowerCase().endsWith(extension)) {
+        continue;
+      }
+      if (_isBinary(entry.name) || entry.size > maxFileSizeBytes) continue;
+      await _searchFile(runtime, entry.path, regex, limit, hits);
+    }
+  }
+
+  Future<void> _searchFile(
+    Runtime runtime,
+    String path,
+    RegExp regex,
+    int limit,
+    List<CodeSearchHit> hits,
+  ) async {
+    final String content;
+    try {
+      content = await runtime.readFile(path);
+    } catch (_) {
+      return;
+    }
+    final lines = content.split('\n');
+    for (var index = 0; index < lines.length && hits.length < limit; index++) {
+      if (!regex.hasMatch(lines[index])) continue;
+      final text = lines[index].trim();
+      hits.add(
+        CodeSearchHit(
+          path,
+          index + 1,
+          text.length > 240 ? '${text.substring(0, 240)}…' : text,
+        ),
+      );
+    }
+  }
+
+  bool _isBinary(String name) {
+    final dot = name.lastIndexOf('.');
+    return dot >= 0 &&
+        _binaryExtensions.contains(name.substring(dot).toLowerCase());
+  }
+
+  String? _normalizeGlob(String glob) {
+    if (glob.trim().isEmpty) return null;
+    var value = glob.trim().toLowerCase();
+    if (value.startsWith('*.')) value = value.substring(1);
+    if (!value.startsWith('.')) value = '.$value';
+    return value;
+  }
+}
+
+abstract class _CodeSearchTool extends ReadOnlyTool {
+  _CodeSearchTool({CodeSearchService? searchService})
+    : searchService = searchService ?? const CodeSearchService();
+  final CodeSearchService searchService;
+
+  RegExp compile(String pattern, {bool caseSensitive = true}) {
+    try {
+      return RegExp(pattern, caseSensitive: caseSensitive, multiLine: true);
+    } on FormatException catch (error) {
+      throw ToolExecutionException(
+        'Invalid regular expression: ${error.message}',
+      );
+    }
+  }
+
+  ToolResult render(
+    String toolName,
+    String emptyMessage,
+    List<CodeSearchHit> hits,
+    Map<String, dynamic> metadata,
+  ) {
+    final content = hits.isEmpty
+        ? emptyMessage
+        : '${hits.length} match(es):\n${hits.map((hit) => hit.display).join('\n')}';
+    return ToolResult(
+      toolCallId: '',
+      name: toolName,
+      content: clampOutput(content),
+      data: <String, dynamic>{
+        ...metadata,
+        'count': hits.length,
+        'matches': hits.map((hit) => hit.toJson()).toList(growable: false),
+      },
+    );
+  }
+}
+
+class SearchCodeTool extends _CodeSearchTool {
+  SearchCodeTool({super.searchService, this.maxResults = 100});
+  final int maxResults;
 
   @override
   String get name => 'search_code';
-
   @override
   String get description =>
-      'Search file contents across the workspace using a regular expression. '
-      'Returns matching lines as "path:line: text". Scope with an optional path '
-      'and fileGlob (e.g. "*.dart"). Skips .git, node_modules, build and binary '
-      'files. Use it to locate symbols, usages or config before reading files.';
-
+      'Search source contents with a regular expression. Returns paths, line '
+      'numbers and matching text. Supports path and extension filters.';
   @override
-  Map<String, dynamic> get inputSchema => <String, dynamic>{
-        'type': 'object',
-        'properties': <String, dynamic>{
-          'pattern': <String, dynamic>{
-            'type': 'string',
-            'description': 'Regular expression to search for.',
-          },
-          'path': <String, dynamic>{
-            'type': 'string',
-            'description': 'Optional subdirectory to scope the search.',
-          },
-          'fileGlob': <String, dynamic>{
-            'type': 'string',
-            'description': 'Optional extension filter, e.g. "*.dart" or "dart".',
-          },
-          'ignoreCase': <String, dynamic>{'type': 'boolean'},
-          'maxResults': <String, dynamic>{'type': 'integer'},
-        },
-        'required': <String>['pattern'],
-      };
-
+  Map<String, dynamic> get inputSchema => _schema('pattern');
   @override
   String describeCall(Map<String, dynamic> arguments) =>
       'search_code "${optionalString(arguments, 'pattern')}"';
@@ -86,113 +217,120 @@ class SearchCodeTool extends ReadOnlyTool {
   ) async {
     final pattern = requireString(arguments, 'pattern');
     final root = optionalString(arguments, 'path', fallback: '.');
-    final ignoreCase = optionalBool(arguments, 'ignoreCase', fallback: true);
-    final limit = optionalInt(arguments, 'maxResults', fallback: maxResults);
-    final glob = _normalizeGlob(optionalString(arguments, 'fileGlob'));
-
-    final RegExp regex;
-    try {
-      regex = RegExp(pattern, caseSensitive: !ignoreCase);
-    } on FormatException catch (e) {
-      throw ToolExecutionException('Invalid regular expression: ${e.message}');
-    }
-
-    final matches = <String>[];
-    await _walk(
+    final hits = await searchService.search(
       runtime: context.runtime,
-      dir: root,
-      regex: regex,
-      glob: glob,
-      limit: limit,
-      matches: matches,
+      root: root,
+      regex: compile(
+        pattern,
+        caseSensitive: !optionalBool(arguments, 'ignoreCase', fallback: true),
+      ),
+      fileGlob: optionalString(arguments, 'fileGlob'),
+      limit: optionalInt(arguments, 'maxResults', fallback: maxResults),
     );
-
-    final content = matches.isEmpty
-        ? 'No matches for /$pattern/ under $root.'
-        : '${matches.length} match(es):\n${matches.join('\n')}';
-    return ToolResult(
-      toolCallId: '',
-      name: name,
-      content: clampOutput(content),
-      data: <String, dynamic>{'pattern': pattern, 'count': matches.length},
+    return render(
+      name,
+      'No matches for /$pattern/ under $root.',
+      hits,
+      <String, dynamic>{'pattern': pattern},
     );
   }
-
-  Future<void> _walk({
-    required Runtime runtime,
-    required String dir,
-    required RegExp regex,
-    required String? glob,
-    required int limit,
-    required List<String> matches,
-  }) async {
-    if (matches.length >= limit) return;
-    final List<FileEntry> entries;
-    try {
-      entries = await runtime.listFiles(dir);
-    } catch (_) {
-      return;
-    }
-    for (final entry in entries) {
-      if (matches.length >= limit) return;
-      if (entry.isDirectory) {
-        if (_ignoredDirs.contains(entry.name)) continue;
-        await _walk(
-          runtime: runtime,
-          dir: entry.path,
-          regex: regex,
-          glob: glob,
-          limit: limit,
-          matches: matches,
-        );
-      } else {
-        if (glob != null && !_matchesGlob(entry.name, glob)) continue;
-        if (_isBinary(entry.name)) continue;
-        if (entry.size > maxFileSizeBytes) continue;
-        await _searchFile(runtime, entry.path, regex, limit, matches);
-      }
-    }
-  }
-
-  Future<void> _searchFile(
-    Runtime runtime,
-    String path,
-    RegExp regex,
-    int limit,
-    List<String> matches,
-  ) async {
-    String content;
-    try {
-      content = await runtime.readFile(path);
-    } catch (_) {
-      return; // unreadable / binary — skip silently
-    }
-    final lines = content.split('\n');
-    for (var i = 0; i < lines.length; i++) {
-      if (matches.length >= limit) return;
-      if (regex.hasMatch(lines[i])) {
-        final text = lines[i].trim();
-        matches.add('$path:${i + 1}: ${text.length > 240 ? '${text.substring(0, 240)}…' : text}');
-      }
-    }
-  }
-
-  bool _isBinary(String name) {
-    final dot = name.lastIndexOf('.');
-    if (dot < 0) return false;
-    return _binaryExtensions.contains(name.substring(dot).toLowerCase());
-  }
-
-  String? _normalizeGlob(String glob) {
-    if (glob.trim().isEmpty) return null;
-    var g = glob.trim().toLowerCase();
-    if (g.startsWith('*.')) g = g.substring(1); // ".dart"
-    if (!g.startsWith('.')) g = '.$g';
-    return g;
-  }
-
-  bool _matchesGlob(String fileName, String normalizedExt) =>
-      fileName.toLowerCase().endsWith(normalizedExt);
 }
 
-List<AgentTool> codeTools() => <AgentTool>[SearchCodeTool()];
+class FindSymbolTool extends _CodeSearchTool {
+  FindSymbolTool({super.searchService});
+  @override
+  String get name => 'find_symbol';
+  @override
+  String get description =>
+      'Find likely declarations of a class, function, method, type or variable '
+      'by exact symbol name across common programming languages.';
+  @override
+  Map<String, dynamic> get inputSchema => _schema('symbol');
+  @override
+  String describeCall(Map<String, dynamic> arguments) =>
+      'find_symbol ${optionalString(arguments, 'symbol')}';
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) async {
+    final symbol = requireString(arguments, 'symbol').trim();
+    final escaped = RegExp.escape(symbol);
+    final declaration =
+        r'^\s*(?:(?:(?:abstract|sealed|final|base|interface)\s+)?'
+        r'(?:class|enum|mixin|extension|typedef|struct|trait|type|def|fun|fn|func)\s+'
+        '$escaped\\b|(?:const|final|var|let)\\s+$escaped\\b|'
+        r'(?:[A-Za-z_][\w<>,?.\[\] ]*\s+)'
+        '$escaped\\s*\\()';
+    final root = optionalString(arguments, 'path', fallback: '.');
+    final hits = await searchService.search(
+      runtime: context.runtime,
+      root: root,
+      regex: compile(declaration),
+      fileGlob: optionalString(arguments, 'fileGlob'),
+      limit: optionalInt(arguments, 'maxResults', fallback: 50),
+    );
+    return render(
+      name,
+      'No declaration found for "$symbol" under $root.',
+      hits,
+      <String, dynamic>{'symbol': symbol},
+    );
+  }
+}
+
+class FindReferencesTool extends _CodeSearchTool {
+  FindReferencesTool({super.searchService});
+  @override
+  String get name => 'find_references';
+  @override
+  String get description =>
+      'Find lexical references to an exact identifier. Results may include '
+      'declarations until AST indexing is available.';
+  @override
+  Map<String, dynamic> get inputSchema => _schema('symbol');
+  @override
+  String describeCall(Map<String, dynamic> arguments) =>
+      'find_references ${optionalString(arguments, 'symbol')}';
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) async {
+    final symbol = requireString(arguments, 'symbol').trim();
+    final root = optionalString(arguments, 'path', fallback: '.');
+    final hits = await searchService.search(
+      runtime: context.runtime,
+      root: root,
+      regex: compile('\\b${RegExp.escape(symbol)}\\b'),
+      fileGlob: optionalString(arguments, 'fileGlob'),
+      limit: optionalInt(arguments, 'maxResults', fallback: 100),
+    );
+    return render(
+      name,
+      'No references found for "$symbol" under $root.',
+      hits,
+      <String, dynamic>{'symbol': symbol},
+    );
+  }
+}
+
+Map<String, dynamic> _schema(String requiredName) => <String, dynamic>{
+  'type': 'object',
+  'properties': <String, dynamic>{
+    requiredName: <String, dynamic>{'type': 'string'},
+    'path': <String, dynamic>{'type': 'string'},
+    'fileGlob': <String, dynamic>{'type': 'string'},
+    'ignoreCase': <String, dynamic>{'type': 'boolean'},
+    'maxResults': <String, dynamic>{'type': 'integer'},
+  },
+  'required': <String>[requiredName],
+};
+
+List<AgentTool> codeTools() => <AgentTool>[
+  SearchCodeTool(),
+  FindSymbolTool(),
+  FindReferencesTool(),
+];

@@ -342,4 +342,32 @@ void main() {
       );
     });
   });
+
+  group('code navigation', () {
+    test('find_symbol locates a declaration by exact name', () async {
+      final result = await FindSymbolTool().execute(<String, dynamic>{
+        'symbol': 'main',
+        'fileGlob': '*.dart',
+      }, ctx);
+
+      expect(result.content, contains('main.dart:1'));
+      expect(result.data!['matches'], hasLength(1));
+    });
+
+    test('find_references respects identifier boundaries', () async {
+      File(
+        '${tmp.path}${Platform.pathSeparator}lib${Platform.pathSeparator}refs.dart',
+      ).writeAsStringSync('void call() { main(); }\nvoid domain() {}\n');
+
+      final result = await FindReferencesTool().execute(<String, dynamic>{
+        'symbol': 'main',
+        'fileGlob': 'dart',
+      }, ctx);
+
+      expect(result.content, contains('main.dart:1'));
+      expect(result.content, contains('refs.dart:1'));
+      expect(result.content, isNot(contains('domain')));
+      expect(result.data!['count'], 2);
+    });
+  });
 }
