@@ -165,5 +165,7 @@
   "deleteEntryTitle": "Delete \"{name}\"?",
   "@deleteEntryTitle": {"placeholders": {"name": {"type": "String"}}},
   "deleteFileDescription": "This file will be permanently deleted.",
-  "deleteFolderDescription": "This folder and all of its contents will be permanently deleted."
+  "deleteFolderDescription": "This folder and all of its contents will be permanently deleted.",
+  "draftRestored": "Restored unsaved draft from previous session.",
+  "discard": "Discard"
 }

@@ -213,7 +213,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unsavedChangesDescription => '当前编辑内容尚未保存。';
 
   @override
-  String get discard => '放弃修改';
+  String get discard => '丢弃';
 
   @override
   String get selectWorkspaceForTerminal => '请选择工作区以在其目录中打开终端。';
@@ -493,4 +493,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get deleteFolderDescription => '此文件夹及其中的所有内容将被永久删除。';
+
+  @override
+  String get draftRestored => '已恢复上次未保存的草稿。';
 }

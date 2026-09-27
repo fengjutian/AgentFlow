@@ -504,4 +504,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteFolderDescription =>
       'This folder and all of its contents will be permanently deleted.';
+
+  @override
+  String get draftRestored => 'Restored unsaved draft from previous session.';
 }

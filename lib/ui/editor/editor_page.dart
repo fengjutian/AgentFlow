@@ -1,12 +1,17 @@
 library;
 
+import 'dart:convert';
+import 'dart:io' as io;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../app/providers.dart';
 import '../../app/theme.dart';
 import '../../core/editor/editor_document.dart';
 import '../../core/editor/editor_search.dart';
+import '../../core/editor/syntax_highlighter.dart';
 import '../../l10n/l10n.dart';
 
 class EditorPage extends ConsumerStatefulWidget {
@@ -19,8 +24,9 @@ class EditorPage extends ConsumerStatefulWidget {
   ConsumerState<EditorPage> createState() => _EditorPageState();
 }
 
-class _EditorPageState extends ConsumerState<EditorPage> {
-  final TextEditingController _text = TextEditingController();
+class _EditorPageState extends ConsumerState<EditorPage>
+    with WidgetsBindingObserver {
+  late final SyntaxTextEditingController _text;
   final TextEditingController _search = TextEditingController();
   final TextEditingController _replacement = TextEditingController();
   final ScrollController _editorScroll = ScrollController();
@@ -43,6 +49,10 @@ class _EditorPageState extends ConsumerState<EditorPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _text = SyntaxTextEditingController(
+      language: detectLanguage(widget.path),
+    );
     _text.addListener(_onTextChanged);
     _search.addListener(_refreshMatches);
     _editorScroll.addListener(_syncLineScroll);
@@ -50,7 +60,23 @@ class _EditorPageState extends ConsumerState<EditorPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    _text.colors = isDark ? SyntaxColors.dark : SyntaxColors.light;
+    _text.baseStyle = AppTheme.code;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused && _dirty) {
+      _saveDraft();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _text
       ..removeListener(_onTextChanged)
       ..dispose();
@@ -77,14 +103,27 @@ class _EditorPageState extends ConsumerState<EditorPage> {
       final content = await document.load();
       if (!mounted) return;
       _document = document;
+
+      // Check for a saved draft that is newer than the disk version.
+      final draft = await _loadDraft();
+      final effectiveText =
+          (draft != null && draft != content) ? draft : content;
+
       _text.value = TextEditingValue(
-        text: content,
-        selection: TextSelection.collapsed(offset: content.length),
+        text: effectiveText,
+        selection: TextSelection.collapsed(offset: effectiveText.length),
       );
+      if (effectiveText != content) document.update(effectiveText);
+
       setState(() {
-        _lineCount = _countLines(content);
+        _lineCount = _countLines(effectiveText);
         _loading = false;
       });
+
+      // If a draft was restored, show a banner offering to discard it.
+      if (effectiveText != content && mounted) {
+        _showDraftRestoredBanner();
+      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -103,6 +142,73 @@ class _EditorPageState extends ConsumerState<EditorPage> {
       setState(() => _lineCount = lineCount);
       if (_showSearch) _refreshMatches(selectNearest: false);
     }
+  }
+
+  // -- Draft persistence --------------------------------------------------
+
+  Future<io.File> _draftFile() async {
+    final dir = await getApplicationSupportDirectory();
+    final draftsDir = io.Directory('${dir.path}/editor_drafts');
+    if (!await draftsDir.exists()) {
+      await draftsDir.create(recursive: true);
+    }
+    // Use a URL-safe hash of the path as the filename.
+    final hash = base64Url.encode(utf8.encode(widget.path)).replaceAll('=', '');
+    return io.File('${draftsDir.path}/$hash.txt');
+  }
+
+  Future<void> _saveDraft() async {
+    try {
+      final file = await _draftFile();
+      await file.writeAsString(_text.text);
+    } catch (_) {
+      // Draft save is best-effort; never block the UI or surface errors.
+    }
+  }
+
+  Future<String?> _loadDraft() async {
+    try {
+      final file = await _draftFile();
+      if (await file.exists()) return await file.readAsString();
+    } catch (_) {
+      // Ignore draft read failures.
+    }
+    return null;
+  }
+
+  Future<void> _clearDraft() async {
+    try {
+      final file = await _draftFile();
+      if (await file.exists()) await file.delete();
+    } catch (_) {
+      // Ignore.
+    }
+  }
+
+  void _showDraftRestoredBanner() {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.draftRestored),
+        duration: const Duration(seconds: 8),
+        action: SnackBarAction(
+          label: context.l10n.discard,
+          onPressed: () async {
+            messenger.hideCurrentSnackBar();
+            final content = _document != null
+                ? await _document!.reload()
+                : '';
+            if (!mounted) return;
+            _text.value = TextEditingValue(
+              text: content,
+              selection: TextSelection.collapsed(offset: content.length),
+            );
+            setState(() => _lineCount = _countLines(content));
+            await _clearDraft();
+          },
+        ),
+      ),
+    );
   }
 
   void _openSearch() {
@@ -253,6 +359,8 @@ class _EditorPageState extends ConsumerState<EditorPage> {
         await _resolveConflict(document);
       } else {
         _showMessage(context.l10n.fileSaved);
+        // Saved successfully — discard any lingering draft.
+        await _clearDraft();
       }
     } catch (error) {
       if (mounted) _showMessage(context.l10n.failedToSave(error));

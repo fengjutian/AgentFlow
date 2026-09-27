@@ -154,5 +154,7 @@
   "deleteEntryTitle": "删除“{name}”？",
   "@deleteEntryTitle": {"placeholders": {"name": {"type": "String"}}},
   "deleteFileDescription": "此文件将被永久删除。",
-  "deleteFolderDescription": "此文件夹及其中的所有内容将被永久删除。"
+  "deleteFolderDescription": "此文件夹及其中的所有内容将被永久删除。",
+  "draftRestored": "已恢复上次未保存的草稿。",
+  "discard": "丢弃"
 }

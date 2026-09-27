@@ -28,6 +28,18 @@ class WorkspaceContext {
   final String memoryBlock;
 }
 
+/// Result of [ContextManager.build]: the assembled request plus any structural
+/// summary produced when older messages were trimmed to fit the budget.
+class ContextBuildResult {
+  const ContextBuildResult({required this.request, this.droppedSummary});
+
+  final ModelRequest request;
+
+  /// Non-null when messages were dropped. The engine merges this into the
+  /// running `conversationSummary` so earlier context is not silently lost.
+  final String? droppedSummary;
+}
+
 class ContextManager {
   ContextManager({this.approxTokensPerChar = 1 / 4});
 
@@ -93,7 +105,9 @@ Rules:
   /// [history] excludes the system message; it is prepended here. When the
   /// transcript exceeds the budget, the oldest turns are dropped (keeping any
   /// leading summary) so the model still sees the recent, relevant context.
-  ModelRequest build({
+  /// Returns a [ContextBuildResult] containing the request and an optional
+  /// structural summary of any messages that were trimmed.
+  ContextBuildResult build({
     required WorkspaceContext workspace,
     required List<ChatMessage> history,
     required ToolRegistry registry,
@@ -109,31 +123,94 @@ Rules:
       ));
     }
 
-    messages.addAll(_fitToBudget(history, config.contextWindow));
-    return ModelRequest(
-      messages: messages,
-      tools: registry.specs,
-      config: config,
+    final fitResult = _fitToBudget(history, config.contextWindow);
+    messages.addAll(fitResult.messages);
+
+    // Merge any pre-existing summary with the freshly generated one.
+    String? mergedSummary = conversationSummary;
+    if (fitResult.droppedSummary != null) {
+      mergedSummary = mergedSummary == null || mergedSummary.isEmpty
+          ? fitResult.droppedSummary
+          : '$mergedSummary\n\n${fitResult.droppedSummary}';
+    }
+
+    return ContextBuildResult(
+      request: ModelRequest(
+        messages: messages,
+        tools: registry.specs,
+        config: config,
+      ),
+      droppedSummary: mergedSummary,
     );
   }
 
   /// Drops the oldest messages until the estimated total fits within ~90% of the
   /// model's context window, leaving headroom for the reply and tool schemas.
-  List<ChatMessage> _fitToBudget(List<ChatMessage> history, int contextWindow) {
-    if (history.isEmpty) return history;
+  /// Returns the trimmed messages and a structural summary of what was dropped.
+  _FitResult _fitToBudget(List<ChatMessage> history, int contextWindow) {
+    if (history.isEmpty) return _FitResult(messages: history);
     final budget = (contextWindow * 0.9).round();
-    if (estimateTokens(history) <= budget) return List<ChatMessage>.of(history);
+    if (estimateTokens(history) <= budget) {
+      return _FitResult(messages: List<ChatMessage>.of(history));
+    }
 
     final trimmed = List<ChatMessage>.of(history);
+    final dropped = <ChatMessage>[];
     // Never drop a trailing dangling tool message without its assistant call:
     // trim from the front, but stop before breaking the last exchange.
     while (trimmed.length > 2 && estimateTokens(trimmed) > budget) {
-      trimmed.removeAt(0);
+      dropped.add(trimmed.removeAt(0));
       // If we now start on a tool result, drop it too (its call is gone).
       while (trimmed.isNotEmpty && trimmed.first.role == MessageRole.tool) {
-        trimmed.removeAt(0);
+        dropped.add(trimmed.removeAt(0));
       }
     }
-    return trimmed;
+    return _FitResult(
+      messages: trimmed,
+      droppedSummary: _summarizeDropped(dropped),
+    );
   }
+
+  /// Produces a compact structural summary of messages that were trimmed from
+  /// the context, so the model retains awareness of earlier work.
+  String? _summarizeDropped(List<ChatMessage> dropped) {
+    if (dropped.isEmpty) return null;
+    final lines = <String>[];
+    for (final msg in dropped) {
+      switch (msg.role) {
+        case MessageRole.user:
+          final preview = msg.content.length > 200
+              ? '${msg.content.substring(0, 200)}…'
+              : msg.content;
+          lines.add('User asked: $preview');
+        case MessageRole.assistant:
+          if (msg.content.isNotEmpty) {
+            final preview = msg.content.length > 200
+                ? '${msg.content.substring(0, 200)}…'
+                : msg.content;
+            lines.add('Assistant: $preview');
+          }
+          for (final call in msg.toolCalls) {
+            final argKeys = call.arguments.keys.join(', ');
+            lines.add('Called ${call.name}($argKeys)');
+          }
+        case MessageRole.tool:
+          final preview = msg.content.length > 150
+              ? '${msg.content.substring(0, 150)}…'
+              : msg.content;
+          lines.add('${msg.name ?? 'tool'} result: $preview');
+        case MessageRole.system:
+          break; // skip system messages in summary
+      }
+    }
+    if (lines.isEmpty) return null;
+    return 'Earlier conversation (trimmed for context budget):\n'
+        '${lines.join('\n')}';
+  }
+}
+
+class _FitResult {
+  const _FitResult({required this.messages, this.droppedSummary});
+  final List<ChatMessage> messages;
+  final String? droppedSummary;
 }

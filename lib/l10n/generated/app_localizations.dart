@@ -991,6 +991,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This folder and all of its contents will be permanently deleted.'**
   String get deleteFolderDescription;
+
+  /// No description provided for @draftRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored unsaved draft from previous session.'**
+  String get draftRestored;
 }
 
 class _AppLocalizationsDelegate

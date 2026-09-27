@@ -136,6 +136,7 @@ class AgentEngine {
     }
 
     var toolCallCount = 0;
+    var conversationSummary = request.conversationSummary;
 
     try {
       for (var iteration = 0;
@@ -147,17 +148,22 @@ class AgentEngine {
         }
 
         setPhase(AgentPhase.thinking);
-        final modelRequest = _contextManager.build(
+        final buildResult = _contextManager.build(
           workspace: request.workspace,
           history: messages,
           registry: registry,
           config: request.config,
-          conversationSummary: request.conversationSummary,
+          conversationSummary: conversationSummary,
         );
+        // Carry the structural summary forward so subsequent iterations and
+        // future turns preserve awareness of trimmed context.
+        if (buildResult.droppedSummary != null) {
+          conversationSummary = buildResult.droppedSummary;
+        }
 
         final ModelResponse response;
         try {
-          response = await provider.generate(modelRequest);
+          response = await provider.generate(buildResult.request);
         } on ModelException catch (e) {
           sink.add(ErrorEvent(e.message));
           setPhase(AgentPhase.error);
@@ -180,6 +186,10 @@ class AgentEngine {
           ));
           return;
         }
+
+        // Surface the planning phase so the Activity UI shows the agent
+        // deliberating on what to do next (design doc §9).
+        setPhase(AgentPhase.planning);
 
         for (final call in response.toolCalls) {
           if (isCancelled()) break;
