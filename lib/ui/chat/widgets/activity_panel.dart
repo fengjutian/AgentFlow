@@ -11,11 +11,7 @@ import '../../../core/agent/agent_state.dart';
 import '../../../l10n/l10n.dart';
 
 class ActivityPanel extends StatelessWidget {
-  const ActivityPanel({
-    super.key,
-    required this.items,
-    required this.phase,
-  });
+  const ActivityPanel({super.key, required this.items, required this.phase});
 
   final List<ActivityItem> items;
   final AgentPhase phase;
@@ -36,11 +32,12 @@ class ActivityPanel extends StatelessWidget {
               children: <Widget>[
                 Icon(Icons.bolt, size: 16, color: scheme.primary),
                 const SizedBox(width: 6),
-                Text(context.l10n.agentActivity,
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelLarge
-                        ?.copyWith(color: scheme.primary)),
+                Text(
+                  context.l10n.agentActivity,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(color: scheme.primary),
+                ),
                 const Spacer(),
                 _PhaseBadge(phase: phase),
               ],
@@ -87,8 +84,10 @@ class _PhaseBadge extends StatelessWidget {
           ),
           const SizedBox(width: 6),
         ],
-        Text(_phaseLabel(context, phase),
-            style: Theme.of(context).textTheme.labelSmall),
+        Text(
+          _phaseLabel(context, phase),
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
       ],
     );
   }
@@ -118,7 +117,10 @@ class _ActivityRow extends StatelessWidget {
               ? SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: color),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: color,
+                  ),
                 )
               : Icon(icon, size: 16, color: color),
           const SizedBox(width: 8),
@@ -129,21 +131,20 @@ class _ActivityRow extends StatelessWidget {
                 Text(
                   item.label,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontFamily: 'monospace',
-                        color: item.status == ActivityStatus.pending
-                            ? scheme.outline
-                            : scheme.onSurface,
-                      ),
+                    fontFamily: 'monospace',
+                    color: item.status == ActivityStatus.pending
+                        ? scheme.outline
+                        : scheme.onSurface,
+                  ),
                 ),
                 if (item.detail != null && item.detail!.isNotEmpty)
                   Text(
                     item.detail!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: scheme.outline),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: scheme.outline),
                   ),
               ],
             ),
@@ -155,13 +156,13 @@ class _ActivityRow extends StatelessWidget {
 }
 
 String _phaseLabel(BuildContext context, AgentPhase phase) => switch (phase) {
-      AgentPhase.idle => context.l10n.phaseIdle,
-      AgentPhase.thinking => context.l10n.phaseThinking,
-      AgentPhase.planning => context.l10n.phasePlanning,
-      AgentPhase.waitingApproval => context.l10n.phaseWaitingApproval,
-      AgentPhase.executing => context.l10n.phaseExecuting,
-      AgentPhase.observing => context.l10n.phaseObserving,
-      AgentPhase.completed => context.l10n.phaseCompleted,
-      AgentPhase.error => context.l10n.phaseError,
-      AgentPhase.cancelled => context.l10n.phaseCancelled,
-    };
+  AgentPhase.idle => context.l10n.phaseIdle,
+  AgentPhase.thinking => context.l10n.phaseThinking,
+  AgentPhase.planning => context.l10n.phasePlanning,
+  AgentPhase.waitingApproval => context.l10n.phaseWaitingApproval,
+  AgentPhase.executing => context.l10n.phaseExecuting,
+  AgentPhase.observing => context.l10n.phaseObserving,
+  AgentPhase.completed => context.l10n.phaseCompleted,
+  AgentPhase.error => context.l10n.phaseError,
+  AgentPhase.cancelled => context.l10n.phaseCancelled,
+};

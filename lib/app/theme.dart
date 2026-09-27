@@ -42,7 +42,9 @@ class AppTheme {
         filled: true,
       ),
       listTileTheme: const ListTileThemeData(dense: true),
-      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 

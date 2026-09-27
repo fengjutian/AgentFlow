@@ -118,10 +118,9 @@ class _ToolCallIntent extends StatelessWidget {
             context.l10n.callingTools(
               calls.map((ToolCall c) => c.name).join(', '),
             ),
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: scheme.outline),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: scheme.outline),
           ),
         ],
       ),
@@ -153,8 +152,10 @@ class ToolResultView extends StatelessWidget {
             if (message.content.trim().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 4, left: 4),
-                child: Text(message.content,
-                    style: Theme.of(context).textTheme.bodySmall),
+                child: Text(
+                  message.content,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
             diff,
           ],
@@ -185,7 +186,9 @@ class _GenericToolCard extends StatelessWidget {
         : (message.isError ? scheme.error : scheme.primary);
     final icon = denied
         ? Icons.block
-        : (message.isError ? Icons.warning_amber_rounded : Icons.build_outlined);
+        : (message.isError
+              ? Icons.warning_amber_rounded
+              : Icons.build_outlined);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 8),
       child: Card(
@@ -199,15 +202,12 @@ class _GenericToolCard extends StatelessWidget {
               style: AppTheme.code.copyWith(fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
-              denied
-                  ? context.l10n.deniedByUser
-                  : _firstLine(message.content),
+              denied ? context.l10n.deniedByUser : _firstLine(message.content),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: scheme.outline),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.outline),
             ),
             children: <Widget>[
               Padding(

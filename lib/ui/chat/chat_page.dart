@@ -46,8 +46,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   Widget build(BuildContext context) {
     // Reset the transcript whenever the user switches workspace.
-    ref.listen<String?>(activeWorkspaceProvider,
-        (String? previous, String? next) {
+    ref.listen<String?>(activeWorkspaceProvider, (
+      String? previous,
+      String? next,
+    ) {
       if (previous != next) {
         ref.read(sessionControllerProvider.notifier).startNewSession();
       }
@@ -78,8 +80,9 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             icon: const Icon(Icons.add_comment_outlined),
             onPressed: workspace == null
                 ? null
-                : () =>
-                    ref.read(sessionControllerProvider.notifier).startNewSession(),
+                : () => ref
+                      .read(sessionControllerProvider.notifier)
+                      .startNewSession(),
           ),
         ],
       ),
@@ -126,7 +129,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (BuildContext context) => _SessionsSheet(workspaceId: workspaceId),
+      builder: (BuildContext context) =>
+          _SessionsSheet(workspaceId: workspaceId),
     );
   }
 }
@@ -146,16 +150,17 @@ class _EmptyWorkspaceHint extends ConsumerWidget {
           children: <Widget>[
             Icon(Icons.folder_off_outlined, size: 56, color: scheme.outline),
             const SizedBox(height: 16),
-            Text(context.l10n.noWorkspaceSelected,
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              context.l10n.noWorkspaceSelected,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 6),
             Text(
               context.l10n.workspaceRequiredDescription,
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: scheme.outline),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.outline),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
@@ -183,12 +188,16 @@ class _ModelChip extends ConsumerWidget {
         child: Chip(
           visualDensity: VisualDensity.compact,
           avatar: Icon(
-            config.provider == 'mock' ? Icons.science_outlined : Icons.cloud_outlined,
+            config.provider == 'mock'
+                ? Icons.science_outlined
+                : Icons.cloud_outlined,
             size: 16,
             color: scheme.primary,
           ),
-          label: Text(config.provider == 'mock' ? 'Demo' : config.model,
-              style: Theme.of(context).textTheme.labelSmall),
+          label: Text(
+            config.provider == 'mock' ? 'Demo' : config.model,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
         ),
       ),
     );
@@ -229,14 +238,17 @@ class _Welcome extends ConsumerWidget {
           children: <Widget>[
             Icon(Icons.smart_toy_outlined, size: 48, color: scheme.primary),
             const SizedBox(height: 12),
-            Text(context.l10n.giveAgentTask,
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              context.l10n.giveAgentTask,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 4),
             Text(
               context.l10n.agentTaskDescription,
               textAlign: TextAlign.center,
-              style:
-                  Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.outline),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.outline),
             ),
             const SizedBox(height: 20),
             for (final example in <String>[
@@ -247,8 +259,9 @@ class _Welcome extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: OutlinedButton(
-                  onPressed: () =>
-                      ref.read(sessionControllerProvider.notifier).send(example),
+                  onPressed: () => ref
+                      .read(sessionControllerProvider.notifier)
+                      .send(example),
                   child: Text(example, textAlign: TextAlign.center),
                 ),
               ),
@@ -321,8 +334,10 @@ class _InputBar extends StatelessWidget {
                 onSubmitted: (_) => isRunning ? null : onSubmit(),
                 decoration: InputDecoration(
                   hintText: context.l10n.describeTask,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ),
@@ -362,12 +377,16 @@ class _SessionsSheet extends ConsumerWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                Text(context.l10n.sessions,
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  context.l10n.sessions,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () {
-                    ref.read(sessionControllerProvider.notifier).startNewSession();
+                    ref
+                        .read(sessionControllerProvider.notifier)
+                        .startNewSession();
                     Navigator.pop(context);
                   },
                   icon: const Icon(Icons.add),
@@ -404,8 +423,11 @@ class _SessionsSheet extends ConsumerWidget {
                               ? Icons.chat
                               : Icons.chat_bubble_outline,
                         ),
-                        title: Text(s.title,
-                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                        title: Text(
+                          s.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         subtitle: Text(_relative(context, s.updatedAt)),
                         onTap: () async {
                           await ref
@@ -433,4 +455,3 @@ class _SessionsSheet extends ConsumerWidget {
     return context.l10n.daysAgo(diff.inDays);
   }
 }
-

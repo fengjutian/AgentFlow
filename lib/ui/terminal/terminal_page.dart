@@ -52,8 +52,10 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     final workspace = ref.watch(currentWorkspaceProvider);
     final runtimeAsync = ref.watch(runtimeProvider);
 
-    ref.listen<String?>(activeWorkspaceProvider,
-        (String? previous, String? next) {
+    ref.listen<String?>(activeWorkspaceProvider, (
+      String? previous,
+      String? next,
+    ) {
       if (previous == next) return;
       setState(() {
         _cwd = '';
@@ -65,9 +67,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(workspace == null
-            ? context.l10n.terminal
-            : '${context.l10n.terminal} · ${workspace.name}'),
+        title: Text(
+          workspace == null
+              ? context.l10n.terminal
+              : '${context.l10n.terminal} · ${workspace.name}',
+        ),
         actions: <Widget>[
           IconButton(
             tooltip: context.l10n.clear,
@@ -77,23 +81,23 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         ],
       ),
       body: workspace == null
-          ? _TerminalHint(
-              message: context.l10n.selectWorkspaceForTerminal,
-            )
+          ? _TerminalHint(message: context.l10n.selectWorkspaceForTerminal)
           : runtime == null
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                  children: <Widget>[
-                    Expanded(child: _Scrollback(lines: _lines, controller: _scroll)),
-                    _Prompt(
-                      cwd: _cwd,
-                      controller: _input,
-                      running: _running,
-                      onSubmit: () => _run(runtime),
-                      onHistory: _cycleHistory,
-                    ),
-                  ],
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: <Widget>[
+                Expanded(
+                  child: _Scrollback(lines: _lines, controller: _scroll),
                 ),
+                _Prompt(
+                  cwd: _cwd,
+                  controller: _input,
+                  running: _running,
+                  onSubmit: () => _run(runtime),
+                  onHistory: _cycleHistory,
+                ),
+              ],
+            ),
     );
   }
 
@@ -166,13 +170,17 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   String _resolveCd(String arg) {
     if (arg.isEmpty) return ''; // `cd` alone → workspace root.
     if (arg == '.') return _cwd;
-    final absolute = arg.startsWith('/') ||
+    final absolute =
+        arg.startsWith('/') ||
         (arg.length > 1 && arg[1] == ':'); // Windows drive letter.
     if (absolute) return arg;
 
     final segments = _cwd.isEmpty
         ? <String>[]
-        : _cwd.split(RegExp(r'[\\/]')).where((String s) => s.isNotEmpty).toList();
+        : _cwd
+              .split(RegExp(r'[\\/]'))
+              .where((String s) => s.isNotEmpty)
+              .toList();
     for (final part in arg.split(RegExp(r'[\\/]'))) {
       if (part.isEmpty || part == '.') continue;
       if (part == '..') {
@@ -189,8 +197,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     if (_history.isEmpty) return;
     final last = _history.last;
     setState(() => _input.text = last);
-    _input.selection =
-        TextSelection.collapsed(offset: _input.text.length);
+    _input.selection = TextSelection.collapsed(offset: _input.text.length);
   }
 }
 
@@ -233,11 +240,11 @@ class _Scrollback extends StatelessWidget {
   }
 
   Color _colorFor(ColorScheme scheme, _LineKind kind) => switch (kind) {
-        _LineKind.command => scheme.primary,
-        _LineKind.stderr => scheme.error,
-        _LineKind.info => scheme.outline,
-        _LineKind.stdout => scheme.onSurface,
-      };
+    _LineKind.command => scheme.primary,
+    _LineKind.stderr => scheme.error,
+    _LineKind.info => scheme.outline,
+    _LineKind.stdout => scheme.onSurface,
+  };
 }
 
 class _Prompt extends StatelessWidget {
@@ -301,7 +308,10 @@ class _Prompt extends StatelessWidget {
                 ? const Padding(
                     padding: EdgeInsets.only(right: 8),
                     child: SizedBox(
-                        width: 18, height: 18, child: CircularProgressIndicator()),
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(),
+                    ),
                   )
                 : IconButton.filled(
                     tooltip: context.l10n.run,
@@ -333,10 +343,9 @@ class _TerminalHint extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: scheme.outline),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.outline),
             ),
           ],
         ),

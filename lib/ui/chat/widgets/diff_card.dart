@@ -84,14 +84,15 @@ class DiffCard extends StatelessWidget {
                   try {
                     final message = await onUndo!();
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(message)));
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(message)));
                     }
                   } catch (error) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(error.toString())),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(error.toString())));
                     }
                   }
                 },
@@ -115,12 +116,16 @@ class _SummaryChip extends StatelessWidget {
     return Row(
       children: <Widget>[
         if (diff.addedCount > 0)
-          Text('+${diff.addedCount}',
-              style: AppTheme.code.copyWith(color: AppTheme.added)),
+          Text(
+            '+${diff.addedCount}',
+            style: AppTheme.code.copyWith(color: AppTheme.added),
+          ),
         const SizedBox(width: 6),
         if (diff.removedCount > 0)
-          Text('−${diff.removedCount}',
-              style: AppTheme.code.copyWith(color: AppTheme.removed)),
+          Text(
+            '−${diff.removedCount}',
+            style: AppTheme.code.copyWith(color: AppTheme.removed),
+          ),
       ],
     );
   }
@@ -163,8 +168,7 @@ class _DiffLineView extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(line.prefix,
-              style: AppTheme.code.copyWith(color: foreground)),
+          Text(line.prefix, style: AppTheme.code.copyWith(color: foreground)),
           const SizedBox(width: 6),
           Expanded(
             child: Text(

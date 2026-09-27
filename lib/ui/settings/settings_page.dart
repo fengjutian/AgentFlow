@@ -50,8 +50,9 @@ class SettingsPage extends ConsumerWidget {
           _SectionHeader(
             title: context.l10n.modelProviders,
             subtitle: activeAsync.when(
-              data: (ModelConfig c) =>
-                  c.provider == 'mock' ? 'Active: offline demo' : 'Active: ${c.label}',
+              data: (ModelConfig c) => c.provider == 'mock'
+                  ? 'Active: offline demo'
+                  : 'Active: ${c.label}',
               loading: () => 'Loading…',
               error: (Object _, StackTrace _) => 'Unavailable',
             ),
@@ -96,10 +97,14 @@ class SettingsPage extends ConsumerWidget {
   }
 
   Future<void> _edit(
-      BuildContext context, WidgetRef ref, ModelConfig? existing) async {
+    BuildContext context,
+    WidgetRef ref,
+    ModelConfig? existing,
+  ) async {
     final saved = await showDialog<ModelConfig>(
       context: context,
-      builder: (BuildContext context) => ProviderEditorDialog(existing: existing),
+      builder: (BuildContext context) =>
+          ProviderEditorDialog(existing: existing),
     );
     if (saved == null) return;
     final repo = ref.read(providerRepositoryProvider);
@@ -120,7 +125,10 @@ class SettingsPage extends ConsumerWidget {
   }
 
   Future<void> _delete(
-      BuildContext context, WidgetRef ref, ModelConfig config) async {
+    BuildContext context,
+    WidgetRef ref,
+    ModelConfig config,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -128,11 +136,13 @@ class SettingsPage extends ConsumerWidget {
         content: Text(context.l10n.deleteProviderDescription),
         actions: <Widget>[
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(context.l10n.cancel)),
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(context.l10n.cancel),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(context.l10n.delete)),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(context.l10n.delete),
+          ),
         ],
       ),
     );
@@ -165,10 +175,9 @@ class _SectionHeader extends StatelessWidget {
               child: Text(
                 subtitle!,
                 textAlign: TextAlign.right,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: scheme.primary),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: scheme.primary),
               ),
             ),
           ],
@@ -194,8 +203,10 @@ class _EmptyProviders extends StatelessWidget {
               children: <Widget>[
                 Icon(Icons.science_outlined, color: scheme.primary),
                 const SizedBox(width: 8),
-                Text(context.l10n.offlineDemoMode,
-                    style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  context.l10n.offlineDemoMode,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -203,10 +214,9 @@ class _EmptyProviders extends StatelessWidget {
               'No provider is configured yet, so the agent uses a built-in mock '
               'that demonstrates the loop without any network. Add an '
               'OpenAI-compatible provider to use a real model.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: scheme.outline),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.outline),
             ),
           ],
         ),
@@ -243,8 +253,11 @@ class _ProviderTile extends StatelessWidget {
         title: Row(
           children: <Widget>[
             Flexible(
-              child: Text(config.label,
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              child: Text(
+                config.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             if (config.isDefault) ...<Widget>[
               const SizedBox(width: 6),
@@ -257,8 +270,8 @@ class _ProviderTile extends StatelessWidget {
                 child: Text(
                   'default',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: scheme.onPrimaryContainer,
-                      ),
+                    color: scheme.onPrimaryContainer,
+                  ),
                 ),
               ),
             ],
@@ -277,9 +290,13 @@ class _ProviderTile extends StatelessWidget {
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
             PopupMenuItem<String>(
-                value: 'default', child: Text(context.l10n.setAsDefault)),
+              value: 'default',
+              child: Text(context.l10n.setAsDefault),
+            ),
             PopupMenuItem<String>(
-                value: 'delete', child: Text(context.l10n.delete)),
+              value: 'delete',
+              child: Text(context.l10n.delete),
+            ),
           ],
         ),
       ),
@@ -378,8 +395,11 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
             const SizedBox(height: 6),
             _kv(context, 'Directory', widget.rootDirectory ?? '—'),
             const SizedBox(height: 6),
-            _kv(context, 'Runtime',
-                widget.runtime == null ? 'resolving…' : widget.runtime!.label),
+            _kv(
+              context,
+              'Runtime',
+              widget.runtime == null ? 'resolving…' : widget.runtime!.label,
+            ),
             if (info != null) ...<Widget>[
               const SizedBox(height: 6),
               _kv(context, 'Shell', info.shell),
@@ -390,10 +410,9 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
             Text(
               'On Android the agent runs commands in Termux when it is set up and '
               'falls back to on-device execution otherwise.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: scheme.outline),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.outline),
             ),
             if (needsPermission) ...<Widget>[
               const SizedBox(height: 8),
@@ -403,17 +422,17 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
                           'termux.properties before it accepts commands.'
                     : 'Grant the “Run commands in Termux environment” permission '
                           'to let the agent use its toolchain.',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: scheme.outline),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: scheme.outline),
               ),
               if (!info.termuxPermission) ...<Widget>[
                 const SizedBox(height: 12),
                 FilledButton.tonal(
                   onPressed: _requesting ? null : _grantTermuxAccess,
                   child: Text(
-                      _requesting ? 'Waiting for answer…' : 'Grant Termux access'),
+                    _requesting ? 'Waiting for answer…' : 'Grant Termux access',
+                  ),
                 ),
               ],
             ],
@@ -429,11 +448,12 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
       children: <Widget>[
         SizedBox(
           width: 92,
-          child: Text(k,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: Theme.of(context).colorScheme.outline)),
+          child: Text(
+            k,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
         ),
         Expanded(child: SelectableText(v)),
       ],
@@ -458,17 +478,17 @@ class _AboutCard extends StatelessWidget {
             Text(
               'An on-device AI agent workstation. The agent reads and edits code, '
               'runs commands and operates Git — asking before anything risky.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: scheme.outline),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.outline),
             ),
             const SizedBox(height: 8),
-            Text('MVP build',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall
-                    ?.copyWith(color: scheme.outline)),
+            Text(
+              'MVP build',
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: scheme.outline),
+            ),
           ],
         ),
       ),
@@ -505,7 +525,9 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
     _provider = c?.provider ?? 'openai-compatible';
     _label = TextEditingController(text: c?.label ?? '');
     _model = TextEditingController(text: c?.model ?? '');
-    _baseUrl = TextEditingController(text: c?.baseUrl ?? _providerPresets[_provider] ?? '');
+    _baseUrl = TextEditingController(
+      text: c?.baseUrl ?? _providerPresets[_provider] ?? '',
+    );
     _apiKey = TextEditingController(text: c?.apiKey ?? '');
     _maxTokens = TextEditingController(text: '${c?.maxTokens ?? 4096}');
     _temperature = c?.temperature ?? 0.2;
@@ -556,9 +578,11 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
   Widget build(BuildContext context) {
     final isMock = _provider == 'mock';
     return AlertDialog(
-      title: Text(widget.existing == null
-          ? context.l10n.addProvider
-          : context.l10n.editProvider),
+      title: Text(
+        widget.existing == null
+            ? context.l10n.addProvider
+            : context.l10n.editProvider,
+      ),
       content: SizedBox(
         width: 420,
         child: Form(
@@ -569,13 +593,14 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
               children: <Widget>[
                 DropdownButtonFormField<String>(
                   initialValue: _provider,
-                  decoration:
-                      InputDecoration(labelText: context.l10n.providerType),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.providerType,
+                  ),
                   items: _providerPresets.keys
-                      .map((String p) => DropdownMenuItem<String>(
-                            value: p,
-                            child: Text(p),
-                          ))
+                      .map(
+                        (String p) =>
+                            DropdownMenuItem<String>(value: p, child: Text(p)),
+                      )
                       .toList(),
                   onChanged: (String? v) {
                     if (v != null) _onProviderChanged(v);
@@ -588,10 +613,9 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                     labelText: context.l10n.providerLabel,
                     hintText: 'DeepSeek (personal)',
                   ),
-                  validator: (String? v) =>
-                      (v == null || v.trim().isEmpty)
-                          ? context.l10n.requiredField
-                          : null,
+                  validator: (String? v) => (v == null || v.trim().isEmpty)
+                      ? context.l10n.requiredField
+                      : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -601,8 +625,8 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                     hintText: 'gpt-4o-mini / deepseek-chat',
                   ),
                   enabled: !isMock,
-                  validator: (String? v) => !isMock &&
-                          (v == null || v.trim().isEmpty)
+                  validator: (String? v) =>
+                      !isMock && (v == null || v.trim().isEmpty)
                       ? context.l10n.requiredField
                       : null,
                 ),
@@ -624,9 +648,11 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                   decoration: InputDecoration(
                     labelText: context.l10n.apiKey,
                     suffixIcon: IconButton(
-                      icon: Icon(_obscureKey
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined),
+                      icon: Icon(
+                        _obscureKey
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
                       onPressed: () =>
                           setState(() => _obscureKey = !_obscureKey),
                     ),
@@ -635,9 +661,12 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                 const SizedBox(height: 16),
                 Row(
                   children: <Widget>[
-                    Text(context.l10n
-                        .temperatureValue(_temperature.toStringAsFixed(2)),
-                        style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      context.l10n.temperatureValue(
+                        _temperature.toStringAsFixed(2),
+                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     Expanded(
                       child: Slider(
                         value: _temperature,
@@ -653,8 +682,9 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                 const SizedBox(height: 4),
                 TextFormField(
                   controller: _maxTokens,
-                  decoration:
-                      InputDecoration(labelText: context.l10n.maxTokens),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.maxTokens,
+                  ),
                   keyboardType: TextInputType.number,
                 ),
               ],
@@ -664,8 +694,9 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
       ),
       actions: <Widget>[
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.l10n.cancel)),
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.cancel),
+        ),
         FilledButton(onPressed: _submit, child: Text(context.l10n.save)),
       ],
     );

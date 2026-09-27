@@ -54,10 +54,9 @@ class ApprovalCard extends StatelessWidget {
                     strong
                         ? context.l10n.confirmHighRisk
                         : context.l10n.approveAction,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(color: accent),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleSmall?.copyWith(color: accent),
                   ),
                 ),
                 _RiskChip(risk: request.risk),
@@ -76,10 +75,9 @@ class ApprovalCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 'tool: ${request.toolName}',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: scheme.outline),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: scheme.outline),
               ),
             ],
             const SizedBox(height: 12),
@@ -88,9 +86,11 @@ class ApprovalCard extends StatelessWidget {
               children: <Widget>[
                 TextButton(
                   onPressed: () => onDecision(ApprovalDecision.deny),
-                  child: Text(request.previewData == null
-                      ? context.l10n.deny
-                      : context.l10n.reject),
+                  child: Text(
+                    request.previewData == null
+                        ? context.l10n.deny
+                        : context.l10n.reject,
+                  ),
                 ),
                 const SizedBox(width: 4),
                 TextButton(
@@ -105,9 +105,11 @@ class ApprovalCard extends StatelessWidget {
                 FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: accent),
                   onPressed: () => onDecision(ApprovalDecision.allow),
-                  child: Text(request.previewData == null
-                      ? context.l10n.allow
-                      : context.l10n.accept),
+                  child: Text(
+                    request.previewData == null
+                        ? context.l10n.allow
+                        : context.l10n.accept,
+                  ),
                 ),
               ],
             ),

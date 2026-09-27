@@ -66,7 +66,10 @@ class TerminalCard extends StatelessWidget {
             ),
           ),
           if (output.trim().isNotEmpty) ...<Widget>[
-            Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.3)),
+            Divider(
+              height: 1,
+              color: scheme.outlineVariant.withValues(alpha: 0.3),
+            ),
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 280),
               child: SingleChildScrollView(
@@ -85,8 +88,11 @@ class TerminalCard extends StatelessWidget {
 }
 
 class _ExitBadge extends StatelessWidget {
-  const _ExitBadge(
-      {required this.ok, required this.exitCode, required this.timedOut});
+  const _ExitBadge({
+    required this.ok,
+    required this.exitCode,
+    required this.timedOut,
+  });
   final bool ok;
   final int exitCode;
   final bool timedOut;

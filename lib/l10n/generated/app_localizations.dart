@@ -518,6 +518,18 @@ abstract class AppLocalizations {
   /// **'API Key'**
   String get apiKey;
 
+  /// No description provided for @requiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get requiredField;
+
+  /// No description provided for @maxTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Max tokens'**
+  String get maxTokens;
+
   /// No description provided for @temperatureValue.
   ///
   /// In en, this message translates to:

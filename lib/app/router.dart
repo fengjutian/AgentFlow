@@ -22,9 +22,12 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
     debugLogDiagnostics: false,
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
-        builder: (BuildContext context, GoRouterState state,
-                StatefulNavigationShell navigationShell) =>
-            AppShell(navigationShell: navigationShell),
+        builder:
+            (
+              BuildContext context,
+              GoRouterState state,
+              StatefulNavigationShell navigationShell,
+            ) => AppShell(navigationShell: navigationShell),
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
             routes: <RouteBase>[

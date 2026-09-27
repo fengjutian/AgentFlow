@@ -245,6 +245,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apiKey => 'API Key';
 
   @override
+  String get requiredField => 'Required';
+
+  @override
+  String get maxTokens => 'Max tokens';
+
+  @override
   String temperatureValue(String value) {
     return 'Temperature: $value';
   }

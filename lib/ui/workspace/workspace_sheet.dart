@@ -40,8 +40,10 @@ class _WorkspaceSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(context.l10n.workspaces,
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              context.l10n.workspaces,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 12),
             workspaces.when(
               loading: () => const Padding(
@@ -90,13 +92,17 @@ class _WorkspaceSheet extends ConsumerWidget {
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
-                            PopupMenuItem<String>(
-                                value: 'delete', child: Text(context.l10n.delete)),
-                          ],
+                                PopupMenuItem<String>(
+                                  value: 'delete',
+                                  child: Text(context.l10n.delete),
+                                ),
+                              ],
                         ),
                         selected: selected,
                         onTap: () {
-                          ref.read(activeWorkspaceProvider.notifier).select(w.id);
+                          ref
+                              .read(activeWorkspaceProvider.notifier)
+                              .select(w.id);
                           Navigator.of(context).pop();
                         },
                       );
@@ -110,7 +116,8 @@ class _WorkspaceSheet extends ConsumerWidget {
               onPressed: () async {
                 final created = await showDialog<Workspace>(
                   context: context,
-                  builder: (BuildContext context) => const CreateWorkspaceDialog(),
+                  builder: (BuildContext context) =>
+                      const CreateWorkspaceDialog(),
                 );
                 if (created != null && context.mounted) {
                   ref.read(activeWorkspaceProvider.notifier).select(created.id);
@@ -128,7 +135,10 @@ class _WorkspaceSheet extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, WidgetRef ref, Workspace w) async {
+    BuildContext context,
+    WidgetRef ref,
+    Workspace w,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -136,11 +146,13 @@ class _WorkspaceSheet extends ConsumerWidget {
         content: Text(context.l10n.deleteWorkspaceDescription),
         actions: <Widget>[
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(context.l10n.cancel)),
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(context.l10n.cancel),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(context.l10n.delete)),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(context.l10n.delete),
+          ),
         ],
       ),
     );
@@ -166,7 +178,8 @@ class CreateWorkspaceDialog extends ConsumerStatefulWidget {
 class _CreateWorkspaceDialogState extends ConsumerState<CreateWorkspaceDialog> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _path = TextEditingController(
-      text: Directory.current.path);
+    text: Directory.current.path,
+  );
   String? _error;
   bool _busy = false;
 
@@ -197,7 +210,8 @@ class _CreateWorkspaceDialogState extends ConsumerState<CreateWorkspaceDialog> {
         rootDirectory: exists ? dir.absolute.path : path,
         createdAt: DateTime.now(),
       );
-      await ref.read<WorkspaceRepository>(workspaceRepositoryProvider)
+      await ref
+          .read<WorkspaceRepository>(workspaceRepositoryProvider)
           .upsert(workspace);
       if (!mounted) return;
       Navigator.of(context).pop(workspace);
@@ -234,21 +248,28 @@ class _CreateWorkspaceDialogState extends ConsumerState<CreateWorkspaceDialog> {
           ),
           if (_error != null) ...<Widget>[
             const SizedBox(height: 12),
-            Text(_error!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            Text(
+              _error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ],
         ],
       ),
       actions: <Widget>[
         TextButton(
-            onPressed: _busy ? null : () => Navigator.pop(context),
-            child: Text(context.l10n.cancel)),
+          onPressed: _busy ? null : () => Navigator.pop(context),
+          child: Text(context.l10n.cancel),
+        ),
         FilledButton(
-            onPressed: _busy ? null : _submit,
-            child: _busy
-                ? const SizedBox(
-                    width: 18, height: 18, child: CircularProgressIndicator())
-                : Text(context.l10n.create)),
+          onPressed: _busy ? null : _submit,
+          child: _busy
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(),
+                )
+              : Text(context.l10n.create),
+        ),
       ],
     );
   }

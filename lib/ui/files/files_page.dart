@@ -40,8 +40,10 @@ class _FilesPageState extends ConsumerState<FilesPage> {
 
     // Reset to the root whenever the active workspace changes. The body's
     // auto-load picks up the new runtime on the next frame.
-    ref.listen<String?>(activeWorkspaceProvider,
-        (String? previous, String? next) {
+    ref.listen<String?>(activeWorkspaceProvider, (
+      String? previous,
+      String? next,
+    ) {
       if (previous == next) return;
       _path = '';
       _history.clear();
@@ -56,10 +58,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
             ? null
             : PreferredSize(
                 preferredSize: const Size.fromHeight(36),
-                child: _Breadcrumb(
-                  path: _path,
-                  onCrumb: _navigateTo,
-                ),
+                child: _Breadcrumb(path: _path, onCrumb: _navigateTo),
               ),
         actions: <Widget>[
           IconButton(
@@ -102,10 +101,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
       return _FilesHint(
         icon: Icons.error_outline,
         message: _error!,
-        action: TextButton(
-          onPressed: _load,
-          child: Text(context.l10n.retry),
-        ),
+        action: TextButton(onPressed: _load, child: Text(context.l10n.retry)),
       );
     }
     if (_loading && _entries.isEmpty) {
@@ -155,7 +151,8 @@ class _FilesPageState extends ConsumerState<FilesPage> {
     });
     try {
       final entries = await runtime.listFiles(_path);
-      final sorted = <FileEntry>[...entries]..sort((FileEntry a, FileEntry b) {
+      final sorted = <FileEntry>[...entries]
+        ..sort((FileEntry a, FileEntry b) {
           if (a.isDirectory != b.isDirectory) return a.isDirectory ? -1 : 1;
           return a.name.toLowerCase().compareTo(b.name.toLowerCase());
         });
@@ -202,8 +199,10 @@ class _FilesPageState extends ConsumerState<FilesPage> {
 
   Future<void> _openFile(Runtime runtime, FileEntry entry) async {
     if (entry.size > _maxPreviewBytes) {
-      _snack('${entry.name} is too large to preview '
-          '(${_humanSize(entry.size)}).');
+      _snack(
+        '${entry.name} is too large to preview '
+        '(${_humanSize(entry.size)}).',
+      );
       return;
     }
     await showModalBottomSheet<void>(
@@ -220,8 +219,9 @@ class _FilesPageState extends ConsumerState<FilesPage> {
 
   void _snack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -242,8 +242,10 @@ class _FileTile extends StatelessWidget {
       title: Text(entry.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: entry.isDirectory
           ? null
-          : Text(_humanSize(entry.size),
-              style: Theme.of(context).textTheme.bodySmall),
+          : Text(
+              _humanSize(entry.size),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
       trailing: entry.isDirectory ? const Icon(Icons.chevron_right) : null,
       onTap: onTap,
     );
@@ -255,12 +257,16 @@ class _FileTile extends StatelessWidget {
     if (lower.endsWith('.md') || lower.endsWith('.txt')) {
       return Icons.description_outlined;
     }
-    if (lower.endsWith('.json') || lower.endsWith('.yaml') ||
-        lower.endsWith('.yml') || lower.endsWith('.toml')) {
+    if (lower.endsWith('.json') ||
+        lower.endsWith('.yaml') ||
+        lower.endsWith('.yml') ||
+        lower.endsWith('.toml')) {
       return Icons.data_object;
     }
-    if (lower.endsWith('.png') || lower.endsWith('.jpg') ||
-        lower.endsWith('.jpeg') || lower.endsWith('.gif') ||
+    if (lower.endsWith('.png') ||
+        lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.gif') ||
         lower.endsWith('.webp')) {
       return Icons.image_outlined;
     }
@@ -278,14 +284,11 @@ class _Breadcrumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final segments =
-        path.isEmpty ? const <String>[] : path.split(RegExp(r'[\\/]'));
+    final segments = path.isEmpty
+        ? const <String>[]
+        : path.split(RegExp(r'[\\/]'));
     final crumbs = <Widget>[
-      _Crumb(
-        label: 'root',
-        isLast: segments.isEmpty,
-        onTap: () => onCrumb(''),
-      ),
+      _Crumb(label: 'root', isLast: segments.isEmpty, onTap: () => onCrumb('')),
     ];
     var acc = '';
     for (var i = 0; i < segments.length; i++) {
@@ -293,11 +296,13 @@ class _Breadcrumb extends StatelessWidget {
       acc = acc.isEmpty ? seg : '$acc/$seg';
       final target = acc;
       crumbs.add(Text('/', style: TextStyle(color: scheme.outline)));
-      crumbs.add(_Crumb(
-        label: seg,
-        isLast: i == segments.length - 1,
-        onTap: () => onCrumb(target),
-      ));
+      crumbs.add(
+        _Crumb(
+          label: seg,
+          isLast: i == segments.length - 1,
+          onTap: () => onCrumb(target),
+        ),
+      );
     }
     return Align(
       alignment: Alignment.centerLeft,
@@ -312,7 +317,11 @@ class _Breadcrumb extends StatelessWidget {
 }
 
 class _Crumb extends StatelessWidget {
-  const _Crumb({required this.label, required this.isLast, required this.onTap});
+  const _Crumb({
+    required this.label,
+    required this.isLast,
+    required this.onTap,
+  });
 
   final String label;
   final bool isLast;
@@ -391,25 +400,26 @@ class _FileViewerState extends State<_FileViewer> {
             Expanded(
               child: FutureBuilder<String>(
                 future: _future,
-                builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Text(context.l10n.cannotOpen(snapshot.error!)),
-                    );
-                  }
-                  final text = snapshot.data ?? '';
-                  if (text.trim().isEmpty) {
-                    return Center(child: Text(context.l10n.emptyFile));
-                  }
-                  return SingleChildScrollView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(16),
-                    child: SelectableText(text, style: AppTheme.code),
-                  );
-                },
+                builder:
+                    (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text(context.l10n.cannotOpen(snapshot.error!)),
+                        );
+                      }
+                      final text = snapshot.data ?? '';
+                      if (text.trim().isEmpty) {
+                        return Center(child: Text(context.l10n.emptyFile));
+                      }
+                      return SingleChildScrollView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.all(16),
+                        child: SelectableText(text, style: AppTheme.code),
+                      );
+                    },
               ),
             ),
           ],
@@ -440,10 +450,9 @@ class _FilesHint extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: scheme.outline),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.outline),
             ),
             if (action != null) ...<Widget>[
               const SizedBox(height: 12),

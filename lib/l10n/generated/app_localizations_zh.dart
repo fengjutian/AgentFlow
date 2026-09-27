@@ -236,6 +236,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get apiKey => 'API Key';
 
   @override
+  String get requiredField => '必填';
+
+  @override
+  String get maxTokens => '最大输出 Token';
+
+  @override
   String temperatureValue(String value) {
     return '温度：$value';
   }

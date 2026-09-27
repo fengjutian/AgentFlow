@@ -49,37 +49,36 @@ class ChatState {
     AgentPhase? phase,
     bool? isRunning,
     String? error,
-  }) =>
-      ChatState(
-        sessionId: sessionId ?? this.sessionId,
-        messages: messages ?? this.messages,
-        activity: activity ?? this.activity,
-        phase: phase ?? this.phase,
-        isRunning: isRunning ?? this.isRunning,
-        pendingApproval: pendingApproval,
-        error: error ?? this.error,
-      );
+  }) => ChatState(
+    sessionId: sessionId ?? this.sessionId,
+    messages: messages ?? this.messages,
+    activity: activity ?? this.activity,
+    phase: phase ?? this.phase,
+    isRunning: isRunning ?? this.isRunning,
+    pendingApproval: pendingApproval,
+    error: error ?? this.error,
+  );
 
   /// Sets/clears the pending approval (copyWith cannot express `null`).
   ChatState withPending(ApprovalRequest? request) => ChatState(
-        sessionId: sessionId,
-        messages: messages,
-        activity: activity,
-        phase: phase,
-        isRunning: isRunning,
-        pendingApproval: request,
-        error: error,
-      );
+    sessionId: sessionId,
+    messages: messages,
+    activity: activity,
+    phase: phase,
+    isRunning: isRunning,
+    pendingApproval: request,
+    error: error,
+  );
 
   ChatState withError(String? message) => ChatState(
-        sessionId: sessionId,
-        messages: messages,
-        activity: activity,
-        phase: message == null ? phase : AgentPhase.error,
-        isRunning: isRunning,
-        pendingApproval: pendingApproval,
-        error: message,
-      );
+    sessionId: sessionId,
+    messages: messages,
+    activity: activity,
+    phase: message == null ? phase : AgentPhase.error,
+    isRunning: isRunning,
+    pendingApproval: pendingApproval,
+    error: message,
+  );
 }
 
 class SessionController extends Notifier<ChatState> {
@@ -150,10 +149,13 @@ class SessionController extends Notifier<ChatState> {
     try {
       final runtime = await resolveRuntime(workspace);
       final config = await ref.read(activeModelConfigProvider.future);
-      final memoryBlock =
-          await ref.read(memoryManagerProvider).renderContextBlock(workspace.id);
-      final registry =
-          registryForWorkspace(workspace, ref.read(toolRegistryProvider));
+      final memoryBlock = await ref
+          .read(memoryManagerProvider)
+          .renderContextBlock(workspace.id);
+      final registry = registryForWorkspace(
+        workspace,
+        ref.read(toolRegistryProvider),
+      );
 
       final approval = ref.read(approvalManagerProvider);
       approval.autoApprove = workspace.autoApprove;
@@ -260,7 +262,8 @@ class SessionController extends Notifier<ChatState> {
 
   String _titleFrom(String prompt) {
     final firstLine = prompt.split('\n').first.trim();
-    if (firstLine.length <= 42) return firstLine.isEmpty ? 'New session' : firstLine;
+    if (firstLine.length <= 42)
+      return firstLine.isEmpty ? 'New session' : firstLine;
     return '${firstLine.substring(0, 42)}…';
   }
 }
