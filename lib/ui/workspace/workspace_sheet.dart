@@ -88,10 +88,16 @@ class _WorkspaceSheet extends ConsumerWidget {
                           onSelected: (String value) async {
                             if (value == 'delete') {
                               await _confirmDelete(context, ref, w);
+                            } else if (value == 'runtime') {
+                              await _selectRuntime(context, ref, w);
                             }
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
+                                PopupMenuItem<String>(
+                                  value: 'runtime',
+                                  child: Text('Runtime: ${w.runtimeId}'),
+                                ),
                                 PopupMenuItem<String>(
                                   value: 'delete',
                                   child: Text(context.l10n.delete),
@@ -162,6 +168,53 @@ class _WorkspaceSheet extends ConsumerWidget {
         ref.read(activeWorkspaceProvider.notifier).select(null);
       }
       ref.invalidate(workspaceListProvider);
+    }
+  }
+
+  Future<void> _selectRuntime(
+    BuildContext context,
+    WidgetRef ref,
+    Workspace w,
+  ) async {
+    final allConfigs = await ref.read(runtimeConfigRepositoryProvider).all();
+    final sshConfigs = allConfigs.where((c) => c.kind == 'ssh').toList();
+
+    if (!context.mounted) return;
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Select runtime'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, 'local'),
+            child: ListTile(
+              leading: const Icon(Icons.computer),
+              title: const Text('Local'),
+              subtitle: const Text('Run on this device'),
+              selected: w.runtimeId == 'local',
+            ),
+          ),
+          for (final config in sshConfigs)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, config.id),
+              child: ListTile(
+                leading: const Icon(Icons.cloud),
+                title: Text(config.label),
+                subtitle: Text(
+                  'SSH · ${config.options['host'] ?? ''}',
+                ),
+                selected: w.runtimeId == config.id,
+              ),
+            ),
+        ],
+      ),
+    );
+
+    if (selected != null) {
+      final updated = w.copyWith(runtimeId: selected);
+      await ref.read(workspaceRepositoryProvider).upsert(updated);
+      ref.invalidate(workspaceListProvider);
+      ref.invalidate(runtimeProvider);
     }
   }
 }

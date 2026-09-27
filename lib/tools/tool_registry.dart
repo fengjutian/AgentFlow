@@ -37,6 +37,12 @@ class ToolRegistry {
     }
   }
 
+  /// Removes a tool from the registry (e.g. when an MCP server disconnects).
+  void unregister(String name) {
+    _tools.remove(name);
+    _disabled.remove(name);
+  }
+
   void setEnabled(String name, bool enabled) {
     if (enabled) {
       _disabled.remove(name);

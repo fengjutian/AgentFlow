@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 
 import '../core/agent/agent_engine.dart';
 import '../core/approval/approval_manager.dart';
+import '../core/mcp/mcp_connection_manager.dart';
 import '../core/memory/memory_manager.dart';
 import '../core/model/model_provider.dart';
 import '../core/model/provider_factory.dart';
@@ -126,6 +127,16 @@ final Provider<McpServerRepository> mcpServerRepositoryProvider =
     ref.watch(secretStoreProvider),
   ),
 );
+
+final Provider<McpConnectionManager> mcpConnectionManagerProvider =
+    Provider<McpConnectionManager>((Ref ref) {
+  final manager = McpConnectionManager(
+    repository: ref.watch(mcpServerRepositoryProvider),
+    registry: ref.watch(toolRegistryProvider),
+  );
+  ref.onDispose(manager.disconnectAll);
+  return manager;
+});
 
 final Provider<ProviderRepository> providerRepositoryProvider =
     Provider<ProviderRepository>(
@@ -294,25 +305,32 @@ void initializeRuntimeResolver({
   _secretStore = secretStore;
 }
 
-/// Creates an SSH runtime from a runtime config.
-SshRuntime _createSshRuntime(RuntimeConfig config) {
+/// Creates an SSH runtime from a runtime config, reading secrets from SecretStore.
+Future<SshRuntime> _createSshRuntime(RuntimeConfig config) async {
   final options = config.options;
   final host = options['host'] as String? ?? '';
   final port = options['port'] as int? ?? 22;
   final username = options['username'] as String? ?? '';
   final remoteRoot = options['remoteRoot'] as String? ?? '~';
 
-  // Secrets are read lazily at connection time.
+  final secrets = _secretStore!;
+  final password = await secrets.read('ssh/${config.id}/password');
+  final privateKey = await secrets.read('ssh/${config.id}/private-key');
+  final passphrase = await secrets.read('ssh/${config.id}/passphrase');
+
   return SshRuntime(
     config: SshConfig(
       id: config.id,
       host: host,
       port: port,
       username: username,
+      password: password,
+      privateKey: privateKey,
+      passphrase: passphrase,
       remoteRoot: remoteRoot,
       label: config.label,
     ),
-    hostKeyStore: SshHostKeyStore(_secretStore!),
+    hostKeyStore: SshHostKeyStore(secrets),
   );
 }
 

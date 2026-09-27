@@ -14,8 +14,12 @@ import '../../app/providers.dart';
 import '../../l10n/l10n.dart';
 import '../../core/model/model_provider.dart';
 import '../../core/model/provider_catalog.dart';
+import '../../data/models.dart';
 import '../../runtime/bridge_runtime.dart';
 import '../../runtime/runtime.dart';
+import '../../storage/mcp_server_repository.dart';
+import 'ssh_settings.dart';
+import 'mcp_settings.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -31,7 +35,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this)
+    _tabController = TabController(length: 5, vsync: this)
       ..addListener(_handleTabChanged);
   }
 
@@ -59,6 +63,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         title: Text(context.l10n.settings),
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           tabs: <Widget>[
             Tab(
               icon: const Icon(Icons.hub_outlined),
@@ -67,6 +72,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             Tab(
               icon: const Icon(Icons.terminal_outlined),
               text: context.l10n.runtime,
+            ),
+            Tab(
+              icon: const Icon(Icons.cloud_outlined),
+              text: 'SSH',
+            ),
+            Tab(
+              icon: const Icon(Icons.extension_outlined),
+              text: 'MCP',
             ),
             Tab(icon: const Icon(Icons.info_outline), text: context.l10n.about),
           ],
@@ -78,7 +91,19 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               icon: const Icon(Icons.add),
               label: Text(context.l10n.provider),
             )
-          : null,
+          : _tabController.index == 2
+              ? FloatingActionButton.extended(
+                  onPressed: () => _addSsh(context, ref),
+                  icon: const Icon(Icons.add),
+                  label: const Text('SSH'),
+                )
+              : _tabController.index == 3
+                  ? FloatingActionButton.extended(
+                      onPressed: () => _addMcp(context, ref),
+                      icon: const Icon(Icons.add),
+                      label: const Text('MCP'),
+                    )
+                  : null,
       body: TabBarView(
         controller: _tabController,
         children: <Widget>[
@@ -134,6 +159,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               ),
             ],
           ),
+          const SshSettingsTab(),
+          const McpSettingsTab(),
           ListView(
             key: const PageStorageKey<String>('settings-about'),
             padding: const EdgeInsets.all(16),
@@ -145,6 +172,29 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         ],
       ),
     );
+  }
+
+  Future<void> _addSsh(BuildContext context, WidgetRef ref) async {
+    final result = await showDialog<RuntimeConfig>(
+      context: context,
+      builder: (_) => const SshConfigDialog(),
+    );
+    if (result == null) return;
+    await ref.read(runtimeConfigRepositoryProvider).upsert(result);
+    ref.invalidate(sshConfigsProvider);
+    ref.invalidate(runtimeConfigsProvider);
+  }
+
+  Future<void> _addMcp(BuildContext context, WidgetRef ref) async {
+    final workspaceId = ref.read(activeWorkspaceProvider);
+    if (workspaceId == null) return;
+    final result = await showDialog<McpServerConfig>(
+      context: context,
+      builder: (_) => McpServerDialog(workspaceId: workspaceId),
+    );
+    if (result == null) return;
+    await ref.read(mcpServerRepositoryProvider).upsert(result);
+    ref.invalidate(mcpServersProvider);
   }
 
   Future<void> _edit(

@@ -4,6 +4,7 @@
 /// Tapping opens the reader; long-press shows a delete confirmation.
 library;
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,47 +21,96 @@ class DocumentsPage extends ConsumerStatefulWidget {
 }
 
 class _DocumentsPageState extends ConsumerState<DocumentsPage> {
+  bool _importing = false;
+
+  Future<void> _importDocument() async {
+    final workspaceId = ref.read(activeWorkspaceProvider);
+    if (workspaceId == null) return;
+
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'epub'],
+    );
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+    if (file.path == null) return;
+
+    setState(() => _importing = true);
+    try {
+      final importService = await ref.read(documentImportServiceProvider.future);
+      await importService.import(DocumentImportRequest(
+        workspaceId: workspaceId,
+        sourcePath: file.path!,
+        displayName: file.name,
+      ));
+      if (mounted) setState(() {}); // Refresh list.
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Import failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final workspaceId = ref.watch(activeWorkspaceProvider);
     final store = ref.watch(documentStoreProvider);
-    if (workspaceId == null) {
-      return const Center(child: Text('Select a workspace first.'));
-    }
-    return FutureBuilder<List<AgentDocument>>(
-      future: store.forWorkspace(workspaceId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final documents = snapshot.data ?? const <AgentDocument>[];
-        if (documents.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.library_books_outlined,
-                    size: 64, color: Theme.of(context).colorScheme.outline),
-                const SizedBox(height: 16),
-                Text('No imported documents.',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Text('Import a PDF or EPUB to get started.',
-                    style: Theme.of(context).textTheme.bodySmall),
-              ],
+    return Scaffold(
+      floatingActionButton: workspaceId != null
+          ? FloatingActionButton.extended(
+              onPressed: _importing ? null : _importDocument,
+              icon: _importing
+                  ? const SizedBox(
+                      width: 16, height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.file_upload_outlined),
+              label: Text(_importing ? 'Importing…' : 'Import'),
+            )
+          : null,
+      body: workspaceId == null
+          ? const Center(child: Text('Select a workspace first.'))
+          : FutureBuilder<List<AgentDocument>>(
+              future: store.forWorkspace(workspaceId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final documents = snapshot.data ?? const <AgentDocument>[];
+                if (documents.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.library_books_outlined,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.outline),
+                        const SizedBox(height: 16),
+                        Text('No imported documents.',
+                            style: Theme.of(context).textTheme.titleMedium),
+                        const SizedBox(height: 8),
+                        Text('Import a PDF or EPUB to get started.',
+                            style: Theme.of(context).textTheme.bodySmall),
+                      ],
+                    ),
+                  );
+                }
+                return RefreshIndicator(
+                  onRefresh: () async => setState(() {}),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 80),
+                    itemCount: documents.length,
+                    itemBuilder: (context, index) => _DocumentTile(
+                      document: documents[index],
+                      store: store,
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        }
-        return RefreshIndicator(
-          onRefresh: () async => setState(() {}),
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: documents.length,
-            itemBuilder: (context, index) =>
-                _DocumentTile(document: documents[index], store: store),
-          ),
-        );
-      },
     );
   }
 }
