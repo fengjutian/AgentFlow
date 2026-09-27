@@ -31,6 +31,18 @@ class ToolRegistry {
     _tools[tool.name] = tool;
   }
 
+  /// Registers a tool only if it doesn't shadow an existing non-MCP tool.
+  ///
+  /// Returns `true` if the tool was registered, `false` if a non-MCP tool with
+  /// that name already exists and the registration was rejected.
+  bool registerSafe(AgentTool tool) {
+    if (_tools.containsKey(tool.name) && !tool.name.startsWith('mcp_')) {
+      return false; // Would shadow a built-in tool — reject.
+    }
+    _tools[tool.name] = tool;
+    return true;
+  }
+
   void registerAll(Iterable<AgentTool> tools) {
     for (final tool in tools) {
       register(tool);

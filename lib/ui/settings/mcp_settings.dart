@@ -1,13 +1,15 @@
 /// MCP server settings tab — add, edit, connect, and delete MCP servers.
 ///
 /// Each MCP server config specifies an endpoint (HTTP) or command (stdio) and
-/// optional auth headers. Connected servers show their discovered tools.
+/// optional auth headers. Connected servers show their discovered tools and
+/// connection status.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../core/mcp/mcp_connection_manager.dart';
 import '../../storage/mcp_server_repository.dart';
 
 /// MCP servers provider for the active workspace.
@@ -68,46 +70,207 @@ class McpSettingsTab extends ConsumerWidget {
             ],
           );
         }
+
+        final manager = ref.watch(mcpConnectionManagerProvider);
+
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
           itemCount: servers.length,
           itemBuilder: (context, i) {
             final server = servers[i];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: Icon(
+            final state = manager.stateFor(server.id);
+            return _buildServerCard(context, ref, server, state, workspaceId);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildServerCard(
+    BuildContext context,
+    WidgetRef ref,
+    McpServerConfig server,
+    McpConnectionState? state,
+    String workspaceId,
+  ) {
+    final status = state?.status ?? McpConnectionStatus.disconnected;
+    final theme = Theme.of(context);
+    final statusColor = _statusColor(status, theme);
+    final statusLabel = _statusLabel(status);
+    final subtitle = server.transport == 'stdio'
+        ? 'stdio · ${server.command}'
+        : '${server.transport.toUpperCase()} · ${server.endpoint}';
+    final tools = state?.tools ?? [];
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          ListTile(
+            leading: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
                   server.enabled ? Icons.extension : Icons.extension_outlined,
                   color: server.enabled
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.outline,
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.outline,
                 ),
-                title: Text(server.name),
-                subtitle: Text(
-                  '${server.transport.toUpperCase()} · ${server.endpoint}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 4),
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: statusColor,
+                  ),
                 ),
-                trailing: PopupMenuButton<String>(
+              ],
+            ),
+            title: Text(server.name),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                if (status == McpConnectionStatus.error && state?.error != null)
+                  Text(
+                    state!.error!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+              ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Chip(
+                  label: Text(statusLabel, style: const TextStyle(fontSize: 11)),
+                  backgroundColor: statusColor.withValues(alpha: 0.15),
+                  side: BorderSide(color: statusColor, width: 0.5),
+                  padding: EdgeInsets.zero,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+                PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert),
                   onSelected: (value) async {
                     if (value == 'edit') {
                       await _editServer(context, ref, server, workspaceId);
+                    } else if (value == 'connect') {
+                      final manager = ref.read(mcpConnectionManagerProvider);
+                      await manager.connect(server.id);
+                      ref.invalidate(mcpServersProvider);
+                    } else if (value == 'disconnect') {
+                      final manager = ref.read(mcpConnectionManagerProvider);
+                      await manager.disconnect(server.id);
+                      ref.invalidate(mcpServersProvider);
+                    } else if (value == 'refresh') {
+                      final manager = ref.read(mcpConnectionManagerProvider);
+                      try {
+                        await manager.refreshTools(server.id);
+                      } catch (_) {}
+                      ref.invalidate(mcpServersProvider);
                     } else if (value == 'delete') {
                       await _deleteServer(context, ref, server);
                     }
                   },
                   itemBuilder: (_) => [
+                    if (status != McpConnectionStatus.connected)
+                      const PopupMenuItem(value: 'connect', child: Text('Connect')),
+                    if (status == McpConnectionStatus.connected) ...[
+                      const PopupMenuItem(
+                          value: 'disconnect', child: Text('Disconnect')),
+                      const PopupMenuItem(
+                          value: 'refresh', child: Text('Refresh tools')),
+                    ],
                     const PopupMenuItem(value: 'edit', child: Text('Edit')),
                     const PopupMenuItem(value: 'delete', child: Text('Delete')),
                   ],
                 ),
+              ],
+            ),
+          ),
+          // Show discovered tools when connected.
+          if (status == McpConnectionStatus.connected && tools.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                border: Border(
+                  top: BorderSide(color: theme.dividerColor, width: 0.5),
+                ),
               ),
-            );
-          },
-        );
-      },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${tools.length} tool${tools.length == 1 ? '' : 's'} available',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: tools.map((tool) {
+                      return Tooltip(
+                        message: tool.description,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+                          ),
+                          child: Text(
+                            tool.name,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
+  }
+
+  Color _statusColor(McpConnectionStatus status, ThemeData theme) {
+    switch (status) {
+      case McpConnectionStatus.connected:
+        return Colors.green;
+      case McpConnectionStatus.connecting:
+        return Colors.orange;
+      case McpConnectionStatus.error:
+        return theme.colorScheme.error;
+      case McpConnectionStatus.disconnected:
+        return theme.colorScheme.outline;
+    }
+  }
+
+  String _statusLabel(McpConnectionStatus status) {
+    switch (status) {
+      case McpConnectionStatus.connected:
+        return 'Connected';
+      case McpConnectionStatus.connecting:
+        return 'Connecting';
+      case McpConnectionStatus.error:
+        return 'Error';
+      case McpConnectionStatus.disconnected:
+        return 'Disconnected';
+    }
   }
 
   Future<void> _editServer(
@@ -147,6 +310,7 @@ class McpSettingsTab extends ConsumerWidget {
     );
     if (confirmed != true) return;
     await ref.read(mcpServerRepositoryProvider).delete(server.id);
+    await ref.read(mcpConnectionManagerProvider).onServerDeleted(server.id);
     ref.invalidate(mcpServersProvider);
   }
 }
@@ -170,6 +334,8 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _name;
   late final TextEditingController _endpoint;
+  late final TextEditingController _command;
+  late final TextEditingController _arguments;
   late final TextEditingController _authHeader;
   late String _transport;
   bool _enabled = true;
@@ -181,6 +347,10 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
     final c = widget.existing;
     _name = TextEditingController(text: c?.name ?? '');
     _endpoint = TextEditingController(text: c?.endpoint ?? '');
+    _command = TextEditingController(text: c?.command ?? '');
+    _arguments = TextEditingController(
+      text: (c?.arguments ?? const <String>[]).join(' '),
+    );
     _authHeader = TextEditingController(
       text: c?.headers['Authorization'] ?? '',
     );
@@ -193,6 +363,8 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
   void dispose() {
     _name.dispose();
     _endpoint.dispose();
+    _command.dispose();
+    _arguments.dispose();
     _authHeader.dispose();
     super.dispose();
   }
@@ -206,12 +378,18 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
       headers['Authorization'] = _authHeader.text;
     }
 
+    final args = _arguments.text.trim().isEmpty
+        ? <String>[]
+        : _arguments.text.trim().split(RegExp(r'\s+'));
+
     final config = McpServerConfig(
       id: existing?.id ?? newId(),
       workspaceId: widget.workspaceId,
       name: _name.text.trim(),
       transport: _transport,
-      endpoint: _endpoint.text.trim(),
+      endpoint: _transport == 'http' ? _endpoint.text.trim() : '',
+      command: _transport == 'stdio' ? _command.text.trim() : '',
+      arguments: _transport == 'stdio' ? args : const <String>[],
       headers: headers,
       enabled: _enabled,
       autoConnect: _autoConnect,
@@ -267,6 +445,27 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
                             ? 'Required'
                             : null,
                   ),
+                if (_transport == 'stdio') ...[
+                  TextFormField(
+                    controller: _command,
+                    decoration: const InputDecoration(
+                      labelText: 'Command',
+                      hintText: 'npx',
+                    ),
+                    validator: (v) =>
+                        _transport == 'stdio' && (v == null || v.trim().isEmpty)
+                            ? 'Required'
+                            : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _arguments,
+                    decoration: const InputDecoration(
+                      labelText: 'Arguments (space-separated)',
+                      hintText: '-y @modelcontextprotocol/server-name',
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _authHeader,

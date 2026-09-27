@@ -59,6 +59,29 @@ class ApprovalCard extends StatelessWidget {
                     ).textTheme.titleSmall?.copyWith(color: accent),
                   ),
                 ),
+                if (request.runtimeLabel != null &&
+                    request.runtimeLabel!.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: scheme.primaryContainer,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.cloud_outlined, size: 12, color: scheme.onPrimaryContainer),
+                        const SizedBox(width: 4),
+                        Text(
+                          request.runtimeLabel!,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: scheme.onPrimaryContainer,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 _RiskChip(risk: request.risk),
               ],
             ),

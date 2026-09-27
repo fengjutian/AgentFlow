@@ -367,9 +367,19 @@ class SshRuntime implements Runtime {
   }
 
   /// Resolves a relative path against the remote root, preventing escape.
+  ///
+  /// Rejects paths containing `..` components that would traverse above the
+  /// remote root directory. Absolute paths are only allowed if they start with
+  /// the configured remote root.
   String resolvePath(String path) {
+    // Reject explicit escape attempts via path components.
+    final parts = path.split('/');
+    if (parts.any((p) => p == '..')) {
+      throw ArgumentError('Path contains ".." which is not allowed: $path');
+    }
+
     if (path.startsWith('/')) {
-      if (!path.startsWith(config.remoteRoot) && config.remoteRoot != '~') {
+      if (config.remoteRoot != '~' && !path.startsWith(config.remoteRoot)) {
         throw ArgumentError('Path escapes remote root: $path');
       }
       return path;

@@ -191,6 +191,7 @@ class AgentEngine {
             sink: sink,
             setPhase: setPhase,
             isCancelled: isCancelled,
+            runtimeLabel: request.runtime.label,
           );
           messages.add(ChatMessage.fromToolResult(result));
           setPhase(AgentPhase.observing);
@@ -215,6 +216,7 @@ class AgentEngine {
     required StreamController<AgentEvent> sink,
     required void Function(AgentPhase) setPhase,
     required bool Function() isCancelled,
+    String? runtimeLabel,
   }) async {
     final tool = registry.lookup(call.name);
     final label = tool?.describeCall(call.arguments) ?? call.name;
@@ -277,6 +279,7 @@ class AgentEngine {
           summary: label,
           arguments: call.arguments,
           previewData: preview?.data,
+          runtimeLabel: runtimeLabel,
         );
         if (decision == ApprovalDecision.deny) {
           result = ToolResult(

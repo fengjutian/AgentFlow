@@ -22,6 +22,7 @@ class ApprovalRequest {
     required this.risk,
     required this.arguments,
     this.previewData,
+    this.runtimeLabel,
   });
 
   final String id;
@@ -30,6 +31,10 @@ class ApprovalRequest {
   final ToolRisk risk;
   final Map<String, dynamic> arguments;
   final Map<String, dynamic>? previewData;
+
+  /// Human label for the runtime context (e.g. `user@host` for SSH).
+  /// When present, shown in the UI to clarify where the action runs.
+  final String? runtimeLabel;
 
   bool get isStrong => risk == ToolRisk.strong;
 }
@@ -75,6 +80,7 @@ class ApprovalManager {
     required String summary,
     Map<String, dynamic> arguments = const <String, dynamic>{},
     Map<String, dynamic>? previewData,
+    String? runtimeLabel,
   }) async {
     if (risk == ToolRisk.auto || _autoApprove) {
       return ApprovalDecision.allow;
@@ -90,6 +96,7 @@ class ApprovalManager {
       risk: risk,
       arguments: arguments,
       previewData: previewData,
+      runtimeLabel: runtimeLabel,
     );
 
     final resolver = _resolver;

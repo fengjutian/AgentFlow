@@ -135,6 +135,24 @@ class McpStdioClient {
     _initialized = false;
   }
 
+  /// Sends a `$/cancelRequest` notification to cancel an in-flight request.
+  ///
+  /// The MCP server may or may not honor the cancellation. This is a
+  /// best-effort notification, not a guaranteed abort.
+  Future<void> cancelRequest(int requestId) async {
+    await _sendNotification(JsonRpcNotification(
+      method: r'$/cancelRequest',
+      params: <String, dynamic>{'id': requestId},
+    ));
+    // Also remove the pending completer so it doesn't block forever.
+    final completer = _pending.remove(requestId);
+    if (completer != null && !completer.isCompleted) {
+      completer.completeError(
+        StateError('Request $requestId cancelled by client.'),
+      );
+    }
+  }
+
   void _ensureInitialized() {
     if (!_initialized) {
       throw StateError('MCP stdio client not initialized. Call initialize() first.');

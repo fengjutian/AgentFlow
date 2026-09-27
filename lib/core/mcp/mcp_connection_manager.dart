@@ -128,10 +128,17 @@ class McpConnectionManager {
   /// Discovers tools from a connected server.
   Future<List<McpTool>> refreshTools(String serverId) async {
     final state = _connections[serverId];
-    if (state == null || state.client == null) {
+    if (state == null) {
+      throw StateError('Server $serverId is not known.');
+    }
+    final List<McpTool> tools;
+    if (state.stdioClient != null) {
+      tools = await state.stdioClient!.listTools();
+    } else if (state.client != null) {
+      tools = await state.client!.listTools();
+    } else {
       throw StateError('Server $serverId is not connected.');
     }
-    final tools = await state.client!.listTools();
     state.tools = tools;
     _registerTools(state);
     return tools;
@@ -360,7 +367,8 @@ class McpConnectionManager {
       callTool,
     );
     for (final adapter in adapters) {
-      registry.register(adapter);
+      // Never let MCP tools override built-in tools (plan §F-03).
+      registry.registerSafe(adapter);
     }
   }
 

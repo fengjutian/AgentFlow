@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:agentflow/core/log_sanitizer.dart';
-import 'package:agentflow/core/mcp/mcp_client.dart';
 import 'package:agentflow/core/mcp/mcp_stdio_client.dart';
 import 'package:agentflow/runtime/runtime.dart';
 import 'package:flutter_test/flutter_test.dart';
