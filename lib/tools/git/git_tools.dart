@@ -6,7 +6,10 @@
 /// the design doc forbids automatic git push (§34).
 library;
 
+import 'dart:io';
+
 import '../../core/message.dart';
+import '../../runtime/runtime.dart';
 import '../agent_tool.dart';
 import '../tool_args.dart';
 
@@ -17,8 +20,10 @@ abstract class _GitTool extends AgentTool {
     ToolContext context, {
     bool isErrorOnNonZero = true,
   }) async {
+    final windowsLocal =
+        context.runtime.kind == RuntimeKind.local && Platform.isWindows;
     final result = await context.runtime.execute(
-      'git ${args.map(_shellQuote).join(' ')}',
+      'git ${args.map((arg) => _shellQuote(arg, windows: windowsLocal)).join(' ')}',
       workingDirectory: context.workingDirectory,
     );
     final output = result.combinedOutput;
@@ -36,16 +41,13 @@ abstract class _GitTool extends AgentTool {
   }
 }
 
-String _shellQuote(String value) {
+String _shellQuote(String value, {required bool windows}) {
   if (RegExp(r'^[A-Za-z0-9_./:@=+-]+$').hasMatch(value)) return value;
-  // Double-quoted arguments work in Android/Unix shells and cmd.exe. Escape
-  // expansion characters for both families; Git receives the original value.
-  final escaped = value
-      .replaceAll(r'\', r'\\')
-      .replaceAll('"', r'\"')
-      .replaceAll(r'$', r'\$')
-      .replaceAll('`', r'\`');
-  return '"$escaped"';
+  if (windows) {
+    final escaped = value.replaceAll('%', '%%').replaceAll('"', r'\"');
+    return '"$escaped"';
+  }
+  return "'${value.replaceAll("'", "'\\''")}'";
 }
 
 class GitStatusTool extends _GitTool {
@@ -115,7 +117,8 @@ class GitDiffTool extends _GitTool {
     final path = optionalString(arguments, 'path');
     if (path.isNotEmpty) args.addAll(<String>['--', path]);
     final result = await _runGit(args, context, isErrorOnNonZero: true);
-    if (result.content.trim().isEmpty) {
+    if ((result.data?['stdout'] as String? ?? '').trim().isEmpty &&
+        !result.isError) {
       return ToolResult(
         toolCallId: '',
         name: name,
@@ -214,14 +217,14 @@ class GitBranchesTool extends _GitTool {
   ) async {
     final result = await _runGit(<String>[
       'branch',
-      '--format=%(HEAD)%x1f%(refname:short)',
+      '--format=%(HEAD)|%(refname:short)',
     ], context);
     if (result.isError) return result;
     final branches = (result.data!['stdout'] as String)
         .split('\n')
         .where((line) => line.trim().isNotEmpty)
         .map((line) {
-          final fields = line.split('\x1f');
+          final fields = line.split('|');
           return <String, dynamic>{
             'name': fields.length > 1 ? fields[1] : line.trim(),
             'current': fields.isNotEmpty && fields[0].trim() == '*',
@@ -355,12 +358,20 @@ class GitCommitTool extends _GitTool {
       final staged = await _runGit(<String>['add', '-A'], context);
       if (staged.isError) return staged;
     }
-    final commit = await _runGit(
-      <String>['commit', '-m', message],
-      context,
-      isErrorOnNonZero: true,
-    );
-    return commit;
+    final messagePath =
+        '.agentflow-commit-message-${DateTime.now().microsecondsSinceEpoch}.txt';
+    try {
+      await context.runtime.writeFile(messagePath, '$message\n');
+      return await _runGit(
+        <String>['commit', '-F', messagePath],
+        context,
+        isErrorOnNonZero: true,
+      );
+    } finally {
+      if (await context.runtime.fileExists(messagePath)) {
+        await context.runtime.deleteFile(messagePath);
+      }
+    }
   }
 }
 
