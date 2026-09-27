@@ -75,10 +75,14 @@ class DriftDocumentStore implements DocumentStore {
         );
       });
     }
+    // Populate FTS index for this document.
+    await _reindexFts(document.id, sections);
   });
 
   @override
   Future<void> delete(String id) => _db.transaction(() async {
+    // Remove FTS entries first.
+    await _removeFtsEntries(id);
     // Keep cleanup deterministic even when a SQLite connection has foreign-key
     // enforcement disabled (as some in-memory/test connections do).
     await (_db.delete(
@@ -88,6 +92,136 @@ class DriftDocumentStore implements DocumentStore {
       _db.documents,
     )..where((table) => table.id.equals(id))).go();
   });
+
+  @override
+  Future<List<DocumentSearchHit>> search(
+    String documentId,
+    String query, {
+    int limit = 10,
+  }) async {
+    // Try FTS5 first; fall back to in-memory substring search.
+    if (await _ftsAvailable()) {
+      return _ftsSearch(documentId, query, limit: limit);
+    }
+    return _substringSearch(documentId, query, limit: limit);
+  }
+
+  // ---------------------------------------------------------------------------
+  // FTS helpers
+  // ---------------------------------------------------------------------------
+
+  bool? _ftsAvailableCache;
+
+  Future<bool> _ftsAvailable() async {
+    if (_ftsAvailableCache != null) return _ftsAvailableCache!;
+    try {
+      await _db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type='table' "
+            "AND name='document_sections_fts'",
+            readsFrom: const <ResultSetImplementation<dynamic, dynamic>>{},
+          )
+          .get()
+          .then((rows) => _ftsAvailableCache = rows.isNotEmpty);
+    } catch (_) {
+      _ftsAvailableCache = false;
+    }
+    return _ftsAvailableCache!;
+  }
+
+  Future<void> _reindexFts(
+    String documentId,
+    List<DocumentSection> sections,
+  ) async {
+    if (!await _ftsAvailable()) return;
+    // Delete old FTS entries for this document.
+    await _removeFtsEntries(documentId);
+    // Insert new entries using the content= rebuild command per section.
+    for (final section in sections) {
+      await _db.customStatement(
+        "INSERT INTO document_sections_fts(document_sections_fts, rowid, "
+        'plain_text) VALUES(\'rebuild\', '
+        "(SELECT rowid FROM document_sections WHERE id = "
+        "'${_escapeSql(section.id)}'), "
+        "'${_escapeSql(section.plainText)}')",
+      );
+    }
+  }
+
+  Future<void> _removeFtsEntries(String documentId) async {
+    if (!await _ftsAvailable()) return;
+    try {
+      await _db.customStatement(
+        "DELETE FROM document_sections_fts WHERE rowid IN ("
+        'SELECT ds.rowid FROM document_sections ds WHERE ds.id = '
+        "'${_escapeSql(documentId)}')",
+      );
+    } catch (_) {
+      // FTS table may not exist or section may have no entries.
+    }
+  }
+
+  Future<List<DocumentSearchHit>> _ftsSearch(
+    String documentId,
+    String query, {
+    int limit = 10,
+  }) async {
+    final escaped = _escapeSql(query).replaceAll('"', '""');
+    final rows = await _db
+        .customSelect(
+          'SELECT ds.section_index, ds.title, ds.locator, '
+          "snippet(document_sections_fts, 0, '<b>', '</b>', '...', 32) "
+          'AS snippet '
+          'FROM document_sections_fts fts '
+          'JOIN document_sections ds ON ds.rowid = fts.rowid '
+          "WHERE ds.document_id = '${_escapeSql(documentId)}' "
+          'AND document_sections_fts MATCH \'\"$escaped\"\' '
+          'ORDER BY rank '
+          'LIMIT $limit',
+          readsFrom: <Table>{_db.documentSections},
+        )
+        .get();
+    return rows
+        .map(
+          (row) => DocumentSearchHit(
+            index: row.read<int>('section_index'),
+            title: row.read<String>('title'),
+            locator: row.read<String>('locator'),
+            snippet: row.read<String>('snippet'),
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  Future<List<DocumentSearchHit>> _substringSearch(
+    String documentId,
+    String query, {
+    int limit = 10,
+  }) async {
+    final sections = await this.sections(documentId);
+    final needle = query.toLowerCase();
+    final hits = <DocumentSearchHit>[];
+    for (final section in sections) {
+      final lower = section.plainText.toLowerCase();
+      final offset = lower.indexOf(needle);
+      if (offset < 0) continue;
+      final start = (offset - 100).clamp(0, section.plainText.length);
+      final end = (offset + query.length + 180).clamp(
+        start,
+        section.plainText.length,
+      );
+      hits.add(
+        DocumentSearchHit(
+          index: section.index,
+          title: section.title,
+          locator: section.locator,
+          snippet: section.plainText.substring(start, end).trim(),
+        ),
+      );
+      if (hits.length >= limit) break;
+    }
+    return hits;
+  }
 
   DocumentsCompanion _documentToCompanion(AgentDocument document) =>
       DocumentsCompanion.insert(

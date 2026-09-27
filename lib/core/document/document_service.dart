@@ -19,6 +19,28 @@ abstract class DocumentStore {
     List<DocumentSection> sections,
   );
   Future<void> delete(String id);
+
+  /// Full-text search across document sections. Returns matching sections with
+  /// snippets. Falls back to substring matching when FTS is unavailable.
+  Future<List<DocumentSearchHit>> search(
+    String documentId,
+    String query, {
+    int limit = 10,
+  });
+}
+
+class DocumentSearchHit {
+  const DocumentSearchHit({
+    required this.index,
+    required this.title,
+    required this.locator,
+    required this.snippet,
+  });
+
+  final int index;
+  final String title;
+  final String locator;
+  final String snippet;
 }
 
 typedef DocumentIdGenerator = String Function();

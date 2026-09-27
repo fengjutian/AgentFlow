@@ -202,11 +202,14 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.connect(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (Migrator m) => m.createAll(),
+    onCreate: (Migrator m) async {
+      await m.createAll();
+      await _createFtsTable();
+    },
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
         await m.createTable(runtimeConfigs);
@@ -214,6 +217,16 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(documentSections);
         await m.createTable(mcpServers);
       }
+      if (from < 3) {
+        await _createFtsTable();
+      }
     },
   );
+
+  Future<void> _createFtsTable() async {
+    await customStatement(
+      'CREATE VIRTUAL TABLE IF NOT EXISTS document_sections_fts '
+      'USING fts5(plain_text, content=document_sections, content_rowid=rowid)',
+    );
+  }
 }
