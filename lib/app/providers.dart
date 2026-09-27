@@ -16,14 +16,17 @@ import '../core/memory/memory_manager.dart';
 import '../core/model/model_provider.dart';
 import '../core/model/provider_factory.dart';
 import '../core/context/context_manager.dart';
+import '../core/document/document_service.dart';
 import '../data/models.dart';
 import '../runtime/bridge_runtime.dart';
 import '../runtime/local_runtime.dart';
 import '../runtime/runtime.dart';
 import '../storage/database.dart';
+import '../storage/document_repository.dart';
 import '../storage/repositories.dart';
 import '../storage/secret_store.dart';
 import '../tools/default_tools.dart';
+import '../tools/document/document_tools.dart';
 import '../tools/tool_registry.dart';
 
 const Uuid _uuid = Uuid();
@@ -65,6 +68,10 @@ final Provider<RuntimeConfigRepository> runtimeConfigRepositoryProvider =
       (Ref ref) => RuntimeConfigRepository(ref.watch(databaseProvider)),
     );
 
+final Provider<DocumentStore> documentStoreProvider = Provider<DocumentStore>(
+  (Ref ref) => DriftDocumentStore(ref.watch(databaseProvider)),
+);
+
 final Provider<SecretStore> secretStoreProvider = Provider<SecretStore>(
   (Ref ref) => PlatformSecretStore(),
 );
@@ -96,9 +103,13 @@ final Provider<ModelProviderFactory> modelProviderFactoryProvider =
       return factory;
     });
 
-final Provider<ToolRegistry> toolRegistryProvider = Provider<ToolRegistry>(
-  (Ref ref) => defaultToolRegistry(),
-);
+final Provider<ToolRegistry> toolRegistryProvider = Provider<ToolRegistry>((
+  Ref ref,
+) {
+  final registry = defaultToolRegistry();
+  registry.registerAll(documentTools(ref.watch(documentStoreProvider)));
+  return registry;
+});
 
 final Provider<AgentEngine> agentEngineProvider = Provider<AgentEngine>(
   (Ref ref) => AgentEngine(

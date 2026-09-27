@@ -60,8 +60,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         bottom: TabBar(
           controller: _tabController,
           tabs: <Widget>[
-            Tab(icon: const Icon(Icons.hub_outlined), text: context.l10n.modelProviders),
-            Tab(icon: const Icon(Icons.terminal_outlined), text: context.l10n.runtime),
+            Tab(
+              icon: const Icon(Icons.hub_outlined),
+              text: context.l10n.provider,
+            ),
+            Tab(
+              icon: const Icon(Icons.terminal_outlined),
+              text: context.l10n.runtime,
+            ),
             Tab(icon: const Icon(Icons.info_outline), text: context.l10n.about),
           ],
         ),

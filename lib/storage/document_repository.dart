@@ -78,8 +78,14 @@ class DriftDocumentStore implements DocumentStore {
   });
 
   @override
-  Future<void> delete(String id) =>
-      (_db.delete(_db.documents)..where((table) => table.id.equals(id))).go();
+  Future<void> delete(String id) => _db.transaction(() async {
+    // Keep cleanup deterministic even when a SQLite connection has foreign-key
+    // enforcement disabled (as some in-memory/test connections do).
+    await (_db.delete(
+      _db.documentSections,
+    )..where((table) => table.documentId.equals(id))).go();
+    await (_db.delete(_db.documents)..where((table) => table.id.equals(id))).go();
+  });
 
   DocumentsCompanion _documentToCompanion(AgentDocument document) =>
       DocumentsCompanion.insert(
