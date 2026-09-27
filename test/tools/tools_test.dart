@@ -183,6 +183,132 @@ void main() {
     });
   });
 
+  group('apply_patch', () {
+    test('previews and atomically applies multiple exact replacements', () async {
+      final tool = ApplyPatchTool();
+      final preview = await tool.preview(<String, dynamic>{
+        'changes': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'path': 'hello.txt',
+            'old_text': 'second line',
+            'new_text': 'updated line',
+          },
+          <String, dynamic>{
+            'path': 'lib/main.dart',
+            'old_text': 'print("hi")',
+            'new_text': 'print("updated")',
+          },
+        ],
+      }, ctx);
+
+      expect(preview.data['diffs'], hasLength(2));
+      expect(
+        File(
+          '${tmp.path}${Platform.pathSeparator}hello.txt',
+        ).readAsStringSync(),
+        contains('second line'),
+      );
+
+      final result = await tool.executePrepared(
+        const <String, dynamic>{},
+        ctx,
+        preview,
+      );
+      expect(result.content, contains('Patched 2 files'));
+      expect(
+        File(
+          '${tmp.path}${Platform.pathSeparator}hello.txt',
+        ).readAsStringSync(),
+        contains('updated line'),
+      );
+      expect(
+        File(
+          '${tmp.path}${Platform.pathSeparator}lib${Platform.pathSeparator}main.dart',
+        ).readAsStringSync(),
+        contains('print("updated")'),
+      );
+
+      await fileChangeJournal.undo(result.data!['transactionId'] as String);
+      expect(
+        File(
+          '${tmp.path}${Platform.pathSeparator}hello.txt',
+        ).readAsStringSync(),
+        contains('second line'),
+      );
+      expect(
+        File(
+          '${tmp.path}${Platform.pathSeparator}lib${Platform.pathSeparator}main.dart',
+        ).readAsStringSync(),
+        contains('print("hi")'),
+      );
+    });
+
+    test('rejects ambiguous old text unless replace_all is explicit', () async {
+      File(
+        '${tmp.path}${Platform.pathSeparator}hello.txt',
+      ).writeAsStringSync('same same');
+      final tool = ApplyPatchTool();
+
+      await expectLater(
+        tool.preview(<String, dynamic>{
+          'changes': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'path': 'hello.txt',
+              'old_text': 'same',
+              'new_text': 'new',
+            },
+          ],
+        }, ctx),
+        throwsA(isA<ToolExecutionException>()),
+      );
+
+      final result = await tool.execute(<String, dynamic>{
+        'changes': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'path': 'hello.txt',
+            'old_text': 'same',
+            'new_text': 'new',
+            'replace_all': true,
+          },
+        ],
+      }, ctx);
+      expect(result.isError, isFalse);
+      expect(
+        File(
+          '${tmp.path}${Platform.pathSeparator}hello.txt',
+        ).readAsStringSync(),
+        'new new',
+      );
+    });
+
+    test('refuses a stale preview without modifying the file', () async {
+      final tool = ApplyPatchTool();
+      final preview = await tool.preview(<String, dynamic>{
+        'changes': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'path': 'hello.txt',
+            'old_text': 'second line',
+            'new_text': 'agent line',
+          },
+        ],
+      }, ctx);
+      File(
+        '${tmp.path}${Platform.pathSeparator}hello.txt',
+      ).writeAsStringSync('manual edit\n');
+
+      await expectLater(
+        tool.executePrepared(const <String, dynamic>{}, ctx, preview),
+        throwsA(isA<ToolExecutionException>()),
+      );
+      expect(
+        File(
+          '${tmp.path}${Platform.pathSeparator}hello.txt',
+        ).readAsStringSync(),
+        'manual edit\n',
+      );
+    });
+  });
+
   group('search_code', () {
     test('finds matches and respects fileGlob', () async {
       final result = await SearchCodeTool().execute(<String, dynamic>{
