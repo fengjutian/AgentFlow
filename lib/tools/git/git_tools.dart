@@ -1,4 +1,4 @@
-/// Git tools: git_status, git_diff, git_commit.
+/// Git inspection and local workflow tools.
 ///
 /// Implemented on top of the Git CLI through the workspace [Runtime] (design doc
 /// §33 lists "Git CLI / JGit fallback"). Read-only inspection is auto-approved;
@@ -18,7 +18,7 @@ abstract class _GitTool extends AgentTool {
     bool isErrorOnNonZero = true,
   }) async {
     final result = await context.runtime.execute(
-      'git ${args.join(' ')}',
+      'git ${args.map(_shellQuote).join(' ')}',
       workingDirectory: context.workingDirectory,
     );
     final output = result.combinedOutput;
@@ -36,6 +36,18 @@ abstract class _GitTool extends AgentTool {
   }
 }
 
+String _shellQuote(String value) {
+  if (RegExp(r'^[A-Za-z0-9_./:@=+-]+$').hasMatch(value)) return value;
+  // Double-quoted arguments work in Android/Unix shells and cmd.exe. Escape
+  // expansion characters for both families; Git receives the original value.
+  final escaped = value
+      .replaceAll(r'\', r'\\')
+      .replaceAll('"', r'\"')
+      .replaceAll(r'$', r'\$')
+      .replaceAll('`', r'\`');
+  return '"$escaped"';
+}
+
 class GitStatusTool extends _GitTool {
   @override
   String get name => 'git_status';
@@ -50,17 +62,19 @@ class GitStatusTool extends _GitTool {
 
   @override
   Map<String, dynamic> get inputSchema => <String, dynamic>{
-        'type': 'object',
-        'properties': <String, dynamic>{},
-      };
+    'type': 'object',
+    'properties': <String, dynamic>{},
+  };
 
   @override
   Future<ToolResult> execute(
     Map<String, dynamic> arguments,
     ToolContext context,
-  ) =>
-      _runGit(<String>['status', '--porcelain', '-b'], context,
-          isErrorOnNonZero: true);
+  ) => _runGit(
+    <String>['status', '--porcelain', '-b'],
+    context,
+    isErrorOnNonZero: true,
+  );
 }
 
 class GitDiffTool extends _GitTool {
@@ -77,12 +91,12 @@ class GitDiffTool extends _GitTool {
 
   @override
   Map<String, dynamic> get inputSchema => <String, dynamic>{
-        'type': 'object',
-        'properties': <String, dynamic>{
-          'path': <String, dynamic>{'type': 'string'},
-          'staged': <String, dynamic>{'type': 'boolean'},
-        },
-      };
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'path': <String, dynamic>{'type': 'string'},
+      'staged': <String, dynamic>{'type': 'boolean'},
+    },
+  };
 
   @override
   String describeCall(Map<String, dynamic> arguments) {
@@ -99,7 +113,7 @@ class GitDiffTool extends _GitTool {
     final args = <String>['diff'];
     if (optionalBool(arguments, 'staged')) args.add('--cached');
     final path = optionalString(arguments, 'path');
-    if (path.isNotEmpty) args.add(path);
+    if (path.isNotEmpty) args.addAll(<String>['--', path]);
     final result = await _runGit(args, context, isErrorOnNonZero: true);
     if (result.content.trim().isEmpty) {
       return ToolResult(
@@ -113,6 +127,195 @@ class GitDiffTool extends _GitTool {
   }
 }
 
+class GitLogTool extends _GitTool {
+  @override
+  String get name => 'git_log';
+
+  @override
+  ToolRisk get risk => ToolRisk.auto;
+
+  @override
+  String get description =>
+      'Show recent commits with hash, author, date and subject. Optionally '
+      'scope history to a path.';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'limit': <String, dynamic>{
+        'type': 'integer',
+        'minimum': 1,
+        'maximum': 100,
+      },
+      'path': <String, dynamic>{'type': 'string'},
+    },
+  };
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) async {
+    final limit = optionalInt(arguments, 'limit', fallback: 10).clamp(1, 100);
+    final args = <String>[
+      'log',
+      '-$limit',
+      '--date=short',
+      '--pretty=format:%h%x1f%an%x1f%ad%x1f%s',
+    ];
+    final path = optionalString(arguments, 'path');
+    if (path.isNotEmpty) args.addAll(<String>['--', path]);
+    final result = await _runGit(args, context);
+    if (result.isError) return result;
+    final commits = (result.data!['stdout'] as String)
+        .split('\n')
+        .where((line) => line.trim().isNotEmpty)
+        .map((line) {
+          final fields = line.split('\x1f');
+          return <String, dynamic>{
+            'hash': fields.isNotEmpty ? fields[0] : '',
+            'author': fields.length > 1 ? fields[1] : '',
+            'date': fields.length > 2 ? fields[2] : '',
+            'subject': fields.length > 3 ? fields.sublist(3).join('\x1f') : '',
+          };
+        })
+        .toList(growable: false);
+    return ToolResult(
+      toolCallId: '',
+      name: name,
+      content: result.content,
+      data: <String, dynamic>{...result.data!, 'commits': commits},
+    );
+  }
+}
+
+class GitBranchesTool extends _GitTool {
+  @override
+  String get name => 'git_branches';
+
+  @override
+  ToolRisk get risk => ToolRisk.auto;
+
+  @override
+  String get description =>
+      'List local branches and identify the currently checked out branch.';
+
+  @override
+  Map<String, dynamic> get inputSchema => const <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{},
+  };
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) async {
+    final result = await _runGit(<String>[
+      'branch',
+      '--format=%(HEAD)%x1f%(refname:short)',
+    ], context);
+    if (result.isError) return result;
+    final branches = (result.data!['stdout'] as String)
+        .split('\n')
+        .where((line) => line.trim().isNotEmpty)
+        .map((line) {
+          final fields = line.split('\x1f');
+          return <String, dynamic>{
+            'name': fields.length > 1 ? fields[1] : line.trim(),
+            'current': fields.isNotEmpty && fields[0].trim() == '*',
+          };
+        })
+        .toList(growable: false);
+    return ToolResult(
+      toolCallId: '',
+      name: name,
+      content: result.content,
+      data: <String, dynamic>{...result.data!, 'branches': branches},
+    );
+  }
+}
+
+class GitAddTool extends _GitTool {
+  @override
+  String get name => 'git_add';
+
+  @override
+  ToolRisk get risk => ToolRisk.confirm;
+
+  @override
+  String get description =>
+      'Stage selected paths, or all workspace changes when all=true. Requires '
+      'approval and does not commit or push.';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'paths': <String, dynamic>{
+        'type': 'array',
+        'items': <String, dynamic>{'type': 'string'},
+      },
+      'all': <String, dynamic>{'type': 'boolean'},
+    },
+  };
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) async {
+    final all = optionalBool(arguments, 'all');
+    final paths = _stringList(arguments, 'paths');
+    if (!all && paths.isEmpty) {
+      throw const ToolExecutionException(
+        'git_add requires at least one path or all=true.',
+      );
+    }
+    return _runGit(
+      all ? <String>['add', '-A'] : <String>['add', '--', ...paths],
+      context,
+    );
+  }
+}
+
+class GitUnstageTool extends _GitTool {
+  @override
+  String get name => 'git_unstage';
+
+  @override
+  ToolRisk get risk => ToolRisk.confirm;
+
+  @override
+  String get description =>
+      'Remove selected paths from the Git staging area without changing working '
+      'tree files. Use all=true to unstage everything.';
+
+  @override
+  Map<String, dynamic> get inputSchema => GitAddTool().inputSchema;
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) async {
+    final all = optionalBool(arguments, 'all');
+    final paths = _stringList(arguments, 'paths');
+    if (!all && paths.isEmpty) {
+      throw const ToolExecutionException(
+        'git_unstage requires at least one path or all=true.',
+      );
+    }
+    return _runGit(
+      all
+          ? <String>['reset', '--mixed', 'HEAD']
+          : <String>['reset', '--mixed', 'HEAD', '--', ...paths],
+      context,
+    );
+  }
+}
+
 class GitCommitTool extends _GitTool {
   @override
   String get name => 'git_commit';
@@ -122,20 +325,21 @@ class GitCommitTool extends _GitTool {
 
   @override
   String get description =>
-      'Stage all changes and create a commit with the given message. Runs '
-      '"git add -A" then "git commit -m". Requires user approval. Never pushes.';
+      'Create a local commit from staged changes. Set stage_all=true to stage '
+      'the entire workspace first. Requires approval and never pushes.';
 
   @override
   Map<String, dynamic> get inputSchema => <String, dynamic>{
-        'type': 'object',
-        'properties': <String, dynamic>{
-          'message': <String, dynamic>{
-            'type': 'string',
-            'description': 'Commit message.',
-          },
-        },
-        'required': <String>['message'],
-      };
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'message': <String, dynamic>{
+        'type': 'string',
+        'description': 'Commit message.',
+      },
+      'stage_all': <String, dynamic>{'type': 'boolean'},
+    },
+    'required': <String>['message'],
+  };
 
   @override
   String describeCall(Map<String, dynamic> arguments) =>
@@ -147,10 +351,12 @@ class GitCommitTool extends _GitTool {
     ToolContext context,
   ) async {
     final message = requireString(arguments, 'message');
-    await _runGit(<String>['add', '-A'], context);
-    final escaped = message.replaceAll('"', r'\"');
+    if (optionalBool(arguments, 'stage_all')) {
+      final staged = await _runGit(<String>['add', '-A'], context);
+      if (staged.isError) return staged;
+    }
     final commit = await _runGit(
-      <String>['commit', '-m', '"$escaped"'],
+      <String>['commit', '-m', message],
       context,
       isErrorOnNonZero: true,
     );
@@ -158,8 +364,28 @@ class GitCommitTool extends _GitTool {
   }
 }
 
+List<String> _stringList(Map<String, dynamic> arguments, String key) {
+  final value = arguments[key];
+  if (value == null) return const <String>[];
+  if (value is! List) {
+    throw ToolExecutionException("'$key' must be an array of strings.");
+  }
+  final values = <String>[];
+  for (final item in value) {
+    if (item is! String || item.isEmpty) {
+      throw ToolExecutionException("'$key' must contain non-empty strings.");
+    }
+    values.add(item);
+  }
+  return values;
+}
+
 List<AgentTool> gitTools() => <AgentTool>[
-      GitStatusTool(),
-      GitDiffTool(),
-      GitCommitTool(),
-    ];
+  GitStatusTool(),
+  GitDiffTool(),
+  GitLogTool(),
+  GitBranchesTool(),
+  GitAddTool(),
+  GitUnstageTool(),
+  GitCommitTool(),
+];
