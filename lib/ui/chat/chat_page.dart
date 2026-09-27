@@ -12,6 +12,7 @@ import '../../app/providers.dart';
 import '../../app/session_controller.dart';
 import '../../core/approval/approval_manager.dart';
 import '../../data/models.dart';
+import '../../l10n/l10n.dart';
 import '../workspace/workspace_sheet.dart';
 import 'widgets/activity_panel.dart';
 import 'widgets/approval_card.dart';
@@ -66,14 +67,14 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         actions: <Widget>[
           _ModelChip(),
           IconButton(
-            tooltip: 'Sessions',
+            tooltip: context.l10n.sessions,
             icon: const Icon(Icons.history),
             onPressed: workspace == null
                 ? null
                 : () => _openSessions(context, workspace.id),
           ),
           IconButton(
-            tooltip: 'New session',
+            tooltip: context.l10n.newSession,
             icon: const Icon(Icons.add_comment_outlined),
             onPressed: workspace == null
                 ? null
@@ -145,12 +146,11 @@ class _EmptyWorkspaceHint extends ConsumerWidget {
           children: <Widget>[
             Icon(Icons.folder_off_outlined, size: 56, color: scheme.outline),
             const SizedBox(height: 16),
-            Text('No workspace selected',
+            Text(context.l10n.noWorkspaceSelected,
                 style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 6),
             Text(
-              'A workspace is the project folder the agent reads and edits. '
-              'Pick an existing one or create a new one to begin.',
+              context.l10n.workspaceRequiredDescription,
               textAlign: TextAlign.center,
               style: Theme.of(context)
                   .textTheme
@@ -161,7 +161,7 @@ class _EmptyWorkspaceHint extends ConsumerWidget {
             FilledButton.icon(
               onPressed: () => showWorkspacePicker(context),
               icon: const Icon(Icons.folder_open),
-              label: const Text('Select or create a workspace'),
+              label: Text(context.l10n.selectOrCreateWorkspace),
             ),
           ],
         ),
@@ -218,12 +218,6 @@ class _Transcript extends StatelessWidget {
 class _Welcome extends ConsumerWidget {
   const _Welcome();
 
-  static const List<String> _examples = <String>[
-    'Analyze this project and summarize its architecture.',
-    'Find where the app reads its configuration and explain it.',
-    'Why is startup slow? Investigate and propose a fix.',
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
@@ -235,18 +229,21 @@ class _Welcome extends ConsumerWidget {
           children: <Widget>[
             Icon(Icons.smart_toy_outlined, size: 48, color: scheme.primary),
             const SizedBox(height: 12),
-            Text('Give the agent a task',
+            Text(context.l10n.giveAgentTask,
                 style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
-              'It will read files, search code, propose changes and run commands '
-              '— asking before anything risky.',
+              context.l10n.agentTaskDescription,
               textAlign: TextAlign.center,
               style:
                   Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.outline),
             ),
             const SizedBox(height: 20),
-            for (final example in _examples)
+            for (final example in <String>[
+              context.l10n.exampleAnalyze,
+              context.l10n.exampleConfiguration,
+              context.l10n.examplePerformance,
+            ])
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: OutlinedButton(
@@ -323,7 +320,7 @@ class _InputBar extends StatelessWidget {
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => isRunning ? null : onSubmit(),
                 decoration: const InputDecoration(
-                  hintText: 'Describe a task…',
+                  hintText: context.l10n.describeTask,
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
@@ -332,12 +329,12 @@ class _InputBar extends StatelessWidget {
             const SizedBox(width: 8),
             isRunning
                 ? IconButton.filledTonal(
-                    tooltip: 'Stop',
+                    tooltip: context.l10n.stop,
                     onPressed: onCancel,
                     icon: const Icon(Icons.stop_circle_outlined),
                   )
                 : IconButton.filled(
-                    tooltip: 'Send',
+                    tooltip: context.l10n.send,
                     onPressed: onSubmit,
                     icon: const Icon(Icons.send),
                   ),
@@ -365,7 +362,8 @@ class _SessionsSheet extends ConsumerWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                Text('Sessions', style: Theme.of(context).textTheme.titleLarge),
+                Text(context.l10n.sessions,
+                    style: Theme.of(context).textTheme.titleLarge),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () {
@@ -373,7 +371,7 @@ class _SessionsSheet extends ConsumerWidget {
                     Navigator.pop(context);
                   },
                   icon: const Icon(Icons.add),
-                  label: const Text('New'),
+                  label: Text(context.l10n.newLabel),
                 ),
               ],
             ),
@@ -383,12 +381,12 @@ class _SessionsSheet extends ConsumerWidget {
                 padding: EdgeInsets.all(24),
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (Object e, _) => Text('Failed to load: $e'),
+              error: (Object e, _) => Text(context.l10n.failedToLoad(e)),
               data: (List<Session> list) {
                 if (list.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Text('No sessions yet. Start by sending a task.'),
+                    child: Text(context.l10n.noSessions),
                   );
                 }
                 return ConstrainedBox(
@@ -408,7 +406,7 @@ class _SessionsSheet extends ConsumerWidget {
                         ),
                         title: Text(s.title,
                             maxLines: 1, overflow: TextOverflow.ellipsis),
-                        subtitle: Text(_relative(s.updatedAt)),
+                        subtitle: Text(_relative(context, s.updatedAt)),
                         onTap: () async {
                           await ref
                               .read(sessionControllerProvider.notifier)
@@ -427,12 +425,12 @@ class _SessionsSheet extends ConsumerWidget {
     );
   }
 
-  String _relative(DateTime t) {
+  String _relative(BuildContext context, DateTime t) {
     final diff = DateTime.now().difference(t);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return context.l10n.justNow;
+    if (diff.inHours < 1) return context.l10n.minutesAgo(diff.inMinutes);
+    if (diff.inDays < 1) return context.l10n.hoursAgo(diff.inHours);
+    return context.l10n.daysAgo(diff.inDays);
   }
 }
 

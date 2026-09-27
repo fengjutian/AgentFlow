@@ -14,6 +14,7 @@ import '../ui/files/files_page.dart';
 import '../ui/settings/settings_page.dart';
 import '../ui/terminal/terminal_page.dart';
 import 'shell/app_shell.dart';
+import '../l10n/l10n.dart';
 
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
   return GoRouter(
@@ -69,8 +70,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
     ],
     errorBuilder: (BuildContext context, GoRouterState state) => Scaffold(
-      appBar: AppBar(title: const Text('Not found')),
-      body: Center(child: Text('No route for ${state.uri}')),
+      appBar: AppBar(title: Text(context.l10n.notFound)),
+      body: Center(child: Text(context.l10n.noRouteFor('${state.uri}'))),
     ),
   );
 });
