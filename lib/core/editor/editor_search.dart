@@ -13,10 +13,7 @@ List<EditorMatch> findEditorMatches(
   bool caseSensitive = false,
 }) {
   if (query.isEmpty) return const <EditorMatch>[];
-  final expression = RegExp(
-    RegExp.escape(query),
-    caseSensitive: caseSensitive,
-  );
+  final expression = RegExp(RegExp.escape(query), caseSensitive: caseSensitive);
   return expression
       .allMatches(text)
       .map((match) => EditorMatch(match.start, match.end))

@@ -267,39 +267,30 @@ class SearchDocumentTool extends _DocumentTool {
       throw const ToolExecutionException('Search query cannot be empty.');
     }
     final limit = optionalInt(arguments, 'limit', fallback: 10).clamp(1, 50);
-    final needle = query.toLowerCase();
-    final matches = <Map<String, dynamic>>[];
-    for (final section in await store.sections(id)) {
-      final lower = section.plainText.toLowerCase();
-      final offset = lower.indexOf(needle);
-      if (offset < 0) continue;
-      final start = (offset - 100).clamp(0, section.plainText.length);
-      final end = (offset + query.length + 180).clamp(
-        start,
-        section.plainText.length,
-      );
-      matches.add(<String, dynamic>{
-        'index': section.index,
-        'title': section.title,
-        'locator': section.locator,
-        'snippet': section.plainText.substring(start, end).trim(),
-      });
-      if (matches.length >= limit) break;
-    }
-    final content = matches
+    final hits = await store.search(id, query, limit: limit);
+    final content = hits
         .map(
-          (match) =>
-              '[${match['locator']}] ${match['title']}\n${match['snippet']}',
+          (hit) =>
+              '[${hit.locator}] ${hit.title}\n${hit.snippet}',
         )
         .join('\n\n');
     return ToolResult(
       toolCallId: '',
       name: name,
-      content: matches.isEmpty ? 'No matches for "$query".' : content,
+      content: hits.isEmpty ? 'No matches for "$query".' : content,
       data: <String, dynamic>{
         'documentId': id,
         'query': query,
-        'matches': matches,
+        'matches': hits
+            .map(
+              (hit) => <String, dynamic>{
+                'index': hit.index,
+                'title': hit.title,
+                'locator': hit.locator,
+                'snippet': hit.snippet,
+              },
+            )
+            .toList(growable: false),
       },
     );
   }

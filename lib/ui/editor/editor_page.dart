@@ -205,8 +205,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
             labelText: context.l10n.lineNumber,
             helperText: context.l10n.lineRange(_lineCount),
           ),
-          onSubmitted: (value) =>
-              Navigator.pop(context, int.tryParse(value)),
+          onSubmitted: (value) => Navigator.pop(context, int.tryParse(value)),
         ),
         actions: <Widget>[
           TextButton(
@@ -510,15 +509,16 @@ class _EditorPageState extends ConsumerState<EditorPage> {
                       ),
                     ),
                   ),
-                  TextButton(
+                  IconButton(
+                    tooltip: context.l10n.replace,
                     onPressed: _matches.isEmpty ? null : _replaceCurrent,
-                    child: Text(context.l10n.replace),
+                    icon: const Icon(Icons.find_replace),
                   ),
-                  TextButton(
+                  IconButton(
+                    tooltip: context.l10n.replaceAll,
                     onPressed: _matches.isEmpty ? null : _replaceAll,
-                    child: Text(context.l10n.replaceAll),
+                    icon: const Icon(Icons.playlist_add_check),
                   ),
-                  const SizedBox(width: 44),
                 ],
               ),
             ],

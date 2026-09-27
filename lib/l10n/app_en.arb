@@ -135,5 +135,22 @@
   "callingTools": "Calling {tools}",
   "@callingTools": {"placeholders": {"tools": {"type": "String"}}},
   "deniedByUser": "Denied by user",
-  "done": "done"
+  "done": "done",
+  "search": "Find",
+  "replace": "Replace",
+  "replaceAll": "Replace all",
+  "previousMatch": "Previous match",
+  "nextMatch": "Next match",
+  "close": "Close",
+  "noMatches": "0 results",
+  "matchPosition": "{current}/{total}",
+  "@matchPosition": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "replacedOccurrences": "Replaced {count} occurrences",
+  "@replacedOccurrences": {"placeholders": {"count": {"type": "int"}}},
+  "goToLine": "Go to line",
+  "lineNumber": "Line number",
+  "lineRange": "1–{count}",
+  "@lineRange": {"placeholders": {"count": {"type": "int"}}},
+  "go": "Go",
+  "invalidLineNumber": "Line number is outside this file"
 }

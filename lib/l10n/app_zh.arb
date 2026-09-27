@@ -124,5 +124,22 @@
   "phaseCancelled": "已取消",
   "callingTools": "正在调用 {tools}",
   "deniedByUser": "用户已拒绝",
-  "done": "完成"
+  "done": "完成",
+  "search": "查找",
+  "replace": "替换",
+  "replaceAll": "全部替换",
+  "previousMatch": "上一个匹配",
+  "nextMatch": "下一个匹配",
+  "close": "关闭",
+  "noMatches": "0 个结果",
+  "matchPosition": "{current}/{total}",
+  "@matchPosition": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "replacedOccurrences": "已替换 {count} 处",
+  "@replacedOccurrences": {"placeholders": {"count": {"type": "int"}}},
+  "goToLine": "跳转到行",
+  "lineNumber": "行号",
+  "lineRange": "1–{count}",
+  "@lineRange": {"placeholders": {"count": {"type": "int"}}},
+  "go": "跳转",
+  "invalidLineNumber": "行号超出当前文件范围"
 }

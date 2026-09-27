@@ -178,7 +178,9 @@ class DriftDocumentStore implements DocumentStore {
           'AND document_sections_fts MATCH \'\"$escaped\"\' '
           'ORDER BY rank '
           'LIMIT $limit',
-          readsFrom: <Table>{_db.documentSections},
+          readsFrom: <ResultSetImplementation<dynamic, dynamic>>{
+            _db.documentSections,
+          },
         )
         .get();
     return rows
@@ -302,3 +304,6 @@ Map<String, dynamic> _decodeMetadata(String source) {
   }
   return <String, dynamic>{};
 }
+
+/// Escapes single quotes for safe SQL string interpolation.
+String _escapeSql(String value) => value.replaceAll("'", "''");
