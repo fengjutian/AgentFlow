@@ -230,6 +230,9 @@ class McpConnectionManager {
     } catch (e) {
       state.status = McpConnectionStatus.error;
       state.error = e.toString();
+      // Close any partially-initialized client to release HTTP resources.
+      state.client?.close();
+      state.client = null;
       _unregisterTools(state.config.id);
       // Schedule auto-reconnect with backoff.
       _scheduleReconnect(state.config.id);
@@ -279,16 +282,18 @@ class McpConnectionManager {
       _registerTools(state);
 
       // Monitor process exit.
-      session.waitForExit().then((_) {
+      unawaited(session.waitForExit().then((_) async {
         if (state.status == McpConnectionStatus.connected) {
           state.status = McpConnectionStatus.error;
           state.error = 'MCP server process exited.';
+          // Close the stdio client to release resources.
+          await state.stdioClient?.close();
           state.stdioClient = null;
           state.processSession = null;
           _unregisterTools(state.config.id);
           _scheduleReconnect(state.config.id);
         }
-      });
+      }));
     } catch (e) {
       state.status = McpConnectionStatus.error;
       state.error = e.toString();
