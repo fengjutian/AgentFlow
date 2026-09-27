@@ -140,7 +140,7 @@ class DriftDocumentStore implements DocumentStore {
     for (final section in sections) {
       await _db.customStatement(
         "INSERT INTO document_sections_fts(document_sections_fts, rowid, "
-        'plain_text) VALUES(\'rebuild\', '
+        "plain_text) VALUES('rebuild', "
         "(SELECT rowid FROM document_sections WHERE id = "
         "'${_escapeSql(section.id)}'), "
         "'${_escapeSql(section.plainText)}')",
@@ -175,7 +175,7 @@ class DriftDocumentStore implements DocumentStore {
           'FROM document_sections_fts fts '
           'JOIN document_sections ds ON ds.rowid = fts.rowid '
           "WHERE ds.document_id = '${_escapeSql(documentId)}' "
-          'AND document_sections_fts MATCH \'\"$escaped\"\' '
+          "AND document_sections_fts MATCH '\"$escaped\"' "
           'ORDER BY rank '
           'LIMIT $limit',
           readsFrom: <ResultSetImplementation<dynamic, dynamic>>{

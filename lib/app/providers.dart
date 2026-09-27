@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/agent/agent_engine.dart';
@@ -16,7 +17,11 @@ import '../core/memory/memory_manager.dart';
 import '../core/model/model_provider.dart';
 import '../core/model/provider_factory.dart';
 import '../core/context/context_manager.dart';
+import '../core/document/document_context_builder.dart';
+import '../core/document/document_parser.dart';
 import '../core/document/document_service.dart';
+import '../core/document/epub_parser.dart';
+import '../core/document/pdf_parser.dart';
 import '../data/models.dart';
 import '../runtime/bridge_runtime.dart';
 import '../runtime/local_runtime.dart';
@@ -70,6 +75,36 @@ final Provider<RuntimeConfigRepository> runtimeConfigRepositoryProvider =
 
 final Provider<DocumentStore> documentStoreProvider = Provider<DocumentStore>(
   (Ref ref) => DriftDocumentStore(ref.watch(databaseProvider)),
+);
+
+final Provider<DocumentParserRegistry> documentParserRegistryProvider =
+    Provider<DocumentParserRegistry>(
+  (Ref ref) => DocumentParserRegistry(
+    parsers: <DocumentParser>[
+      PdfDocumentParser(),
+      EpubDocumentParser(),
+    ],
+  ),
+);
+
+final Provider<DocumentContextBuilder> documentContextBuilderProvider =
+    Provider<DocumentContextBuilder>(
+  (Ref ref) => DocumentContextBuilder(
+    store: ref.watch(documentStoreProvider),
+  ),
+);
+
+final FutureProvider<DocumentImportService> documentImportServiceProvider =
+    FutureProvider<DocumentImportService>(
+  (Ref ref) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    return DocumentImportService(
+      store: ref.watch(documentStoreProvider),
+      parsers: ref.watch(documentParserRegistryProvider),
+      documentsDirectory: '${appDir.path}/agentflow_documents',
+      idGenerator: newId,
+    );
+  },
 );
 
 final Provider<SecretStore> secretStoreProvider = Provider<SecretStore>(

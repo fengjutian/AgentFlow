@@ -12,7 +12,6 @@
 /// `buildSectionContext` for deeper reads.
 library;
 
-import 'document.dart';
 import 'document_service.dart';
 
 class DocumentContextBuilder {
