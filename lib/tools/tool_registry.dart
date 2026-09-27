@@ -16,6 +16,17 @@ class ToolRegistry {
   final Map<String, AgentTool> _tools = <String, AgentTool>{};
   final Set<String> _disabled = <String>{};
 
+  /// Creates an independent registry with the same tools and enablement state.
+  ///
+  /// Workspace-specific registries must copy the composed base registry rather
+  /// than rebuilding only the built-in tools, otherwise dynamically discovered
+  /// tools (for example MCP tools) disappear before an agent run starts.
+  ToolRegistry copy() {
+    final registry = ToolRegistry(tools: _tools.values);
+    registry._disabled.addAll(_disabled);
+    return registry;
+  }
+
   void register(AgentTool tool) {
     _tools[tool.name] = tool;
   }
@@ -55,6 +66,13 @@ class ToolRegistry {
 
   List<String> get names {
     final list = enabledTools.map((AgentTool t) => t.name).toList();
+    list.sort();
+    return list;
+  }
+
+  /// Names of every registered tool, including disabled tools.
+  List<String> get registeredNames {
+    final list = _tools.keys.toList();
     list.sort();
     return list;
   }

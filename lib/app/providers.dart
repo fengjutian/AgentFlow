@@ -201,14 +201,9 @@ Future<Runtime> resolveRuntime(Workspace workspace) async {
 
 /// Builds a registry reflecting a workspace's disabled-tool settings.
 ToolRegistry registryForWorkspace(Workspace workspace, ToolRegistry base) {
-  final registry = defaultToolRegistry();
+  final registry = base.copy();
   for (final name in workspace.disabledTools) {
     registry.setEnabled(name, false);
-  }
-  // `base` is currently only used for its enable/disable state; the tool set is
-  // identical, so we mirror any tools disabled globally too.
-  for (final name in base.names) {
-    if (!base.isEnabled(name)) registry.setEnabled(name, false);
   }
   return registry;
 }
