@@ -37,7 +37,11 @@ class LocalRuntime implements Runtime {
   String resolve(String target) {
     if (target.isEmpty) return _root;
     final absolute = p.isAbsolute(target) ? target : p.join(_root, target);
-    return p.normalize(absolute);
+    final normalized = p.normalize(absolute);
+    if (!isInsideRoot(normalized)) {
+      throw FileSystemException('Path is outside the workspace', normalized);
+    }
+    return normalized;
   }
 
   bool isInsideRoot(String absolutePath) {
@@ -150,6 +154,44 @@ class LocalRuntime implements Runtime {
   Future<void> deleteFile(String path) async {
     final file = File(resolve(path));
     if (file.existsSync()) await file.delete();
+  }
+
+  @override
+  Future<void> createDirectory(String path) async {
+    await Directory(resolve(path)).create(recursive: true);
+  }
+
+  @override
+  Future<void> renameEntry(String path, String newPath) async {
+    final source = FileSystemEntity.typeSync(resolve(path), followLinks: false);
+    final destination = resolve(newPath);
+    if (source == FileSystemEntityType.notFound) {
+      throw FileSystemException('Entry not found', resolve(path));
+    }
+    if (FileSystemEntity.typeSync(destination, followLinks: false) !=
+        FileSystemEntityType.notFound) {
+      throw FileSystemException('Destination already exists', destination);
+    }
+    await Directory(p.dirname(destination)).create(recursive: true);
+    if (source == FileSystemEntityType.directory) {
+      await Directory(resolve(path)).rename(destination);
+    } else {
+      await File(resolve(path)).rename(destination);
+    }
+  }
+
+  @override
+  Future<void> deleteEntry(String path) async {
+    final resolved = resolve(path);
+    if (resolved == _root) {
+      throw FileSystemException('Cannot delete the workspace root', resolved);
+    }
+    final type = FileSystemEntity.typeSync(resolved, followLinks: false);
+    if (type == FileSystemEntityType.directory) {
+      await Directory(resolved).delete(recursive: true);
+    } else if (type != FileSystemEntityType.notFound) {
+      await File(resolved).delete();
+    }
   }
 
   @override

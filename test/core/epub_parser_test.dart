@@ -12,7 +12,7 @@ Uint8List buildTestEpub({
   String title = 'Test Book',
   String author = 'Test Author',
   String language = 'en',
-  required List<_Chapter> chapters,
+  required List<({String title, String body})> chapters,
   bool includeNcx = true,
 }) {
   final archive = Archive();
@@ -54,19 +54,16 @@ Uint8List buildTestEpub({
     }
 
     // Chapter XHTML.
-    archive.addFile(
-      ArchiveFile(
-        'OEBPS/$href',
-        true,
-        utf8.encode('''<?xml version="1.0" encoding="UTF-8"?>
+    final chapterContent = utf8.encode('''<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head><title>${chapters[i].title}</title></head>
 <body>
   <h1>${chapters[i].title}</h1>
   <p>${chapters[i].body}</p>
 </body>
-</html>'''),
-      ),
+</html>''');
+    archive.addFile(
+      ArchiveFile('OEBPS/$href', chapterContent.length, chapterContent),
     );
   }
 
@@ -77,11 +74,7 @@ Uint8List buildTestEpub({
   }
 
   // content.opf
-  archive.addFile(
-    ArchiveFile(
-      'OEBPS/content.opf',
-      true,
-      utf8.encode('''<?xml version="1.0" encoding="UTF-8"?>
+  final opfContent = utf8.encode('''<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="uid">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:title>$title</dc:title>
@@ -93,26 +86,20 @@ Uint8List buildTestEpub({
 $manifestItems  </manifest>
   <spine${includeNcx ? ' toc="ncx"' : ''}>
 $spineItems  </spine>
-</package>'''),
-    ),
-  );
+</package>''');
+  archive.addFile(ArchiveFile('OEBPS/content.opf', opfContent.length, opfContent));
 
   // NCX
   if (includeNcx) {
-    archive.addFile(
-      ArchiveFile(
-        'OEBPS/toc.ncx',
-        true,
-        utf8.encode('''<?xml version="1.0" encoding="UTF-8"?>
+    final ncxContent = utf8.encode('''<?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head><meta name="dtb:uid" content="test-epub-123"/></head>
   <docTitle><text>$title</text></docTitle>
   <navMap>
 $ncxNavPoints
   </navMap>
-</ncx>'''),
-      ),
-    );
+</ncx>''');
+    archive.addFile(ArchiveFile('OEBPS/toc.ncx', ncxContent.length, ncxContent));
   }
 
   return Uint8List.fromList(ZipEncoder().encode(archive)!);
@@ -208,27 +195,19 @@ void main() {
 
   test('strips HTML tags from XHTML content', () async {
     final archive = Archive();
-    archive.addFile(
-      ArchiveFile('mimetype', false, utf8.encode('application/epub+zip'))
-        ..compress = false,
-    );
-    archive.addFile(
-      ArchiveFile(
-        'META-INF/container.xml',
-        true,
-        utf8.encode('''<?xml version="1.0"?>
+
+    final mime = utf8.encode('application/epub+zip');
+    archive.addFile(ArchiveFile('mimetype', mime.length, mime)..compress = false);
+
+    final container = utf8.encode('''<?xml version="1.0"?>
 <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
   <rootfiles>
     <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
   </rootfiles>
-</container>'''),
-      ),
-    );
-    archive.addFile(
-      ArchiveFile(
-        'OEBPS/content.opf',
-        true,
-        utf8.encode('''<?xml version="1.0"?>
+</container>''');
+    archive.addFile(ArchiveFile('META-INF/container.xml', container.length, container));
+
+    final opf = utf8.encode('''<?xml version="1.0"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="uid">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:title>HTML Test</dc:title>
@@ -241,14 +220,10 @@ void main() {
   <spine>
     <itemref idref="ch0"/>
   </spine>
-</package>'''),
-      ),
-    );
-    archive.addFile(
-      ArchiveFile(
-        'OEBPS/ch0.xhtml',
-        true,
-        utf8.encode('''<?xml version="1.0"?>
+</package>''');
+    archive.addFile(ArchiveFile('OEBPS/content.opf', opf.length, opf));
+
+    final xhtml = utf8.encode('''<?xml version="1.0"?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head><title>Test</title></head>
 <body>
@@ -258,9 +233,8 @@ void main() {
   <style>.hidden { display: none; }</style>
   <p>Clean paragraph.</p>
 </body>
-</html>'''),
-      ),
-    );
+</html>''');
+    archive.addFile(ArchiveFile('OEBPS/ch0.xhtml', xhtml.length, xhtml));
 
     final epubBytes = Uint8List.fromList(ZipEncoder().encode(archive)!);
     final epubPath = '${tempDir.path}/html_test.epub';

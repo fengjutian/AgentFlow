@@ -63,6 +63,9 @@ class RuntimeManager(
             "readFile" -> readFile(call, result)
             "writeFile" -> writeFile(call, result)
             "deleteFile" -> deleteFile(call, result)
+            "createDirectory" -> createDirectory(call, result)
+            "renameEntry" -> renameEntry(call, result)
+            "deleteEntry" -> deleteEntry(call, result)
             "fileExists" -> fileExists(call, result)
             "listFiles" -> listFiles(call, result)
             else -> result.notImplemented()
@@ -337,6 +340,56 @@ class RuntimeManager(
                 false
             }
             mainHandler.post { result.success(exists) }
+        }
+    }
+
+    private fun createDirectory(call: MethodCall, result: MethodChannel.Result) {
+        val path = call.argument<String>("path")
+        if (path == null) {
+            result.error("bad_args", "path is required", null)
+            return
+        }
+        executor.execute {
+            val ok = try { File(path).mkdirs() || File(path).isDirectory } catch (_: Exception) { false }
+            mainHandler.post {
+                if (ok) result.success(null)
+                else result.error("create_failed", "Cannot create directory: $path", null)
+            }
+        }
+    }
+
+    private fun renameEntry(call: MethodCall, result: MethodChannel.Result) {
+        val path = call.argument<String>("path")
+        val newPath = call.argument<String>("newPath")
+        if (path == null || newPath == null) {
+            result.error("bad_args", "path and newPath are required", null)
+            return
+        }
+        executor.execute {
+            val ok = try {
+                val destination = File(newPath)
+                destination.parentFile?.mkdirs()
+                !destination.exists() && File(path).renameTo(destination)
+            } catch (_: Exception) { false }
+            mainHandler.post {
+                if (ok) result.success(null)
+                else result.error("rename_failed", "Cannot rename: $path", null)
+            }
+        }
+    }
+
+    private fun deleteEntry(call: MethodCall, result: MethodChannel.Result) {
+        val path = call.argument<String>("path")
+        if (path == null) {
+            result.error("bad_args", "path is required", null)
+            return
+        }
+        executor.execute {
+            val ok = try { val file = File(path); !file.exists() || file.deleteRecursively() } catch (_: Exception) { false }
+            mainHandler.post {
+                if (ok) result.success(null)
+                else result.error("delete_failed", "Cannot delete: $path", null)
+            }
         }
     }
 

@@ -104,6 +104,15 @@ abstract class Runtime {
 
   Future<void> deleteFile(String path);
 
+  /// Creates a directory and any missing parent directories.
+  Future<void> createDirectory(String path);
+
+  /// Renames or moves a file or directory within the workspace.
+  Future<void> renameEntry(String path, String newPath);
+
+  /// Deletes a file or directory. Non-empty directories are removed recursively.
+  Future<void> deleteEntry(String path);
+
   Future<bool> fileExists(String path);
 
   Future<List<FileEntry>> listFiles(String path);
