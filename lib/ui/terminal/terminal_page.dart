@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../l10n/l10n.dart';
 import '../../app/theme.dart';
 import '../../runtime/runtime.dart';
 
@@ -64,10 +65,12 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(workspace == null ? 'Terminal' : 'Terminal · ${workspace.name}'),
+        title: Text(workspace == null
+            ? context.l10n.terminal
+            : '${context.l10n.terminal} · ${workspace.name}'),
         actions: <Widget>[
           IconButton(
-            tooltip: 'Clear',
+            tooltip: context.l10n.clear,
             icon: const Icon(Icons.delete_sweep_outlined),
             onPressed: _lines.isEmpty ? null : () => setState(_lines.clear),
           ),
@@ -75,7 +78,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       ),
       body: workspace == null
           ? const _TerminalHint(
-              message: 'Select a workspace to open a shell in its directory.',
+              message: context.l10n.selectWorkspaceForTerminal,
             )
           : runtime == null
               ? const Center(child: CircularProgressIndicator())
@@ -282,7 +285,7 @@ class _Prompt extends StatelessWidget {
                 onSubmitted: (_) => onSubmit(),
                 decoration: const InputDecoration(
                   isDense: true,
-                  hintText: 'command',
+                  hintText: context.l10n.commandHint,
                   border: InputBorder.none,
                   filled: false,
                   contentPadding: EdgeInsets.symmetric(vertical: 10),
@@ -290,7 +293,7 @@ class _Prompt extends StatelessWidget {
               ),
             ),
             IconButton(
-              tooltip: 'Last command',
+              tooltip: context.l10n.lastCommand,
               icon: const Icon(Icons.history, size: 20),
               onPressed: running ? null : onHistory,
             ),
@@ -301,7 +304,7 @@ class _Prompt extends StatelessWidget {
                         width: 18, height: 18, child: CircularProgressIndicator()),
                   )
                 : IconButton.filled(
-                    tooltip: 'Run',
+                    tooltip: context.l10n.run,
                     icon: const Icon(Icons.play_arrow),
                     onPressed: onSubmit,
                   ),

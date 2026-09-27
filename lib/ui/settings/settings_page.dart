@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../l10n/l10n.dart';
 import '../../core/model/model_provider.dart';
 import '../../runtime/bridge_runtime.dart';
 import '../../runtime/runtime.dart';
@@ -37,17 +38,17 @@ class SettingsPage extends ConsumerWidget {
     final runtimeAsync = ref.watch(runtimeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(context.l10n.settings)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _edit(context, ref, null),
         icon: const Icon(Icons.add),
-        label: const Text('Provider'),
+        label: Text(context.l10n.provider),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
         children: <Widget>[
           _SectionHeader(
-            title: 'Model providers',
+            title: context.l10n.modelProviders,
             subtitle: activeAsync.when(
               data: (ModelConfig c) =>
                   c.provider == 'mock' ? 'Active: offline demo' : 'Active: ${c.label}',
@@ -60,7 +61,8 @@ class SettingsPage extends ConsumerWidget {
               padding: EdgeInsets.all(24),
               child: Center(child: CircularProgressIndicator()),
             ),
-            error: (Object e, StackTrace _) => Text('Failed to load: $e'),
+            error: (Object e, StackTrace _) =>
+                Text(context.l10n.failedToLoad(e)),
             data: (List<ModelConfig> configs) {
               if (configs.isEmpty) {
                 return const _EmptyProviders();
@@ -79,14 +81,14 @@ class SettingsPage extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 24),
-          const _SectionHeader(title: 'Runtime'),
+          _SectionHeader(title: context.l10n.runtime),
           _RuntimeCard(
             workspaceName: workspace?.name,
             rootDirectory: workspace?.rootDirectory,
             runtime: runtimeAsync.value,
           ),
           const SizedBox(height: 24),
-          const _SectionHeader(title: 'About'),
+          _SectionHeader(title: context.l10n.about),
           const _AboutCard(),
         ],
       ),
@@ -122,15 +124,15 @@ class SettingsPage extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: Text('Delete "${config.label}"?'),
-        content: const Text('This removes the provider configuration.'),
+        title: Text(context.l10n.deleteProviderTitle(config.label)),
+        content: Text(context.l10n.deleteProviderDescription),
         actions: <Widget>[
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+              child: Text(context.l10n.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete')),
+              child: Text(context.l10n.delete)),
         ],
       ),
     );
@@ -192,7 +194,7 @@ class _EmptyProviders extends StatelessWidget {
               children: <Widget>[
                 Icon(Icons.science_outlined, color: scheme.primary),
                 const SizedBox(width: 8),
-                Text('Running in offline demo mode',
+                Text(context.l10n.offlineDemoMode,
                     style: Theme.of(context).textTheme.titleSmall),
               ],
             ),
@@ -275,8 +277,9 @@ class _ProviderTile extends StatelessWidget {
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
             const PopupMenuItem<String>(
-                value: 'default', child: Text('Set as default')),
-            const PopupMenuItem<String>(value: 'delete', child: Text('Delete')),
+                value: 'default', child: Text(context.l10n.setAsDefault)),
+            PopupMenuItem<String>(
+                value: 'delete', child: Text(context.l10n.delete)),
           ],
         ),
       ),
@@ -553,7 +556,9 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
   Widget build(BuildContext context) {
     final isMock = _provider == 'mock';
     return AlertDialog(
-      title: Text(widget.existing == null ? 'Add provider' : 'Edit provider'),
+      title: Text(widget.existing == null
+          ? context.l10n.addProvider
+          : context.l10n.editProvider),
       content: SizedBox(
         width: 420,
         child: Form(
@@ -564,7 +569,8 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
               children: <Widget>[
                 DropdownButtonFormField<String>(
                   initialValue: _provider,
-                  decoration: const InputDecoration(labelText: 'Provider type'),
+                  decoration:
+                      InputDecoration(labelText: context.l10n.providerType),
                   items: _providerPresets.keys
                       .map((String p) => DropdownMenuItem<String>(
                             value: p,
@@ -627,7 +633,8 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                 const SizedBox(height: 16),
                 Row(
                   children: <Widget>[
-                    Text('Temperature: ${_temperature.toStringAsFixed(2)}',
+                    Text(context.l10n
+                        .temperatureValue(_temperature.toStringAsFixed(2)),
                         style: Theme.of(context).textTheme.bodyMedium),
                     Expanded(
                       child: Slider(
@@ -655,8 +662,8 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
       actions: <Widget>[
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel')),
-        FilledButton(onPressed: _submit, child: const Text('Save')),
+            child: Text(context.l10n.cancel)),
+        FilledButton(onPressed: _submit, child: Text(context.l10n.save)),
       ],
     );
   }

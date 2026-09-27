@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../l10n/l10n.dart';
 import '../../app/theme.dart';
 import '../../runtime/runtime.dart';
 
@@ -50,7 +51,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(workspace?.name ?? 'Files'),
+        title: Text(workspace?.name ?? context.l10n.files),
         bottom: workspace == null
             ? null
             : PreferredSize(
@@ -62,7 +63,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
               ),
         actions: <Widget>[
           IconButton(
-            tooltip: 'Refresh',
+            tooltip: context.l10n.refresh,
             icon: const Icon(Icons.refresh),
             onPressed: workspace == null ? null : () => _load(),
           ),
@@ -73,7 +74,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
           if (workspace == null) {
             return const _FilesHint(
               icon: Icons.folder_off_outlined,
-              message: 'Select a workspace to browse its files.',
+              message: context.l10n.selectWorkspaceForFiles,
             );
           }
           final runtime = runtimeAsync.value;
@@ -83,7 +84,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
           if (runtime == null) {
             return const _FilesHint(
               icon: Icons.link_off,
-              message: 'Runtime unavailable for this workspace.',
+              message: context.l10n.runtimeUnavailable,
             );
           }
           // Kick off a load the first time we have a runtime and no entries.
@@ -103,7 +104,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
         message: _error!,
         action: TextButton(
           onPressed: _load,
-          child: const Text('Retry'),
+          child: Text(context.l10n.retry),
         ),
       );
     }
@@ -113,7 +114,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
     if (_entries.isEmpty) {
       return const _FilesHint(
         icon: Icons.folder_open,
-        message: 'This folder is empty.',
+        message: context.l10n.emptyFolder,
       );
     }
     return RefreshIndicator(
@@ -129,7 +130,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
             return ListTile(
               leading: const Icon(Icons.arrow_upward),
               title: const Text('..'),
-              subtitle: const Text('Parent folder'),
+              subtitle: Text(context.l10n.parentFolder),
               onTap: _navigateUp,
             );
           }
@@ -395,11 +396,13 @@ class _FileViewerState extends State<_FileViewer> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.hasError) {
-                    return Center(child: Text('Cannot open: ${snapshot.error}'));
+                    return Center(
+                      child: Text(context.l10n.cannotOpen(snapshot.error!)),
+                    );
                   }
                   final text = snapshot.data ?? '';
                   if (text.trim().isEmpty) {
-                    return const Center(child: Text('(empty file)'));
+                    return Center(child: Text(context.l10n.emptyFile));
                   }
                   return SingleChildScrollView(
                     controller: scrollController,
