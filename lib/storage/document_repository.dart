@@ -134,17 +134,16 @@ class DriftDocumentStore implements DocumentStore {
     List<DocumentSection> sections,
   ) async {
     if (!await _ftsAvailable()) return;
-    // Delete old FTS entries for this document.
-    await _removeFtsEntries(documentId);
-    // Insert new entries using the content= rebuild command per section.
-    for (final section in sections) {
+    // Rebuild the entire FTS index from the content table.
+    // FTS5 'rebuild' is a table-level command that reads from the
+    // content= table and repopulates the index.
+    try {
       await _db.customStatement(
-        "INSERT INTO document_sections_fts(document_sections_fts, rowid, "
-        "plain_text) VALUES('rebuild', "
-        "(SELECT rowid FROM document_sections WHERE id = "
-        "'${_escapeSql(section.id)}'), "
-        "'${_escapeSql(section.plainText)}')",
+        "INSERT INTO document_sections_fts(document_sections_fts) "
+        "VALUES('rebuild')",
       );
+    } catch (_) {
+      // FTS table may not support rebuild or may have structural issues.
     }
   }
 

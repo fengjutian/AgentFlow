@@ -7,9 +7,9 @@ library;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:dartssh2/dartssh2.dart';
+import 'package:flutter/foundation.dart';
 
 import '../runtime.dart';
 import 'ssh_host_key_store.dart';
@@ -449,6 +449,12 @@ class SshRuntime implements Runtime {
         }
         if (verification.isUnknown) {
           // Auto-accept first connection and persist the fingerprint.
+          // WARNING: This is TOFU (Trust On First Use) — the first connection
+          // is vulnerable to MITM. Log a warning for audit purposes.
+          debugPrint(
+            'SSH: Auto-accepting unknown host key for '
+            '${config.host}:${config.port} ($type: $hex)',
+          );
           await hostKeyStore.store(SshHostKey(
             host: config.host,
             port: config.port,

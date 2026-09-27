@@ -93,8 +93,8 @@ class BridgeProcessSession implements ProcessSession {
             if (!_exitCompleter.isCompleted) {
               _exitCompleter.complete(code);
             }
-            _stdoutController.close();
-            _stderrController.close();
+            if (!_stdoutController.isClosed) _stdoutController.close();
+            if (!_stderrController.isClosed) _stderrController.close();
         }
       },
       onError: (Object error) {
@@ -138,8 +138,10 @@ class BridgeProcessSession implements ProcessSession {
       _exitCompleter.complete(-1);
     }
     await _eventSub?.cancel();
-    await _stdoutController.close();
-    await _stderrController.close();
+    // Guard against double-close: the exit event handler may have
+    // already closed these controllers.
+    if (!_stdoutController.isClosed) await _stdoutController.close();
+    if (!_stderrController.isClosed) await _stderrController.close();
   }
 
   @override
