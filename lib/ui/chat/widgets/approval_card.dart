@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme.dart';
 import '../../../core/approval/approval_manager.dart';
 import '../../../tools/agent_tool.dart';
+import '../../../l10n/l10n.dart';
 import 'diff_card.dart';
 
 class ApprovalCard extends StatelessWidget {
@@ -51,8 +52,8 @@ class ApprovalCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     strong
-                        ? 'Confirm a high-risk action'
-                        : 'Approve this action',
+                        ? context.l10n.confirmHighRisk
+                        : context.l10n.approveAction,
                     style: Theme.of(context)
                         .textTheme
                         .titleSmall
@@ -87,20 +88,26 @@ class ApprovalCard extends StatelessWidget {
               children: <Widget>[
                 TextButton(
                   onPressed: () => onDecision(ApprovalDecision.deny),
-                  child: Text(request.previewData == null ? 'Deny' : 'Reject'),
+                  child: Text(request.previewData == null
+                      ? context.l10n.deny
+                      : context.l10n.reject),
                 ),
                 const SizedBox(width: 4),
                 TextButton(
                   onPressed: () => onDecision(ApprovalDecision.allowAlways),
                   child: Text(
-                    request.previewData == null ? 'Always allow' : 'Accept all',
+                    request.previewData == null
+                        ? context.l10n.alwaysAllow
+                        : context.l10n.acceptAll,
                   ),
                 ),
                 const SizedBox(width: 4),
                 FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: accent),
                   onPressed: () => onDecision(ApprovalDecision.allow),
-                  child: Text(request.previewData == null ? 'Allow' : 'Accept'),
+                  child: Text(request.previewData == null
+                      ? context.l10n.allow
+                      : context.l10n.accept),
                 ),
               ],
             ),
@@ -118,9 +125,9 @@ class _RiskChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = switch (risk) {
-      ToolRisk.auto => 'auto',
-      ToolRisk.confirm => 'confirm',
-      ToolRisk.strong => 'high risk',
+      ToolRisk.auto => context.l10n.riskAuto,
+      ToolRisk.confirm => context.l10n.riskConfirm,
+      ToolRisk.strong => context.l10n.riskHigh,
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

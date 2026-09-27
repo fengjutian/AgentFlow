@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/diff/line_diff.dart';
 import '../../../app/theme.dart';
+import '../../../l10n/l10n.dart';
 
 class DiffCard extends StatelessWidget {
   const DiffCard({super.key, required this.diff, this.onUndo});
@@ -95,7 +96,7 @@ class DiffCard extends StatelessWidget {
                   }
                 },
                 icon: const Icon(Icons.undo, size: 16),
-                label: const Text('Undo'),
+                label: Text(context.l10n.undo),
               ),
             ),
           ],

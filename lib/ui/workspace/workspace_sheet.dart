@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../app/providers.dart';
 import '../../storage/repositories.dart';
+import '../../l10n/l10n.dart';
 
 /// Opens a bottom sheet to pick or create a workspace.
 Future<void> showWorkspacePicker(BuildContext context) async {
@@ -39,7 +40,7 @@ class _WorkspaceSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text('Workspaces',
+            Text(context.l10n.workspaces,
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             workspaces.when(
@@ -47,12 +48,12 @@ class _WorkspaceSheet extends ConsumerWidget {
                 padding: EdgeInsets.all(24),
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (Object e, _) => Text('Failed to load: $e'),
+              error: (Object e, _) => Text(context.l10n.failedToLoad(e)),
               data: (List<Workspace> list) {
                 if (list.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Text('No workspaces yet. Create one to get started.'),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(context.l10n.noWorkspaces),
                   );
                 }
                 return ConstrainedBox(
@@ -88,9 +89,9 @@ class _WorkspaceSheet extends ConsumerWidget {
                             }
                           },
                           itemBuilder: (BuildContext context) =>
-                              const <PopupMenuEntry<String>>[
+                              <PopupMenuEntry<String>>[
                             PopupMenuItem<String>(
-                                value: 'delete', child: Text('Delete')),
+                                value: 'delete', child: Text(context.l10n.delete)),
                           ],
                         ),
                         selected: selected,
@@ -118,7 +119,7 @@ class _WorkspaceSheet extends ConsumerWidget {
                 }
               },
               icon: const Icon(Icons.create_new_folder_outlined),
-              label: const Text('New workspace'),
+              label: Text(context.l10n.newWorkspace),
             ),
           ],
         ),
@@ -131,17 +132,15 @@ class _WorkspaceSheet extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: Text('Delete "${w.name}"?'),
-        content: const Text(
-            'This removes the workspace and its sessions from AgentFlow. Files '
-            'on disk are not touched.'),
+        title: Text(context.l10n.deleteWorkspaceTitle(w.name)),
+        content: Text(context.l10n.deleteWorkspaceDescription),
         actions: <Widget>[
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+              child: Text(context.l10n.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete')),
+              child: Text(context.l10n.delete)),
         ],
       ),
     );
@@ -182,7 +181,7 @@ class _CreateWorkspaceDialogState extends ConsumerState<CreateWorkspaceDialog> {
     final name = _name.text.trim();
     final path = _path.text.trim();
     if (name.isEmpty || path.isEmpty) {
-      setState(() => _error = 'Name and path are required.');
+      setState(() => _error = context.l10n.workspaceRequiredFields);
       return;
     }
     setState(() {
@@ -212,25 +211,25 @@ class _CreateWorkspaceDialogState extends ConsumerState<CreateWorkspaceDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('New workspace'),
+      title: Text(context.l10n.newWorkspace),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           TextField(
             controller: _name,
             autofocus: true,
-            decoration: const InputDecoration(
-              labelText: 'Name',
+            decoration: InputDecoration(
+              labelText: context.l10n.workspaceName,
               hintText: 'My Project',
             ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _path,
-            decoration: const InputDecoration(
-              labelText: 'Project directory',
+            decoration: InputDecoration(
+              labelText: context.l10n.workspacePath,
               hintText: '/path/to/project',
-              helperText: 'Absolute path the agent will read and edit.',
+              helperText: context.l10n.workspacePathHelper,
             ),
           ),
           if (_error != null) ...<Widget>[
@@ -243,13 +242,13 @@ class _CreateWorkspaceDialogState extends ConsumerState<CreateWorkspaceDialog> {
       actions: <Widget>[
         TextButton(
             onPressed: _busy ? null : () => Navigator.pop(context),
-            child: const Text('Cancel')),
+            child: Text(context.l10n.cancel)),
         FilledButton(
             onPressed: _busy ? null : _submit,
             child: _busy
                 ? const SizedBox(
                     width: 18, height: 18, child: CircularProgressIndicator())
-                : const Text('Create')),
+                : Text(context.l10n.create)),
       ],
     );
   }
@@ -266,7 +265,7 @@ class WorkspacePickerButton extends ConsumerWidget {
       onPressed: () => showWorkspacePicker(context),
       icon: const Icon(Icons.folder_open, size: 18),
       label: Text(
-        workspace?.name ?? 'Select workspace',
+        workspace?.name ?? context.l10n.selectWorkspace,
         overflow: TextOverflow.ellipsis,
       ),
       style: TextButton.styleFrom(

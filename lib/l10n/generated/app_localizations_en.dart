@@ -102,6 +102,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'It will read files, search code, propose changes and run commands — asking before anything risky.';
 
   @override
+  String get exampleAnalyze =>
+      'Analyze this project and summarize its architecture.';
+
+  @override
+  String get exampleConfiguration =>
+      'Find where the app reads its configuration and explain it.';
+
+  @override
+  String get examplePerformance =>
+      'Why is startup slow? Investigate and propose a fix.';
+
+  @override
   String get describeTask => 'Describe a task…';
 
   @override
@@ -148,6 +160,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workspacePath => 'Project path';
+
+  @override
+  String get workspacePathHelper =>
+      'Absolute path the agent will read and edit.';
+
+  @override
+  String get workspaceRequiredFields => 'Name and path are required.';
+
+  @override
+  String get selectWorkspace => 'Select workspace';
 
   @override
   String get selectWorkspaceForFiles =>
@@ -262,6 +284,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agentActivity => 'Agent Activity';
+
+  @override
+  String get phaseIdle => 'Idle';
+
+  @override
+  String get phaseThinking => 'Thinking';
+
+  @override
+  String get phasePlanning => 'Planning';
+
+  @override
+  String get phaseWaitingApproval => 'Waiting for approval';
+
+  @override
+  String get phaseExecuting => 'Executing';
+
+  @override
+  String get phaseObserving => 'Observing';
+
+  @override
+  String get phaseCompleted => 'Completed';
+
+  @override
+  String get phaseError => 'Error';
+
+  @override
+  String get phaseCancelled => 'Cancelled';
 
   @override
   String callingTools(String tools) {

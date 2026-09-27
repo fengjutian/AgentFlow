@@ -101,6 +101,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get agentTaskDescription => '它可以读取文件、搜索代码、提出修改并执行命令；进行风险操作前会请求确认。';
 
   @override
+  String get exampleAnalyze => '分析这个项目并总结其架构。';
+
+  @override
+  String get exampleConfiguration => '找出应用读取配置的位置并解释其工作方式。';
+
+  @override
+  String get examplePerformance => '为什么启动速度很慢？请调查并提出修复方案。';
+
+  @override
   String get describeTask => '描述一个任务…';
 
   @override
@@ -146,6 +155,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get workspacePath => '项目路径';
+
+  @override
+  String get workspacePathHelper => '智能体将读取和编辑的绝对路径。';
+
+  @override
+  String get workspaceRequiredFields => '名称和路径不能为空。';
+
+  @override
+  String get selectWorkspace => '选择工作区';
 
   @override
   String get selectWorkspaceForFiles => '请选择工作区以浏览文件。';
@@ -257,6 +275,33 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get agentActivity => '智能体活动';
+
+  @override
+  String get phaseIdle => '空闲';
+
+  @override
+  String get phaseThinking => '思考中';
+
+  @override
+  String get phasePlanning => '规划中';
+
+  @override
+  String get phaseWaitingApproval => '等待批准';
+
+  @override
+  String get phaseExecuting => '执行中';
+
+  @override
+  String get phaseObserving => '分析结果中';
+
+  @override
+  String get phaseCompleted => '已完成';
+
+  @override
+  String get phaseError => '错误';
+
+  @override
+  String get phaseCancelled => '已取消';
 
   @override
   String callingTools(String tools) {

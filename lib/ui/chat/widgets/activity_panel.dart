@@ -8,6 +8,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../core/agent/agent_state.dart';
+import '../../../l10n/l10n.dart';
 
 class ActivityPanel extends StatelessWidget {
   const ActivityPanel({
@@ -35,7 +36,7 @@ class ActivityPanel extends StatelessWidget {
               children: <Widget>[
                 Icon(Icons.bolt, size: 16, color: scheme.primary),
                 const SizedBox(width: 6),
-                Text('Agent Activity',
+                Text(context.l10n.agentActivity,
                     style: Theme.of(context)
                         .textTheme
                         .labelLarge
@@ -50,8 +51,8 @@ class ActivityPanel extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Text(
                   phase == AgentPhase.thinking
-                      ? 'Thinking…'
-                      : phase.label,
+                      ? '${context.l10n.phaseThinking}…'
+                      : _phaseLabel(context, phase),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               )
@@ -86,7 +87,8 @@ class _PhaseBadge extends StatelessWidget {
           ),
           const SizedBox(width: 6),
         ],
-        Text(phase.label, style: Theme.of(context).textTheme.labelSmall),
+        Text(_phaseLabel(context, phase),
+            style: Theme.of(context).textTheme.labelSmall),
       ],
     );
   }
@@ -151,3 +153,15 @@ class _ActivityRow extends StatelessWidget {
     );
   }
 }
+
+String _phaseLabel(BuildContext context, AgentPhase phase) => switch (phase) {
+      AgentPhase.idle => context.l10n.phaseIdle,
+      AgentPhase.thinking => context.l10n.phaseThinking,
+      AgentPhase.planning => context.l10n.phasePlanning,
+      AgentPhase.waitingApproval => context.l10n.phaseWaitingApproval,
+      AgentPhase.executing => context.l10n.phaseExecuting,
+      AgentPhase.observing => context.l10n.phaseObserving,
+      AgentPhase.completed => context.l10n.phaseCompleted,
+      AgentPhase.error => context.l10n.phaseError,
+      AgentPhase.cancelled => context.l10n.phaseCancelled,
+    };

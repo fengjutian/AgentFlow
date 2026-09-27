@@ -272,6 +272,24 @@ abstract class AppLocalizations {
   /// **'It will read files, search code, propose changes and run commands — asking before anything risky.'**
   String get agentTaskDescription;
 
+  /// No description provided for @exampleAnalyze.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze this project and summarize its architecture.'**
+  String get exampleAnalyze;
+
+  /// No description provided for @exampleConfiguration.
+  ///
+  /// In en, this message translates to:
+  /// **'Find where the app reads its configuration and explain it.'**
+  String get exampleConfiguration;
+
+  /// No description provided for @examplePerformance.
+  ///
+  /// In en, this message translates to:
+  /// **'Why is startup slow? Investigate and propose a fix.'**
+  String get examplePerformance;
+
   /// No description provided for @describeTask.
   ///
   /// In en, this message translates to:
@@ -349,6 +367,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Project path'**
   String get workspacePath;
+
+  /// No description provided for @workspacePathHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Absolute path the agent will read and edit.'**
+  String get workspacePathHelper;
+
+  /// No description provided for @workspaceRequiredFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Name and path are required.'**
+  String get workspaceRequiredFields;
+
+  /// No description provided for @selectWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Select workspace'**
+  String get selectWorkspace;
 
   /// No description provided for @selectWorkspaceForFiles.
   ///
@@ -559,6 +595,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Agent Activity'**
   String get agentActivity;
+
+  /// No description provided for @phaseIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Idle'**
+  String get phaseIdle;
+
+  /// No description provided for @phaseThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get phaseThinking;
+
+  /// No description provided for @phasePlanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning'**
+  String get phasePlanning;
+
+  /// No description provided for @phaseWaitingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval'**
+  String get phaseWaitingApproval;
+
+  /// No description provided for @phaseExecuting.
+  ///
+  /// In en, this message translates to:
+  /// **'Executing'**
+  String get phaseExecuting;
+
+  /// No description provided for @phaseObserving.
+  ///
+  /// In en, this message translates to:
+  /// **'Observing'**
+  String get phaseObserving;
+
+  /// No description provided for @phaseCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get phaseCompleted;
+
+  /// No description provided for @phaseError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get phaseError;
+
+  /// No description provided for @phaseCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get phaseCancelled;
 
   /// No description provided for @callingTools.
   ///

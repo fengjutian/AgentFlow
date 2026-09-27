@@ -11,6 +11,7 @@ import '../../../core/message.dart';
 import '../../../app/theme.dart';
 import '../../../data/models.dart';
 import '../../../tools/filesystem/file_tools.dart';
+import '../../../l10n/l10n.dart';
 import 'diff_card.dart';
 import 'terminal_card.dart';
 
@@ -114,7 +115,9 @@ class _ToolCallIntent extends StatelessWidget {
           Icon(Icons.psychology_outlined, size: 14, color: scheme.outline),
           const SizedBox(width: 6),
           Text(
-            'Calling ${calls.map((ToolCall c) => c.name).join(', ')}',
+            context.l10n.callingTools(
+              calls.map((ToolCall c) => c.name).join(', '),
+            ),
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -197,7 +200,7 @@ class _GenericToolCard extends StatelessWidget {
             ),
             subtitle: Text(
               denied
-                  ? 'Denied by user'
+                  ? context.l10n.deniedByUser
                   : _firstLine(message.content),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
