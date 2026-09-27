@@ -195,7 +195,7 @@ class _ModelChip extends ConsumerWidget {
             color: scheme.primary,
           ),
           label: Text(
-            config.provider == 'mock' ? 'Demo' : config.model,
+            config.provider == 'mock' ? context.l10n.demo : config.model,
             style: Theme.of(context).textTheme.labelSmall,
           ),
         ),

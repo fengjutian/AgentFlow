@@ -262,8 +262,9 @@ class SessionController extends Notifier<ChatState> {
 
   String _titleFrom(String prompt) {
     final firstLine = prompt.split('\n').first.trim();
-    if (firstLine.length <= 42)
+    if (firstLine.length <= 42) {
       return firstLine.isEmpty ? 'New session' : firstLine;
+    }
     return '${firstLine.substring(0, 42)}…';
   }
 }
