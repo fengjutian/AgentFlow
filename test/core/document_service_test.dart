@@ -182,6 +182,17 @@ void main() {
     expect(store.documents.values.single.parseError, contains('broken'));
   });
 
+  test('marks documents without a usable text layer as requiring OCR', () async {
+    final document = await service(_FakeEpubParser(requiresOcr: true)).import(
+      DocumentImportRequest(
+        workspaceId: 'workspace',
+        sourcePath: source.path,
+      ),
+    );
+
+    expect(document.parseStatus, DocumentParseStatus.ocrRequired);
+  });
+
   test('rejects unsupported extensions before copying the source', () async {
     final unsupported = File('${temporaryDirectory.path}/notes.txt');
     await unsupported.writeAsString('notes');
