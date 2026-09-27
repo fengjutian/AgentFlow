@@ -43,54 +43,65 @@ void main() {
     if (tmp.existsSync()) tmp.deleteSync(recursive: true);
   });
 
-  AgentEngine buildEngine(ModelProviderFactory factory, ApprovalManager approval) =>
-      AgentEngine(
-        providerFactory: factory,
-        approvalManager: approval,
-        defaultRegistry: defaultToolRegistry(),
-        contextManager: ContextManager(),
-      );
+  AgentEngine buildEngine(
+    ModelProviderFactory factory,
+    ApprovalManager approval,
+  ) => AgentEngine(
+    providerFactory: factory,
+    approvalManager: approval,
+    defaultRegistry: defaultToolRegistry(),
+    contextManager: ContextManager(),
+  );
 
   AgentRunRequest request(String message) => AgentRunRequest(
-        userMessage: message,
-        workspace: WorkspaceContext(
-          workspaceName: 'test-ws',
-          rootDirectory: tmp.path,
-          runtimeLabel: runtime.label,
+    userMessage: message,
+    workspace: WorkspaceContext(
+      workspaceName: 'test-ws',
+      rootDirectory: tmp.path,
+      runtimeLabel: runtime.label,
+    ),
+    config: _mockConfig,
+    runtime: runtime,
+  );
+
+  test(
+    'the demo run lists files, then completes with a final answer',
+    () async {
+      File(
+        '${tmp.path}${Platform.pathSeparator}README.md',
+      ).writeAsStringSync('# hello\n');
+      final approval = ApprovalManager(autoApprove: true);
+      addTearDown(approval.dispose);
+      final engine = buildEngine(ModelProviderFactory(), approval);
+
+      final run = engine.runTurn(request('explore the workspace'));
+      final events = await run.events.toList();
+      await run.done;
+
+      expect(
+        events.whereType<ToolFinishedEvent>().any(
+          (ToolFinishedEvent e) =>
+              e.toolName == 'list_files' && !e.result.isError,
         ),
-        config: _mockConfig,
-        runtime: runtime,
+        isTrue,
+        reason: 'the demo script should have listed the workspace',
       );
-
-  test('the demo run lists files, then completes with a final answer', () async {
-    File('${tmp.path}${Platform.pathSeparator}README.md')
-        .writeAsStringSync('# hello\n');
-    final approval = ApprovalManager(autoApprove: true);
-    addTearDown(approval.dispose);
-    final engine = buildEngine(ModelProviderFactory(), approval);
-
-    final run = engine.runTurn(request('explore the workspace'));
-    final events = await run.events.toList();
-    await run.done;
-
-    expect(
-      events.whereType<ToolFinishedEvent>().any((ToolFinishedEvent e) =>
-          e.toolName == 'list_files' && !e.result.isError),
-      isTrue,
-      reason: 'the demo script should have listed the workspace',
-    );
-    final completed =
-        events.whereType<RunCompletedEvent>().single;
-    expect(completed.toolCallCount, greaterThanOrEqualTo(1));
-    expect(completed.finalText, isNotEmpty);
-    expect(
-      events.whereType<PhaseChangedEvent>().map((PhaseChangedEvent e) => e.phase),
-      contains(AgentPhase.completed),
-    );
-  });
+      final completed = events.whereType<RunCompletedEvent>().single;
+      expect(completed.toolCallCount, greaterThanOrEqualTo(1));
+      expect(completed.finalText, isNotEmpty);
+      expect(
+        events.whereType<PhaseChangedEvent>().map(
+          (PhaseChangedEvent e) => e.phase,
+        ),
+        contains(AgentPhase.completed),
+      );
+    },
+  );
 
   test('a denied mutating tool is reported and never writes', () async {
-    final approval = ApprovalManager(resolver: (ApprovalRequest r) => ApprovalDecision.deny);
+    final approval = ApprovalManager(
+      resolver: (ApprovalRequest r) => ApprovalDecision.deny,
+    );
     addTearDown(approval.dispose);
     final mock = MockModelProvider(
       script: <ModelResponse>[
@@ -120,46 +131,60 @@ void main() {
       reason: 'a denied write must not touch disk',
     );
     // The loop still terminates gracefully with the model's follow-up.
-    expect(events.whereType<RunCompletedEvent>().single.finalText,
-        'Understood, I will not write the file.');
-  });
-
-  test('an approved mutating tool executes and the file lands on disk', () async {
-    final approval = ApprovalManager(resolver: (ApprovalRequest r) => ApprovalDecision.allow);
-    addTearDown(approval.dispose);
-    final mock = MockModelProvider(
-      script: <ModelResponse>[
-        MockModelProvider.toolCall(
-          id: 'call_w1',
-          name: 'write_file',
-          arguments: <String, dynamic>{'path': 'ok.txt', 'content': 'written\n'},
-        ),
-      ],
-      finalText: 'Wrote ok.txt.',
+    expect(
+      events.whereType<RunCompletedEvent>().single.finalText,
+      'Understood, I will not write the file.',
     );
-    final engine = buildEngine(_ScriptedFactory(mock), approval);
-
-    final run = engine.runTurn(request('write ok.txt'));
-    final events = await run.events.toList();
-    await run.done;
-
-    final finished = events.whereType<ToolFinishedEvent>().single;
-    expect(finished.result.isError, isFalse);
-    final file = File('${tmp.path}${Platform.pathSeparator}ok.txt');
-    expect(file.existsSync(), isTrue);
-    expect(file.readAsStringSync(), 'written\n');
-    // The write produces a diff payload for the Diff card.
-    expect(finished.result.data?['diff'], isNotNull);
   });
+
+  test(
+    'an approved mutating tool executes and the file lands on disk',
+    () async {
+      final approval = ApprovalManager(
+        resolver: (ApprovalRequest r) => ApprovalDecision.allow,
+      );
+      addTearDown(approval.dispose);
+      final mock = MockModelProvider(
+        script: <ModelResponse>[
+          MockModelProvider.toolCall(
+            id: 'call_w1',
+            name: 'write_file',
+            arguments: <String, dynamic>{
+              'path': 'ok.txt',
+              'content': 'written\n',
+            },
+          ),
+        ],
+        finalText: 'Wrote ok.txt.',
+      );
+      final engine = buildEngine(_ScriptedFactory(mock), approval);
+
+      final run = engine.runTurn(request('write ok.txt'));
+      final events = await run.events.toList();
+      await run.done;
+
+      final finished = events.whereType<ToolFinishedEvent>().single;
+      expect(finished.result.isError, isFalse);
+      final file = File('${tmp.path}${Platform.pathSeparator}ok.txt');
+      expect(file.existsSync(), isTrue);
+      expect(file.readAsStringSync(), 'written\n');
+      // The write produces a diff payload for the Diff card.
+      expect(finished.result.data?['diff'], isNotNull);
+    },
+  );
 
   test('write approval includes a diff before the file is touched', () async {
     ApprovalRequest? captured;
-    final approval = ApprovalManager(resolver: (ApprovalRequest request) {
-      captured = request;
-      expect(File('${tmp.path}${Platform.pathSeparator}preview.txt').existsSync(),
-          isFalse);
-      return ApprovalDecision.deny;
-    });
+    final approval = ApprovalManager(
+      resolver: (ApprovalRequest request) {
+        captured = request;
+        expect(
+          File('${tmp.path}${Platform.pathSeparator}preview.txt').existsSync(),
+          isFalse,
+        );
+        return ApprovalDecision.deny;
+      },
+    );
     addTearDown(approval.dispose);
     final mock = MockModelProvider(
       script: <ModelResponse>[
@@ -174,73 +199,86 @@ void main() {
       ],
       finalText: 'The proposed change was rejected.',
     );
-    final run = buildEngine(_ScriptedFactory(mock), approval)
-        .runTurn(request('write preview.txt'));
+    final run = buildEngine(
+      _ScriptedFactory(mock),
+      approval,
+    ).runTurn(request('write preview.txt'));
     await run.events.toList();
     await run.done;
 
     expect(captured?.previewData?['diff'], isNotNull);
-    expect(File('${tmp.path}${Platform.pathSeparator}preview.txt').existsSync(),
-        isFalse);
-  });
-
-  test('an unknown tool call yields an error result and keeps looping', () async {
-    final approval = ApprovalManager(autoApprove: true);
-    addTearDown(approval.dispose);
-    final mock = MockModelProvider(
-      script: <ModelResponse>[
-        MockModelProvider.toolCall(
-          id: 'call_x',
-          name: 'launch_missiles',
-          arguments: <String, dynamic>{},
-        ),
-      ],
-      finalText: 'That tool does not exist.',
+    expect(
+      File('${tmp.path}${Platform.pathSeparator}preview.txt').existsSync(),
+      isFalse,
     );
-    final engine = buildEngine(_ScriptedFactory(mock), approval);
-
-    final run = engine.runTurn(request('do something impossible'));
-    final events = await run.events.toList();
-    await run.done;
-
-    final finished = events.whereType<ToolFinishedEvent>().single;
-    expect(finished.result.isError, isTrue);
-    expect(finished.result.content, contains('Unknown or disabled tool'));
-    expect(events.whereType<RunCompletedEvent>(), isNotEmpty);
   });
+
+  test(
+    'an unknown tool call yields an error result and keeps looping',
+    () async {
+      final approval = ApprovalManager(autoApprove: true);
+      addTearDown(approval.dispose);
+      final mock = MockModelProvider(
+        script: <ModelResponse>[
+          MockModelProvider.toolCall(
+            id: 'call_x',
+            name: 'launch_missiles',
+            arguments: <String, dynamic>{},
+          ),
+        ],
+        finalText: 'That tool does not exist.',
+      );
+      final engine = buildEngine(_ScriptedFactory(mock), approval);
+
+      final run = engine.runTurn(request('do something impossible'));
+      final events = await run.events.toList();
+      await run.done;
+
+      final finished = events.whereType<ToolFinishedEvent>().single;
+      expect(finished.result.isError, isTrue);
+      expect(finished.result.content, contains('Unknown or disabled tool'));
+      expect(events.whereType<RunCompletedEvent>(), isNotEmpty);
+    },
+  );
 
   test('the loop stops at maxIterations without a final answer', () async {
     final approval = ApprovalManager(autoApprove: true);
     addTearDown(approval.dispose);
     // A script that always asks for another tool call → never terminates on its own.
-    final mock = MockModelProvider(script: <ModelResponse>[
-      for (var i = 0; i < 5; i++)
-        MockModelProvider.toolCall(
-          id: 'call_$i',
-          name: 'list_files',
-          arguments: <String, dynamic>{'path': '.'},
-        ),
-    ]);
+    final mock = MockModelProvider(
+      script: <ModelResponse>[
+        for (var i = 0; i < 5; i++)
+          MockModelProvider.toolCall(
+            id: 'call_$i',
+            name: 'list_files',
+            arguments: <String, dynamic>{'path': '.'},
+          ),
+      ],
+    );
     final engine = buildEngine(_ScriptedFactory(mock), approval);
 
-    final run = engine.runTurn(AgentRunRequest(
-      userMessage: 'loop forever',
-      workspace: WorkspaceContext(
-        workspaceName: 'test-ws',
-        rootDirectory: tmp.path,
-        runtimeLabel: runtime.label,
+    final run = engine.runTurn(
+      AgentRunRequest(
+        userMessage: 'loop forever',
+        workspace: WorkspaceContext(
+          workspaceName: 'test-ws',
+          rootDirectory: tmp.path,
+          runtimeLabel: runtime.label,
+        ),
+        config: _mockConfig,
+        runtime: runtime,
+        maxIterations: 3,
       ),
-      config: _mockConfig,
-      runtime: runtime,
-      maxIterations: 3,
-    ));
+    );
     final events = await run.events.toList();
     await run.done;
 
     expect(events.whereType<ErrorEvent>(), isNotEmpty);
     expect(events.whereType<RunCompletedEvent>(), isEmpty);
     expect(
-      events.whereType<PhaseChangedEvent>().map((PhaseChangedEvent e) => e.phase),
+      events.whereType<PhaseChangedEvent>().map(
+        (PhaseChangedEvent e) => e.phase,
+      ),
       contains(AgentPhase.error),
     );
   });

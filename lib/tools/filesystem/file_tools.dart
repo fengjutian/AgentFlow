@@ -24,14 +24,14 @@ class ListFilesTool extends ReadOnlyTool {
 
   @override
   Map<String, dynamic> get inputSchema => <String, dynamic>{
-        'type': 'object',
-        'properties': <String, dynamic>{
-          'path': <String, dynamic>{
-            'type': 'string',
-            'description': 'Directory to list, relative to workspace root.',
-          },
-        },
-      };
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'path': <String, dynamic>{
+        'type': 'string',
+        'description': 'Directory to list, relative to workspace root.',
+      },
+    },
+  };
 
   @override
   String describeCall(Map<String, dynamic> arguments) =>
@@ -44,10 +44,12 @@ class ListFilesTool extends ReadOnlyTool {
   ) async {
     final path = optionalString(arguments, 'path', fallback: '.');
     final entries = await context.runtime.listFiles(path);
-    final lines = entries.map((e) {
-      final marker = e.isDirectory ? '/' : '';
-      return '${e.type.padRight(9)} ${e.name}$marker';
-    }).join('\n');
+    final lines = entries
+        .map((e) {
+          final marker = e.isDirectory ? '/' : '';
+          return '${e.type.padRight(9)} ${e.name}$marker';
+        })
+        .join('\n');
     return ToolResult(
       toolCallId: '',
       name: name,
@@ -75,17 +77,17 @@ class ReadFileTool extends ReadOnlyTool {
 
   @override
   Map<String, dynamic> get inputSchema => <String, dynamic>{
-        'type': 'object',
-        'properties': <String, dynamic>{
-          'path': <String, dynamic>{
-            'type': 'string',
-            'description': 'File path relative to the workspace root.',
-          },
-          'startLine': <String, dynamic>{'type': 'integer'},
-          'endLine': <String, dynamic>{'type': 'integer'},
-        },
-        'required': <String>['path'],
-      };
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'path': <String, dynamic>{
+        'type': 'string',
+        'description': 'File path relative to the workspace root.',
+      },
+      'startLine': <String, dynamic>{'type': 'integer'},
+      'endLine': <String, dynamic>{'type': 'integer'},
+    },
+    'required': <String>['path'],
+  };
 
   @override
   String describeCall(Map<String, dynamic> arguments) =>
@@ -194,19 +196,19 @@ class WriteFileTool extends MutatingTool implements PreviewableTool {
 
   @override
   Map<String, dynamic> get inputSchema => <String, dynamic>{
-        'type': 'object',
-        'properties': <String, dynamic>{
-          'path': <String, dynamic>{
-            'type': 'string',
-            'description': 'File path relative to the workspace root.',
-          },
-          'content': <String, dynamic>{
-            'type': 'string',
-            'description': 'Full new content of the file.',
-          },
-        },
-        'required': <String>['path', 'content'],
-      };
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'path': <String, dynamic>{
+        'type': 'string',
+        'description': 'File path relative to the workspace root.',
+      },
+      'content': <String, dynamic>{
+        'type': 'string',
+        'description': 'Full new content of the file.',
+      },
+    },
+    'required': <String>['path', 'content'],
+  };
 
   @override
   String describeCall(Map<String, dynamic> arguments) =>
@@ -216,7 +218,8 @@ class WriteFileTool extends MutatingTool implements PreviewableTool {
   Future<ToolResult> execute(
     Map<String, dynamic> arguments,
     ToolContext context,
-  ) async => executePrepared(arguments, context, await preview(arguments, context));
+  ) async =>
+      executePrepared(arguments, context, await preview(arguments, context));
 
   @override
   Future<ToolPreview> preview(
@@ -249,7 +252,9 @@ class WriteFileTool extends MutatingTool implements PreviewableTool {
   ) async {
     final snapshot = preview.state! as _WriteSnapshot;
     final existsNow = await context.runtime.fileExists(snapshot.path);
-    final current = existsNow ? await context.runtime.readFile(snapshot.path) : '';
+    final current = existsNow
+        ? await context.runtime.readFile(snapshot.path)
+        : '';
     if (existsNow != snapshot.existed || current != snapshot.oldText) {
       throw ToolExecutionException(
         'Refusing to write "${snapshot.path}": it changed after approval.',
@@ -303,7 +308,7 @@ class WriteFileTool extends MutatingTool implements PreviewableTool {
 
 /// Builds the standard filesystem tool set.
 List<AgentTool> fileTools() => <AgentTool>[
-      ListFilesTool(),
-      ReadFileTool(),
-      WriteFileTool(),
-    ];
+  ListFilesTool(),
+  ReadFileTool(),
+  WriteFileTool(),
+];
