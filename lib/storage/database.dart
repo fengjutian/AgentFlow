@@ -152,8 +152,8 @@ class DocumentSections extends Table {
 
   @override
   List<Set<Column>> get uniqueKeys => <Set<Column>>[
-        <Column>{documentId, sectionIndex},
-      ];
+    <Column>{documentId, sectionIndex},
+  ];
 }
 
 @DataClassName('McpServerRow')
@@ -206,14 +206,14 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (Migrator m) => m.createAll(),
-        onUpgrade: (Migrator m, int from, int to) async {
-          if (from < 2) {
-            await m.createTable(runtimeConfigs);
-            await m.createTable(documents);
-            await m.createTable(documentSections);
-            await m.createTable(mcpServers);
-          }
-        },
-      );
+    onCreate: (Migrator m) => m.createAll(),
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await m.createTable(runtimeConfigs);
+        await m.createTable(documents);
+        await m.createTable(documentSections);
+        await m.createTable(mcpServers);
+      }
+    },
+  );
 }

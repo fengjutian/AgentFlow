@@ -22,7 +22,7 @@ class ToolRegistry {
   /// than rebuilding only the built-in tools, otherwise dynamically discovered
   /// tools (for example MCP tools) disappear before an agent run starts.
   ToolRegistry copy() {
-    final registry = ToolRegistry(tools: _tools.values);
+    final registry = ToolRegistry(tools: _tools.values.toList(growable: false));
     registry._disabled.addAll(_disabled);
     return registry;
   }
@@ -45,7 +45,8 @@ class ToolRegistry {
     }
   }
 
-  bool isEnabled(String name) => _tools.containsKey(name) && !_disabled.contains(name);
+  bool isEnabled(String name) =>
+      _tools.containsKey(name) && !_disabled.contains(name);
 
   AgentTool? lookup(String name) {
     final tool = _tools[name];

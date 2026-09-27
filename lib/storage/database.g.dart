@@ -2464,6 +2464,2969 @@ class MemoryNotesCompanion extends UpdateCompanion<MemoryRow> {
   }
 }
 
+class $RuntimeConfigsTable extends RuntimeConfigs
+    with TableInfo<$RuntimeConfigsTable, RuntimeConfigRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RuntimeConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _optionsJsonMeta = const VerificationMeta(
+    'optionsJson',
+  );
+  @override
+  late final GeneratedColumn<String> optionsJson = GeneratedColumn<String>(
+    'options_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    label,
+    kind,
+    optionsJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'runtime_configs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RuntimeConfigRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_labelMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('options_json')) {
+      context.handle(
+        _optionsJsonMeta,
+        optionsJson.isAcceptableOrUnknown(
+          data['options_json']!,
+          _optionsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RuntimeConfigRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RuntimeConfigRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      optionsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}options_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RuntimeConfigsTable createAlias(String alias) {
+    return $RuntimeConfigsTable(attachedDatabase, alias);
+  }
+}
+
+class RuntimeConfigRow extends DataClass
+    implements Insertable<RuntimeConfigRow> {
+  final String id;
+  final String label;
+  final String kind;
+  final String optionsJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const RuntimeConfigRow({
+    required this.id,
+    required this.label,
+    required this.kind,
+    required this.optionsJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['label'] = Variable<String>(label);
+    map['kind'] = Variable<String>(kind);
+    map['options_json'] = Variable<String>(optionsJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  RuntimeConfigsCompanion toCompanion(bool nullToAbsent) {
+    return RuntimeConfigsCompanion(
+      id: Value(id),
+      label: Value(label),
+      kind: Value(kind),
+      optionsJson: Value(optionsJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory RuntimeConfigRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RuntimeConfigRow(
+      id: serializer.fromJson<String>(json['id']),
+      label: serializer.fromJson<String>(json['label']),
+      kind: serializer.fromJson<String>(json['kind']),
+      optionsJson: serializer.fromJson<String>(json['optionsJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'label': serializer.toJson<String>(label),
+      'kind': serializer.toJson<String>(kind),
+      'optionsJson': serializer.toJson<String>(optionsJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  RuntimeConfigRow copyWith({
+    String? id,
+    String? label,
+    String? kind,
+    String? optionsJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => RuntimeConfigRow(
+    id: id ?? this.id,
+    label: label ?? this.label,
+    kind: kind ?? this.kind,
+    optionsJson: optionsJson ?? this.optionsJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  RuntimeConfigRow copyWithCompanion(RuntimeConfigsCompanion data) {
+    return RuntimeConfigRow(
+      id: data.id.present ? data.id.value : this.id,
+      label: data.label.present ? data.label.value : this.label,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      optionsJson: data.optionsJson.present
+          ? data.optionsJson.value
+          : this.optionsJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RuntimeConfigRow(')
+          ..write('id: $id, ')
+          ..write('label: $label, ')
+          ..write('kind: $kind, ')
+          ..write('optionsJson: $optionsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, label, kind, optionsJson, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RuntimeConfigRow &&
+          other.id == this.id &&
+          other.label == this.label &&
+          other.kind == this.kind &&
+          other.optionsJson == this.optionsJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class RuntimeConfigsCompanion extends UpdateCompanion<RuntimeConfigRow> {
+  final Value<String> id;
+  final Value<String> label;
+  final Value<String> kind;
+  final Value<String> optionsJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const RuntimeConfigsCompanion({
+    this.id = const Value.absent(),
+    this.label = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.optionsJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RuntimeConfigsCompanion.insert({
+    required String id,
+    required String label,
+    required String kind,
+    this.optionsJson = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       label = Value(label),
+       kind = Value(kind),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<RuntimeConfigRow> custom({
+    Expression<String>? id,
+    Expression<String>? label,
+    Expression<String>? kind,
+    Expression<String>? optionsJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (label != null) 'label': label,
+      if (kind != null) 'kind': kind,
+      if (optionsJson != null) 'options_json': optionsJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RuntimeConfigsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? label,
+    Value<String>? kind,
+    Value<String>? optionsJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return RuntimeConfigsCompanion(
+      id: id ?? this.id,
+      label: label ?? this.label,
+      kind: kind ?? this.kind,
+      optionsJson: optionsJson ?? this.optionsJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (optionsJson.present) {
+      map['options_json'] = Variable<String>(optionsJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RuntimeConfigsCompanion(')
+          ..write('id: $id, ')
+          ..write('label: $label, ')
+          ..write('kind: $kind, ')
+          ..write('optionsJson: $optionsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DocumentsTable extends Documents
+    with TableInfo<$DocumentsTable, DocumentRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DocumentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _workspaceIdMeta = const VerificationMeta(
+    'workspaceId',
+  );
+  @override
+  late final GeneratedColumn<String> workspaceId = GeneratedColumn<String>(
+    'workspace_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES workspaces (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceUriMeta = const VerificationMeta(
+    'sourceUri',
+  );
+  @override
+  late final GeneratedColumn<String> sourceUri = GeneratedColumn<String>(
+    'source_uri',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _localPathMeta = const VerificationMeta(
+    'localPath',
+  );
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+    'local_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mimeTypeMeta = const VerificationMeta(
+    'mimeType',
+  );
+  @override
+  late final GeneratedColumn<String> mimeType = GeneratedColumn<String>(
+    'mime_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _fileSizeMeta = const VerificationMeta(
+    'fileSize',
+  );
+  @override
+  late final GeneratedColumn<int> fileSize = GeneratedColumn<int>(
+    'file_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _contentHashMeta = const VerificationMeta(
+    'contentHash',
+  );
+  @override
+  late final GeneratedColumn<String> contentHash = GeneratedColumn<String>(
+    'content_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _authorMeta = const VerificationMeta('author');
+  @override
+  late final GeneratedColumn<String> author = GeneratedColumn<String>(
+    'author',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _languageMeta = const VerificationMeta(
+    'language',
+  );
+  @override
+  late final GeneratedColumn<String> language = GeneratedColumn<String>(
+    'language',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _pageCountMeta = const VerificationMeta(
+    'pageCount',
+  );
+  @override
+  late final GeneratedColumn<int> pageCount = GeneratedColumn<int>(
+    'page_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _sectionCountMeta = const VerificationMeta(
+    'sectionCount',
+  );
+  @override
+  late final GeneratedColumn<int> sectionCount = GeneratedColumn<int>(
+    'section_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _parseStatusMeta = const VerificationMeta(
+    'parseStatus',
+  );
+  @override
+  late final GeneratedColumn<String> parseStatus = GeneratedColumn<String>(
+    'parse_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _parseErrorMeta = const VerificationMeta(
+    'parseError',
+  );
+  @override
+  late final GeneratedColumn<String> parseError = GeneratedColumn<String>(
+    'parse_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    workspaceId,
+    displayName,
+    sourceUri,
+    localPath,
+    type,
+    mimeType,
+    fileSize,
+    contentHash,
+    title,
+    author,
+    language,
+    pageCount,
+    sectionCount,
+    parseStatus,
+    parseError,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'documents';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DocumentRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('workspace_id')) {
+      context.handle(
+        _workspaceIdMeta,
+        workspaceId.isAcceptableOrUnknown(
+          data['workspace_id']!,
+          _workspaceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_workspaceIdMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('source_uri')) {
+      context.handle(
+        _sourceUriMeta,
+        sourceUri.isAcceptableOrUnknown(data['source_uri']!, _sourceUriMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceUriMeta);
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(
+        _localPathMeta,
+        localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('mime_type')) {
+      context.handle(
+        _mimeTypeMeta,
+        mimeType.isAcceptableOrUnknown(data['mime_type']!, _mimeTypeMeta),
+      );
+    }
+    if (data.containsKey('file_size')) {
+      context.handle(
+        _fileSizeMeta,
+        fileSize.isAcceptableOrUnknown(data['file_size']!, _fileSizeMeta),
+      );
+    }
+    if (data.containsKey('content_hash')) {
+      context.handle(
+        _contentHashMeta,
+        contentHash.isAcceptableOrUnknown(
+          data['content_hash']!,
+          _contentHashMeta,
+        ),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('author')) {
+      context.handle(
+        _authorMeta,
+        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
+      );
+    }
+    if (data.containsKey('language')) {
+      context.handle(
+        _languageMeta,
+        language.isAcceptableOrUnknown(data['language']!, _languageMeta),
+      );
+    }
+    if (data.containsKey('page_count')) {
+      context.handle(
+        _pageCountMeta,
+        pageCount.isAcceptableOrUnknown(data['page_count']!, _pageCountMeta),
+      );
+    }
+    if (data.containsKey('section_count')) {
+      context.handle(
+        _sectionCountMeta,
+        sectionCount.isAcceptableOrUnknown(
+          data['section_count']!,
+          _sectionCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('parse_status')) {
+      context.handle(
+        _parseStatusMeta,
+        parseStatus.isAcceptableOrUnknown(
+          data['parse_status']!,
+          _parseStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('parse_error')) {
+      context.handle(
+        _parseErrorMeta,
+        parseError.isAcceptableOrUnknown(data['parse_error']!, _parseErrorMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DocumentRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DocumentRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      workspaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}workspace_id'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
+      sourceUri: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_uri'],
+      )!,
+      localPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_path'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      mimeType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mime_type'],
+      )!,
+      fileSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}file_size'],
+      )!,
+      contentHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_hash'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      author: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author'],
+      )!,
+      language: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language'],
+      )!,
+      pageCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}page_count'],
+      )!,
+      sectionCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}section_count'],
+      )!,
+      parseStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parse_status'],
+      )!,
+      parseError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parse_error'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DocumentsTable createAlias(String alias) {
+    return $DocumentsTable(attachedDatabase, alias);
+  }
+}
+
+class DocumentRow extends DataClass implements Insertable<DocumentRow> {
+  final String id;
+  final String workspaceId;
+  final String displayName;
+  final String sourceUri;
+  final String localPath;
+  final String type;
+  final String mimeType;
+  final int fileSize;
+  final String contentHash;
+  final String title;
+  final String author;
+  final String language;
+  final int pageCount;
+  final int sectionCount;
+  final String parseStatus;
+  final String? parseError;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const DocumentRow({
+    required this.id,
+    required this.workspaceId,
+    required this.displayName,
+    required this.sourceUri,
+    required this.localPath,
+    required this.type,
+    required this.mimeType,
+    required this.fileSize,
+    required this.contentHash,
+    required this.title,
+    required this.author,
+    required this.language,
+    required this.pageCount,
+    required this.sectionCount,
+    required this.parseStatus,
+    this.parseError,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['workspace_id'] = Variable<String>(workspaceId);
+    map['display_name'] = Variable<String>(displayName);
+    map['source_uri'] = Variable<String>(sourceUri);
+    map['local_path'] = Variable<String>(localPath);
+    map['type'] = Variable<String>(type);
+    map['mime_type'] = Variable<String>(mimeType);
+    map['file_size'] = Variable<int>(fileSize);
+    map['content_hash'] = Variable<String>(contentHash);
+    map['title'] = Variable<String>(title);
+    map['author'] = Variable<String>(author);
+    map['language'] = Variable<String>(language);
+    map['page_count'] = Variable<int>(pageCount);
+    map['section_count'] = Variable<int>(sectionCount);
+    map['parse_status'] = Variable<String>(parseStatus);
+    if (!nullToAbsent || parseError != null) {
+      map['parse_error'] = Variable<String>(parseError);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DocumentsCompanion toCompanion(bool nullToAbsent) {
+    return DocumentsCompanion(
+      id: Value(id),
+      workspaceId: Value(workspaceId),
+      displayName: Value(displayName),
+      sourceUri: Value(sourceUri),
+      localPath: Value(localPath),
+      type: Value(type),
+      mimeType: Value(mimeType),
+      fileSize: Value(fileSize),
+      contentHash: Value(contentHash),
+      title: Value(title),
+      author: Value(author),
+      language: Value(language),
+      pageCount: Value(pageCount),
+      sectionCount: Value(sectionCount),
+      parseStatus: Value(parseStatus),
+      parseError: parseError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parseError),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory DocumentRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DocumentRow(
+      id: serializer.fromJson<String>(json['id']),
+      workspaceId: serializer.fromJson<String>(json['workspaceId']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      sourceUri: serializer.fromJson<String>(json['sourceUri']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      type: serializer.fromJson<String>(json['type']),
+      mimeType: serializer.fromJson<String>(json['mimeType']),
+      fileSize: serializer.fromJson<int>(json['fileSize']),
+      contentHash: serializer.fromJson<String>(json['contentHash']),
+      title: serializer.fromJson<String>(json['title']),
+      author: serializer.fromJson<String>(json['author']),
+      language: serializer.fromJson<String>(json['language']),
+      pageCount: serializer.fromJson<int>(json['pageCount']),
+      sectionCount: serializer.fromJson<int>(json['sectionCount']),
+      parseStatus: serializer.fromJson<String>(json['parseStatus']),
+      parseError: serializer.fromJson<String?>(json['parseError']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'workspaceId': serializer.toJson<String>(workspaceId),
+      'displayName': serializer.toJson<String>(displayName),
+      'sourceUri': serializer.toJson<String>(sourceUri),
+      'localPath': serializer.toJson<String>(localPath),
+      'type': serializer.toJson<String>(type),
+      'mimeType': serializer.toJson<String>(mimeType),
+      'fileSize': serializer.toJson<int>(fileSize),
+      'contentHash': serializer.toJson<String>(contentHash),
+      'title': serializer.toJson<String>(title),
+      'author': serializer.toJson<String>(author),
+      'language': serializer.toJson<String>(language),
+      'pageCount': serializer.toJson<int>(pageCount),
+      'sectionCount': serializer.toJson<int>(sectionCount),
+      'parseStatus': serializer.toJson<String>(parseStatus),
+      'parseError': serializer.toJson<String?>(parseError),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  DocumentRow copyWith({
+    String? id,
+    String? workspaceId,
+    String? displayName,
+    String? sourceUri,
+    String? localPath,
+    String? type,
+    String? mimeType,
+    int? fileSize,
+    String? contentHash,
+    String? title,
+    String? author,
+    String? language,
+    int? pageCount,
+    int? sectionCount,
+    String? parseStatus,
+    Value<String?> parseError = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => DocumentRow(
+    id: id ?? this.id,
+    workspaceId: workspaceId ?? this.workspaceId,
+    displayName: displayName ?? this.displayName,
+    sourceUri: sourceUri ?? this.sourceUri,
+    localPath: localPath ?? this.localPath,
+    type: type ?? this.type,
+    mimeType: mimeType ?? this.mimeType,
+    fileSize: fileSize ?? this.fileSize,
+    contentHash: contentHash ?? this.contentHash,
+    title: title ?? this.title,
+    author: author ?? this.author,
+    language: language ?? this.language,
+    pageCount: pageCount ?? this.pageCount,
+    sectionCount: sectionCount ?? this.sectionCount,
+    parseStatus: parseStatus ?? this.parseStatus,
+    parseError: parseError.present ? parseError.value : this.parseError,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  DocumentRow copyWithCompanion(DocumentsCompanion data) {
+    return DocumentRow(
+      id: data.id.present ? data.id.value : this.id,
+      workspaceId: data.workspaceId.present
+          ? data.workspaceId.value
+          : this.workspaceId,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      sourceUri: data.sourceUri.present ? data.sourceUri.value : this.sourceUri,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      type: data.type.present ? data.type.value : this.type,
+      mimeType: data.mimeType.present ? data.mimeType.value : this.mimeType,
+      fileSize: data.fileSize.present ? data.fileSize.value : this.fileSize,
+      contentHash: data.contentHash.present
+          ? data.contentHash.value
+          : this.contentHash,
+      title: data.title.present ? data.title.value : this.title,
+      author: data.author.present ? data.author.value : this.author,
+      language: data.language.present ? data.language.value : this.language,
+      pageCount: data.pageCount.present ? data.pageCount.value : this.pageCount,
+      sectionCount: data.sectionCount.present
+          ? data.sectionCount.value
+          : this.sectionCount,
+      parseStatus: data.parseStatus.present
+          ? data.parseStatus.value
+          : this.parseStatus,
+      parseError: data.parseError.present
+          ? data.parseError.value
+          : this.parseError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DocumentRow(')
+          ..write('id: $id, ')
+          ..write('workspaceId: $workspaceId, ')
+          ..write('displayName: $displayName, ')
+          ..write('sourceUri: $sourceUri, ')
+          ..write('localPath: $localPath, ')
+          ..write('type: $type, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('fileSize: $fileSize, ')
+          ..write('contentHash: $contentHash, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('language: $language, ')
+          ..write('pageCount: $pageCount, ')
+          ..write('sectionCount: $sectionCount, ')
+          ..write('parseStatus: $parseStatus, ')
+          ..write('parseError: $parseError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    workspaceId,
+    displayName,
+    sourceUri,
+    localPath,
+    type,
+    mimeType,
+    fileSize,
+    contentHash,
+    title,
+    author,
+    language,
+    pageCount,
+    sectionCount,
+    parseStatus,
+    parseError,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DocumentRow &&
+          other.id == this.id &&
+          other.workspaceId == this.workspaceId &&
+          other.displayName == this.displayName &&
+          other.sourceUri == this.sourceUri &&
+          other.localPath == this.localPath &&
+          other.type == this.type &&
+          other.mimeType == this.mimeType &&
+          other.fileSize == this.fileSize &&
+          other.contentHash == this.contentHash &&
+          other.title == this.title &&
+          other.author == this.author &&
+          other.language == this.language &&
+          other.pageCount == this.pageCount &&
+          other.sectionCount == this.sectionCount &&
+          other.parseStatus == this.parseStatus &&
+          other.parseError == this.parseError &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
+  final Value<String> id;
+  final Value<String> workspaceId;
+  final Value<String> displayName;
+  final Value<String> sourceUri;
+  final Value<String> localPath;
+  final Value<String> type;
+  final Value<String> mimeType;
+  final Value<int> fileSize;
+  final Value<String> contentHash;
+  final Value<String> title;
+  final Value<String> author;
+  final Value<String> language;
+  final Value<int> pageCount;
+  final Value<int> sectionCount;
+  final Value<String> parseStatus;
+  final Value<String?> parseError;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const DocumentsCompanion({
+    this.id = const Value.absent(),
+    this.workspaceId = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.sourceUri = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.type = const Value.absent(),
+    this.mimeType = const Value.absent(),
+    this.fileSize = const Value.absent(),
+    this.contentHash = const Value.absent(),
+    this.title = const Value.absent(),
+    this.author = const Value.absent(),
+    this.language = const Value.absent(),
+    this.pageCount = const Value.absent(),
+    this.sectionCount = const Value.absent(),
+    this.parseStatus = const Value.absent(),
+    this.parseError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DocumentsCompanion.insert({
+    required String id,
+    required String workspaceId,
+    required String displayName,
+    required String sourceUri,
+    required String localPath,
+    required String type,
+    this.mimeType = const Value.absent(),
+    this.fileSize = const Value.absent(),
+    this.contentHash = const Value.absent(),
+    this.title = const Value.absent(),
+    this.author = const Value.absent(),
+    this.language = const Value.absent(),
+    this.pageCount = const Value.absent(),
+    this.sectionCount = const Value.absent(),
+    this.parseStatus = const Value.absent(),
+    this.parseError = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       workspaceId = Value(workspaceId),
+       displayName = Value(displayName),
+       sourceUri = Value(sourceUri),
+       localPath = Value(localPath),
+       type = Value(type),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<DocumentRow> custom({
+    Expression<String>? id,
+    Expression<String>? workspaceId,
+    Expression<String>? displayName,
+    Expression<String>? sourceUri,
+    Expression<String>? localPath,
+    Expression<String>? type,
+    Expression<String>? mimeType,
+    Expression<int>? fileSize,
+    Expression<String>? contentHash,
+    Expression<String>? title,
+    Expression<String>? author,
+    Expression<String>? language,
+    Expression<int>? pageCount,
+    Expression<int>? sectionCount,
+    Expression<String>? parseStatus,
+    Expression<String>? parseError,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (workspaceId != null) 'workspace_id': workspaceId,
+      if (displayName != null) 'display_name': displayName,
+      if (sourceUri != null) 'source_uri': sourceUri,
+      if (localPath != null) 'local_path': localPath,
+      if (type != null) 'type': type,
+      if (mimeType != null) 'mime_type': mimeType,
+      if (fileSize != null) 'file_size': fileSize,
+      if (contentHash != null) 'content_hash': contentHash,
+      if (title != null) 'title': title,
+      if (author != null) 'author': author,
+      if (language != null) 'language': language,
+      if (pageCount != null) 'page_count': pageCount,
+      if (sectionCount != null) 'section_count': sectionCount,
+      if (parseStatus != null) 'parse_status': parseStatus,
+      if (parseError != null) 'parse_error': parseError,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DocumentsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? workspaceId,
+    Value<String>? displayName,
+    Value<String>? sourceUri,
+    Value<String>? localPath,
+    Value<String>? type,
+    Value<String>? mimeType,
+    Value<int>? fileSize,
+    Value<String>? contentHash,
+    Value<String>? title,
+    Value<String>? author,
+    Value<String>? language,
+    Value<int>? pageCount,
+    Value<int>? sectionCount,
+    Value<String>? parseStatus,
+    Value<String?>? parseError,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return DocumentsCompanion(
+      id: id ?? this.id,
+      workspaceId: workspaceId ?? this.workspaceId,
+      displayName: displayName ?? this.displayName,
+      sourceUri: sourceUri ?? this.sourceUri,
+      localPath: localPath ?? this.localPath,
+      type: type ?? this.type,
+      mimeType: mimeType ?? this.mimeType,
+      fileSize: fileSize ?? this.fileSize,
+      contentHash: contentHash ?? this.contentHash,
+      title: title ?? this.title,
+      author: author ?? this.author,
+      language: language ?? this.language,
+      pageCount: pageCount ?? this.pageCount,
+      sectionCount: sectionCount ?? this.sectionCount,
+      parseStatus: parseStatus ?? this.parseStatus,
+      parseError: parseError ?? this.parseError,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (workspaceId.present) {
+      map['workspace_id'] = Variable<String>(workspaceId.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (sourceUri.present) {
+      map['source_uri'] = Variable<String>(sourceUri.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (mimeType.present) {
+      map['mime_type'] = Variable<String>(mimeType.value);
+    }
+    if (fileSize.present) {
+      map['file_size'] = Variable<int>(fileSize.value);
+    }
+    if (contentHash.present) {
+      map['content_hash'] = Variable<String>(contentHash.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (author.present) {
+      map['author'] = Variable<String>(author.value);
+    }
+    if (language.present) {
+      map['language'] = Variable<String>(language.value);
+    }
+    if (pageCount.present) {
+      map['page_count'] = Variable<int>(pageCount.value);
+    }
+    if (sectionCount.present) {
+      map['section_count'] = Variable<int>(sectionCount.value);
+    }
+    if (parseStatus.present) {
+      map['parse_status'] = Variable<String>(parseStatus.value);
+    }
+    if (parseError.present) {
+      map['parse_error'] = Variable<String>(parseError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DocumentsCompanion(')
+          ..write('id: $id, ')
+          ..write('workspaceId: $workspaceId, ')
+          ..write('displayName: $displayName, ')
+          ..write('sourceUri: $sourceUri, ')
+          ..write('localPath: $localPath, ')
+          ..write('type: $type, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('fileSize: $fileSize, ')
+          ..write('contentHash: $contentHash, ')
+          ..write('title: $title, ')
+          ..write('author: $author, ')
+          ..write('language: $language, ')
+          ..write('pageCount: $pageCount, ')
+          ..write('sectionCount: $sectionCount, ')
+          ..write('parseStatus: $parseStatus, ')
+          ..write('parseError: $parseError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DocumentSectionsTable extends DocumentSections
+    with TableInfo<$DocumentSectionsTable, DocumentSectionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DocumentSectionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _documentIdMeta = const VerificationMeta(
+    'documentId',
+  );
+  @override
+  late final GeneratedColumn<String> documentId = GeneratedColumn<String>(
+    'document_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES documents (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _sectionIndexMeta = const VerificationMeta(
+    'sectionIndex',
+  );
+  @override
+  late final GeneratedColumn<int> sectionIndex = GeneratedColumn<int>(
+    'section_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _parentSectionIdMeta = const VerificationMeta(
+    'parentSectionId',
+  );
+  @override
+  late final GeneratedColumn<String> parentSectionId = GeneratedColumn<String>(
+    'parent_section_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _locatorMeta = const VerificationMeta(
+    'locator',
+  );
+  @override
+  late final GeneratedColumn<String> locator = GeneratedColumn<String>(
+    'locator',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _plainTextMeta = const VerificationMeta(
+    'plainText',
+  );
+  @override
+  late final GeneratedColumn<String> plainText = GeneratedColumn<String>(
+    'plain_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _charCountMeta = const VerificationMeta(
+    'charCount',
+  );
+  @override
+  late final GeneratedColumn<int> charCount = GeneratedColumn<int>(
+    'char_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _metadataJsonMeta = const VerificationMeta(
+    'metadataJson',
+  );
+  @override
+  late final GeneratedColumn<String> metadataJson = GeneratedColumn<String>(
+    'metadata_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    documentId,
+    sectionIndex,
+    parentSectionId,
+    kind,
+    title,
+    locator,
+    plainText,
+    charCount,
+    metadataJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'document_sections';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DocumentSectionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('document_id')) {
+      context.handle(
+        _documentIdMeta,
+        documentId.isAcceptableOrUnknown(data['document_id']!, _documentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_documentIdMeta);
+    }
+    if (data.containsKey('section_index')) {
+      context.handle(
+        _sectionIndexMeta,
+        sectionIndex.isAcceptableOrUnknown(
+          data['section_index']!,
+          _sectionIndexMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sectionIndexMeta);
+    }
+    if (data.containsKey('parent_section_id')) {
+      context.handle(
+        _parentSectionIdMeta,
+        parentSectionId.isAcceptableOrUnknown(
+          data['parent_section_id']!,
+          _parentSectionIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('locator')) {
+      context.handle(
+        _locatorMeta,
+        locator.isAcceptableOrUnknown(data['locator']!, _locatorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_locatorMeta);
+    }
+    if (data.containsKey('plain_text')) {
+      context.handle(
+        _plainTextMeta,
+        plainText.isAcceptableOrUnknown(data['plain_text']!, _plainTextMeta),
+      );
+    }
+    if (data.containsKey('char_count')) {
+      context.handle(
+        _charCountMeta,
+        charCount.isAcceptableOrUnknown(data['char_count']!, _charCountMeta),
+      );
+    }
+    if (data.containsKey('metadata_json')) {
+      context.handle(
+        _metadataJsonMeta,
+        metadataJson.isAcceptableOrUnknown(
+          data['metadata_json']!,
+          _metadataJsonMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {documentId, sectionIndex},
+  ];
+  @override
+  DocumentSectionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DocumentSectionRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      documentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}document_id'],
+      )!,
+      sectionIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}section_index'],
+      )!,
+      parentSectionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_section_id'],
+      ),
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      locator: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}locator'],
+      )!,
+      plainText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plain_text'],
+      )!,
+      charCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}char_count'],
+      )!,
+      metadataJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metadata_json'],
+      )!,
+    );
+  }
+
+  @override
+  $DocumentSectionsTable createAlias(String alias) {
+    return $DocumentSectionsTable(attachedDatabase, alias);
+  }
+}
+
+class DocumentSectionRow extends DataClass
+    implements Insertable<DocumentSectionRow> {
+  final String id;
+  final String documentId;
+  final int sectionIndex;
+  final String? parentSectionId;
+  final String kind;
+  final String title;
+  final String locator;
+  final String plainText;
+  final int charCount;
+  final String metadataJson;
+  const DocumentSectionRow({
+    required this.id,
+    required this.documentId,
+    required this.sectionIndex,
+    this.parentSectionId,
+    required this.kind,
+    required this.title,
+    required this.locator,
+    required this.plainText,
+    required this.charCount,
+    required this.metadataJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['document_id'] = Variable<String>(documentId);
+    map['section_index'] = Variable<int>(sectionIndex);
+    if (!nullToAbsent || parentSectionId != null) {
+      map['parent_section_id'] = Variable<String>(parentSectionId);
+    }
+    map['kind'] = Variable<String>(kind);
+    map['title'] = Variable<String>(title);
+    map['locator'] = Variable<String>(locator);
+    map['plain_text'] = Variable<String>(plainText);
+    map['char_count'] = Variable<int>(charCount);
+    map['metadata_json'] = Variable<String>(metadataJson);
+    return map;
+  }
+
+  DocumentSectionsCompanion toCompanion(bool nullToAbsent) {
+    return DocumentSectionsCompanion(
+      id: Value(id),
+      documentId: Value(documentId),
+      sectionIndex: Value(sectionIndex),
+      parentSectionId: parentSectionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentSectionId),
+      kind: Value(kind),
+      title: Value(title),
+      locator: Value(locator),
+      plainText: Value(plainText),
+      charCount: Value(charCount),
+      metadataJson: Value(metadataJson),
+    );
+  }
+
+  factory DocumentSectionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DocumentSectionRow(
+      id: serializer.fromJson<String>(json['id']),
+      documentId: serializer.fromJson<String>(json['documentId']),
+      sectionIndex: serializer.fromJson<int>(json['sectionIndex']),
+      parentSectionId: serializer.fromJson<String?>(json['parentSectionId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      title: serializer.fromJson<String>(json['title']),
+      locator: serializer.fromJson<String>(json['locator']),
+      plainText: serializer.fromJson<String>(json['plainText']),
+      charCount: serializer.fromJson<int>(json['charCount']),
+      metadataJson: serializer.fromJson<String>(json['metadataJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'documentId': serializer.toJson<String>(documentId),
+      'sectionIndex': serializer.toJson<int>(sectionIndex),
+      'parentSectionId': serializer.toJson<String?>(parentSectionId),
+      'kind': serializer.toJson<String>(kind),
+      'title': serializer.toJson<String>(title),
+      'locator': serializer.toJson<String>(locator),
+      'plainText': serializer.toJson<String>(plainText),
+      'charCount': serializer.toJson<int>(charCount),
+      'metadataJson': serializer.toJson<String>(metadataJson),
+    };
+  }
+
+  DocumentSectionRow copyWith({
+    String? id,
+    String? documentId,
+    int? sectionIndex,
+    Value<String?> parentSectionId = const Value.absent(),
+    String? kind,
+    String? title,
+    String? locator,
+    String? plainText,
+    int? charCount,
+    String? metadataJson,
+  }) => DocumentSectionRow(
+    id: id ?? this.id,
+    documentId: documentId ?? this.documentId,
+    sectionIndex: sectionIndex ?? this.sectionIndex,
+    parentSectionId: parentSectionId.present
+        ? parentSectionId.value
+        : this.parentSectionId,
+    kind: kind ?? this.kind,
+    title: title ?? this.title,
+    locator: locator ?? this.locator,
+    plainText: plainText ?? this.plainText,
+    charCount: charCount ?? this.charCount,
+    metadataJson: metadataJson ?? this.metadataJson,
+  );
+  DocumentSectionRow copyWithCompanion(DocumentSectionsCompanion data) {
+    return DocumentSectionRow(
+      id: data.id.present ? data.id.value : this.id,
+      documentId: data.documentId.present
+          ? data.documentId.value
+          : this.documentId,
+      sectionIndex: data.sectionIndex.present
+          ? data.sectionIndex.value
+          : this.sectionIndex,
+      parentSectionId: data.parentSectionId.present
+          ? data.parentSectionId.value
+          : this.parentSectionId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      title: data.title.present ? data.title.value : this.title,
+      locator: data.locator.present ? data.locator.value : this.locator,
+      plainText: data.plainText.present ? data.plainText.value : this.plainText,
+      charCount: data.charCount.present ? data.charCount.value : this.charCount,
+      metadataJson: data.metadataJson.present
+          ? data.metadataJson.value
+          : this.metadataJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DocumentSectionRow(')
+          ..write('id: $id, ')
+          ..write('documentId: $documentId, ')
+          ..write('sectionIndex: $sectionIndex, ')
+          ..write('parentSectionId: $parentSectionId, ')
+          ..write('kind: $kind, ')
+          ..write('title: $title, ')
+          ..write('locator: $locator, ')
+          ..write('plainText: $plainText, ')
+          ..write('charCount: $charCount, ')
+          ..write('metadataJson: $metadataJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    documentId,
+    sectionIndex,
+    parentSectionId,
+    kind,
+    title,
+    locator,
+    plainText,
+    charCount,
+    metadataJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DocumentSectionRow &&
+          other.id == this.id &&
+          other.documentId == this.documentId &&
+          other.sectionIndex == this.sectionIndex &&
+          other.parentSectionId == this.parentSectionId &&
+          other.kind == this.kind &&
+          other.title == this.title &&
+          other.locator == this.locator &&
+          other.plainText == this.plainText &&
+          other.charCount == this.charCount &&
+          other.metadataJson == this.metadataJson);
+}
+
+class DocumentSectionsCompanion extends UpdateCompanion<DocumentSectionRow> {
+  final Value<String> id;
+  final Value<String> documentId;
+  final Value<int> sectionIndex;
+  final Value<String?> parentSectionId;
+  final Value<String> kind;
+  final Value<String> title;
+  final Value<String> locator;
+  final Value<String> plainText;
+  final Value<int> charCount;
+  final Value<String> metadataJson;
+  final Value<int> rowid;
+  const DocumentSectionsCompanion({
+    this.id = const Value.absent(),
+    this.documentId = const Value.absent(),
+    this.sectionIndex = const Value.absent(),
+    this.parentSectionId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.title = const Value.absent(),
+    this.locator = const Value.absent(),
+    this.plainText = const Value.absent(),
+    this.charCount = const Value.absent(),
+    this.metadataJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DocumentSectionsCompanion.insert({
+    required String id,
+    required String documentId,
+    required int sectionIndex,
+    this.parentSectionId = const Value.absent(),
+    required String kind,
+    this.title = const Value.absent(),
+    required String locator,
+    this.plainText = const Value.absent(),
+    this.charCount = const Value.absent(),
+    this.metadataJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       documentId = Value(documentId),
+       sectionIndex = Value(sectionIndex),
+       kind = Value(kind),
+       locator = Value(locator);
+  static Insertable<DocumentSectionRow> custom({
+    Expression<String>? id,
+    Expression<String>? documentId,
+    Expression<int>? sectionIndex,
+    Expression<String>? parentSectionId,
+    Expression<String>? kind,
+    Expression<String>? title,
+    Expression<String>? locator,
+    Expression<String>? plainText,
+    Expression<int>? charCount,
+    Expression<String>? metadataJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (documentId != null) 'document_id': documentId,
+      if (sectionIndex != null) 'section_index': sectionIndex,
+      if (parentSectionId != null) 'parent_section_id': parentSectionId,
+      if (kind != null) 'kind': kind,
+      if (title != null) 'title': title,
+      if (locator != null) 'locator': locator,
+      if (plainText != null) 'plain_text': plainText,
+      if (charCount != null) 'char_count': charCount,
+      if (metadataJson != null) 'metadata_json': metadataJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DocumentSectionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? documentId,
+    Value<int>? sectionIndex,
+    Value<String?>? parentSectionId,
+    Value<String>? kind,
+    Value<String>? title,
+    Value<String>? locator,
+    Value<String>? plainText,
+    Value<int>? charCount,
+    Value<String>? metadataJson,
+    Value<int>? rowid,
+  }) {
+    return DocumentSectionsCompanion(
+      id: id ?? this.id,
+      documentId: documentId ?? this.documentId,
+      sectionIndex: sectionIndex ?? this.sectionIndex,
+      parentSectionId: parentSectionId ?? this.parentSectionId,
+      kind: kind ?? this.kind,
+      title: title ?? this.title,
+      locator: locator ?? this.locator,
+      plainText: plainText ?? this.plainText,
+      charCount: charCount ?? this.charCount,
+      metadataJson: metadataJson ?? this.metadataJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (documentId.present) {
+      map['document_id'] = Variable<String>(documentId.value);
+    }
+    if (sectionIndex.present) {
+      map['section_index'] = Variable<int>(sectionIndex.value);
+    }
+    if (parentSectionId.present) {
+      map['parent_section_id'] = Variable<String>(parentSectionId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (locator.present) {
+      map['locator'] = Variable<String>(locator.value);
+    }
+    if (plainText.present) {
+      map['plain_text'] = Variable<String>(plainText.value);
+    }
+    if (charCount.present) {
+      map['char_count'] = Variable<int>(charCount.value);
+    }
+    if (metadataJson.present) {
+      map['metadata_json'] = Variable<String>(metadataJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DocumentSectionsCompanion(')
+          ..write('id: $id, ')
+          ..write('documentId: $documentId, ')
+          ..write('sectionIndex: $sectionIndex, ')
+          ..write('parentSectionId: $parentSectionId, ')
+          ..write('kind: $kind, ')
+          ..write('title: $title, ')
+          ..write('locator: $locator, ')
+          ..write('plainText: $plainText, ')
+          ..write('charCount: $charCount, ')
+          ..write('metadataJson: $metadataJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $McpServersTable extends McpServers
+    with TableInfo<$McpServersTable, McpServerRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $McpServersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _workspaceIdMeta = const VerificationMeta(
+    'workspaceId',
+  );
+  @override
+  late final GeneratedColumn<String> workspaceId = GeneratedColumn<String>(
+    'workspace_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES workspaces (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _transportMeta = const VerificationMeta(
+    'transport',
+  );
+  @override
+  late final GeneratedColumn<String> transport = GeneratedColumn<String>(
+    'transport',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endpointMeta = const VerificationMeta(
+    'endpoint',
+  );
+  @override
+  late final GeneratedColumn<String> endpoint = GeneratedColumn<String>(
+    'endpoint',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _commandMeta = const VerificationMeta(
+    'command',
+  );
+  @override
+  late final GeneratedColumn<String> command = GeneratedColumn<String>(
+    'command',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _argumentsJsonMeta = const VerificationMeta(
+    'argumentsJson',
+  );
+  @override
+  late final GeneratedColumn<String> argumentsJson = GeneratedColumn<String>(
+    'arguments_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _environmentJsonMeta = const VerificationMeta(
+    'environmentJson',
+  );
+  @override
+  late final GeneratedColumn<String> environmentJson = GeneratedColumn<String>(
+    'environment_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _headersJsonMeta = const VerificationMeta(
+    'headersJson',
+  );
+  @override
+  late final GeneratedColumn<String> headersJson = GeneratedColumn<String>(
+    'headers_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _runtimeConfigIdMeta = const VerificationMeta(
+    'runtimeConfigId',
+  );
+  @override
+  late final GeneratedColumn<String> runtimeConfigId = GeneratedColumn<String>(
+    'runtime_config_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _enabledMeta = const VerificationMeta(
+    'enabled',
+  );
+  @override
+  late final GeneratedColumn<bool> enabled = GeneratedColumn<bool>(
+    'enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _autoConnectMeta = const VerificationMeta(
+    'autoConnect',
+  );
+  @override
+  late final GeneratedColumn<bool> autoConnect = GeneratedColumn<bool>(
+    'auto_connect',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("auto_connect" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _connectionTimeoutMsMeta =
+      const VerificationMeta('connectionTimeoutMs');
+  @override
+  late final GeneratedColumn<int> connectionTimeoutMs = GeneratedColumn<int>(
+    'connection_timeout_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(10000),
+  );
+  static const VerificationMeta _toolTimeoutMsMeta = const VerificationMeta(
+    'toolTimeoutMs',
+  );
+  @override
+  late final GeneratedColumn<int> toolTimeoutMs = GeneratedColumn<int>(
+    'tool_timeout_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(60000),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    workspaceId,
+    name,
+    transport,
+    endpoint,
+    command,
+    argumentsJson,
+    environmentJson,
+    headersJson,
+    runtimeConfigId,
+    enabled,
+    autoConnect,
+    connectionTimeoutMs,
+    toolTimeoutMs,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'mcp_servers';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<McpServerRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('workspace_id')) {
+      context.handle(
+        _workspaceIdMeta,
+        workspaceId.isAcceptableOrUnknown(
+          data['workspace_id']!,
+          _workspaceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_workspaceIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('transport')) {
+      context.handle(
+        _transportMeta,
+        transport.isAcceptableOrUnknown(data['transport']!, _transportMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_transportMeta);
+    }
+    if (data.containsKey('endpoint')) {
+      context.handle(
+        _endpointMeta,
+        endpoint.isAcceptableOrUnknown(data['endpoint']!, _endpointMeta),
+      );
+    }
+    if (data.containsKey('command')) {
+      context.handle(
+        _commandMeta,
+        command.isAcceptableOrUnknown(data['command']!, _commandMeta),
+      );
+    }
+    if (data.containsKey('arguments_json')) {
+      context.handle(
+        _argumentsJsonMeta,
+        argumentsJson.isAcceptableOrUnknown(
+          data['arguments_json']!,
+          _argumentsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('environment_json')) {
+      context.handle(
+        _environmentJsonMeta,
+        environmentJson.isAcceptableOrUnknown(
+          data['environment_json']!,
+          _environmentJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('headers_json')) {
+      context.handle(
+        _headersJsonMeta,
+        headersJson.isAcceptableOrUnknown(
+          data['headers_json']!,
+          _headersJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('runtime_config_id')) {
+      context.handle(
+        _runtimeConfigIdMeta,
+        runtimeConfigId.isAcceptableOrUnknown(
+          data['runtime_config_id']!,
+          _runtimeConfigIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enabled')) {
+      context.handle(
+        _enabledMeta,
+        enabled.isAcceptableOrUnknown(data['enabled']!, _enabledMeta),
+      );
+    }
+    if (data.containsKey('auto_connect')) {
+      context.handle(
+        _autoConnectMeta,
+        autoConnect.isAcceptableOrUnknown(
+          data['auto_connect']!,
+          _autoConnectMeta,
+        ),
+      );
+    }
+    if (data.containsKey('connection_timeout_ms')) {
+      context.handle(
+        _connectionTimeoutMsMeta,
+        connectionTimeoutMs.isAcceptableOrUnknown(
+          data['connection_timeout_ms']!,
+          _connectionTimeoutMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tool_timeout_ms')) {
+      context.handle(
+        _toolTimeoutMsMeta,
+        toolTimeoutMs.isAcceptableOrUnknown(
+          data['tool_timeout_ms']!,
+          _toolTimeoutMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  McpServerRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return McpServerRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      workspaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}workspace_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      transport: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transport'],
+      )!,
+      endpoint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}endpoint'],
+      )!,
+      command: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}command'],
+      )!,
+      argumentsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}arguments_json'],
+      )!,
+      environmentJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}environment_json'],
+      )!,
+      headersJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}headers_json'],
+      )!,
+      runtimeConfigId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}runtime_config_id'],
+      ),
+      enabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enabled'],
+      )!,
+      autoConnect: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_connect'],
+      )!,
+      connectionTimeoutMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}connection_timeout_ms'],
+      )!,
+      toolTimeoutMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tool_timeout_ms'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $McpServersTable createAlias(String alias) {
+    return $McpServersTable(attachedDatabase, alias);
+  }
+}
+
+class McpServerRow extends DataClass implements Insertable<McpServerRow> {
+  final String id;
+  final String workspaceId;
+  final String name;
+  final String transport;
+  final String endpoint;
+  final String command;
+  final String argumentsJson;
+  final String environmentJson;
+  final String headersJson;
+  final String? runtimeConfigId;
+  final bool enabled;
+  final bool autoConnect;
+  final int connectionTimeoutMs;
+  final int toolTimeoutMs;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const McpServerRow({
+    required this.id,
+    required this.workspaceId,
+    required this.name,
+    required this.transport,
+    required this.endpoint,
+    required this.command,
+    required this.argumentsJson,
+    required this.environmentJson,
+    required this.headersJson,
+    this.runtimeConfigId,
+    required this.enabled,
+    required this.autoConnect,
+    required this.connectionTimeoutMs,
+    required this.toolTimeoutMs,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['workspace_id'] = Variable<String>(workspaceId);
+    map['name'] = Variable<String>(name);
+    map['transport'] = Variable<String>(transport);
+    map['endpoint'] = Variable<String>(endpoint);
+    map['command'] = Variable<String>(command);
+    map['arguments_json'] = Variable<String>(argumentsJson);
+    map['environment_json'] = Variable<String>(environmentJson);
+    map['headers_json'] = Variable<String>(headersJson);
+    if (!nullToAbsent || runtimeConfigId != null) {
+      map['runtime_config_id'] = Variable<String>(runtimeConfigId);
+    }
+    map['enabled'] = Variable<bool>(enabled);
+    map['auto_connect'] = Variable<bool>(autoConnect);
+    map['connection_timeout_ms'] = Variable<int>(connectionTimeoutMs);
+    map['tool_timeout_ms'] = Variable<int>(toolTimeoutMs);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  McpServersCompanion toCompanion(bool nullToAbsent) {
+    return McpServersCompanion(
+      id: Value(id),
+      workspaceId: Value(workspaceId),
+      name: Value(name),
+      transport: Value(transport),
+      endpoint: Value(endpoint),
+      command: Value(command),
+      argumentsJson: Value(argumentsJson),
+      environmentJson: Value(environmentJson),
+      headersJson: Value(headersJson),
+      runtimeConfigId: runtimeConfigId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(runtimeConfigId),
+      enabled: Value(enabled),
+      autoConnect: Value(autoConnect),
+      connectionTimeoutMs: Value(connectionTimeoutMs),
+      toolTimeoutMs: Value(toolTimeoutMs),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory McpServerRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return McpServerRow(
+      id: serializer.fromJson<String>(json['id']),
+      workspaceId: serializer.fromJson<String>(json['workspaceId']),
+      name: serializer.fromJson<String>(json['name']),
+      transport: serializer.fromJson<String>(json['transport']),
+      endpoint: serializer.fromJson<String>(json['endpoint']),
+      command: serializer.fromJson<String>(json['command']),
+      argumentsJson: serializer.fromJson<String>(json['argumentsJson']),
+      environmentJson: serializer.fromJson<String>(json['environmentJson']),
+      headersJson: serializer.fromJson<String>(json['headersJson']),
+      runtimeConfigId: serializer.fromJson<String?>(json['runtimeConfigId']),
+      enabled: serializer.fromJson<bool>(json['enabled']),
+      autoConnect: serializer.fromJson<bool>(json['autoConnect']),
+      connectionTimeoutMs: serializer.fromJson<int>(
+        json['connectionTimeoutMs'],
+      ),
+      toolTimeoutMs: serializer.fromJson<int>(json['toolTimeoutMs']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'workspaceId': serializer.toJson<String>(workspaceId),
+      'name': serializer.toJson<String>(name),
+      'transport': serializer.toJson<String>(transport),
+      'endpoint': serializer.toJson<String>(endpoint),
+      'command': serializer.toJson<String>(command),
+      'argumentsJson': serializer.toJson<String>(argumentsJson),
+      'environmentJson': serializer.toJson<String>(environmentJson),
+      'headersJson': serializer.toJson<String>(headersJson),
+      'runtimeConfigId': serializer.toJson<String?>(runtimeConfigId),
+      'enabled': serializer.toJson<bool>(enabled),
+      'autoConnect': serializer.toJson<bool>(autoConnect),
+      'connectionTimeoutMs': serializer.toJson<int>(connectionTimeoutMs),
+      'toolTimeoutMs': serializer.toJson<int>(toolTimeoutMs),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  McpServerRow copyWith({
+    String? id,
+    String? workspaceId,
+    String? name,
+    String? transport,
+    String? endpoint,
+    String? command,
+    String? argumentsJson,
+    String? environmentJson,
+    String? headersJson,
+    Value<String?> runtimeConfigId = const Value.absent(),
+    bool? enabled,
+    bool? autoConnect,
+    int? connectionTimeoutMs,
+    int? toolTimeoutMs,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => McpServerRow(
+    id: id ?? this.id,
+    workspaceId: workspaceId ?? this.workspaceId,
+    name: name ?? this.name,
+    transport: transport ?? this.transport,
+    endpoint: endpoint ?? this.endpoint,
+    command: command ?? this.command,
+    argumentsJson: argumentsJson ?? this.argumentsJson,
+    environmentJson: environmentJson ?? this.environmentJson,
+    headersJson: headersJson ?? this.headersJson,
+    runtimeConfigId: runtimeConfigId.present
+        ? runtimeConfigId.value
+        : this.runtimeConfigId,
+    enabled: enabled ?? this.enabled,
+    autoConnect: autoConnect ?? this.autoConnect,
+    connectionTimeoutMs: connectionTimeoutMs ?? this.connectionTimeoutMs,
+    toolTimeoutMs: toolTimeoutMs ?? this.toolTimeoutMs,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  McpServerRow copyWithCompanion(McpServersCompanion data) {
+    return McpServerRow(
+      id: data.id.present ? data.id.value : this.id,
+      workspaceId: data.workspaceId.present
+          ? data.workspaceId.value
+          : this.workspaceId,
+      name: data.name.present ? data.name.value : this.name,
+      transport: data.transport.present ? data.transport.value : this.transport,
+      endpoint: data.endpoint.present ? data.endpoint.value : this.endpoint,
+      command: data.command.present ? data.command.value : this.command,
+      argumentsJson: data.argumentsJson.present
+          ? data.argumentsJson.value
+          : this.argumentsJson,
+      environmentJson: data.environmentJson.present
+          ? data.environmentJson.value
+          : this.environmentJson,
+      headersJson: data.headersJson.present
+          ? data.headersJson.value
+          : this.headersJson,
+      runtimeConfigId: data.runtimeConfigId.present
+          ? data.runtimeConfigId.value
+          : this.runtimeConfigId,
+      enabled: data.enabled.present ? data.enabled.value : this.enabled,
+      autoConnect: data.autoConnect.present
+          ? data.autoConnect.value
+          : this.autoConnect,
+      connectionTimeoutMs: data.connectionTimeoutMs.present
+          ? data.connectionTimeoutMs.value
+          : this.connectionTimeoutMs,
+      toolTimeoutMs: data.toolTimeoutMs.present
+          ? data.toolTimeoutMs.value
+          : this.toolTimeoutMs,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('McpServerRow(')
+          ..write('id: $id, ')
+          ..write('workspaceId: $workspaceId, ')
+          ..write('name: $name, ')
+          ..write('transport: $transport, ')
+          ..write('endpoint: $endpoint, ')
+          ..write('command: $command, ')
+          ..write('argumentsJson: $argumentsJson, ')
+          ..write('environmentJson: $environmentJson, ')
+          ..write('headersJson: $headersJson, ')
+          ..write('runtimeConfigId: $runtimeConfigId, ')
+          ..write('enabled: $enabled, ')
+          ..write('autoConnect: $autoConnect, ')
+          ..write('connectionTimeoutMs: $connectionTimeoutMs, ')
+          ..write('toolTimeoutMs: $toolTimeoutMs, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    workspaceId,
+    name,
+    transport,
+    endpoint,
+    command,
+    argumentsJson,
+    environmentJson,
+    headersJson,
+    runtimeConfigId,
+    enabled,
+    autoConnect,
+    connectionTimeoutMs,
+    toolTimeoutMs,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is McpServerRow &&
+          other.id == this.id &&
+          other.workspaceId == this.workspaceId &&
+          other.name == this.name &&
+          other.transport == this.transport &&
+          other.endpoint == this.endpoint &&
+          other.command == this.command &&
+          other.argumentsJson == this.argumentsJson &&
+          other.environmentJson == this.environmentJson &&
+          other.headersJson == this.headersJson &&
+          other.runtimeConfigId == this.runtimeConfigId &&
+          other.enabled == this.enabled &&
+          other.autoConnect == this.autoConnect &&
+          other.connectionTimeoutMs == this.connectionTimeoutMs &&
+          other.toolTimeoutMs == this.toolTimeoutMs &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class McpServersCompanion extends UpdateCompanion<McpServerRow> {
+  final Value<String> id;
+  final Value<String> workspaceId;
+  final Value<String> name;
+  final Value<String> transport;
+  final Value<String> endpoint;
+  final Value<String> command;
+  final Value<String> argumentsJson;
+  final Value<String> environmentJson;
+  final Value<String> headersJson;
+  final Value<String?> runtimeConfigId;
+  final Value<bool> enabled;
+  final Value<bool> autoConnect;
+  final Value<int> connectionTimeoutMs;
+  final Value<int> toolTimeoutMs;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const McpServersCompanion({
+    this.id = const Value.absent(),
+    this.workspaceId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.transport = const Value.absent(),
+    this.endpoint = const Value.absent(),
+    this.command = const Value.absent(),
+    this.argumentsJson = const Value.absent(),
+    this.environmentJson = const Value.absent(),
+    this.headersJson = const Value.absent(),
+    this.runtimeConfigId = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.autoConnect = const Value.absent(),
+    this.connectionTimeoutMs = const Value.absent(),
+    this.toolTimeoutMs = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  McpServersCompanion.insert({
+    required String id,
+    required String workspaceId,
+    required String name,
+    required String transport,
+    this.endpoint = const Value.absent(),
+    this.command = const Value.absent(),
+    this.argumentsJson = const Value.absent(),
+    this.environmentJson = const Value.absent(),
+    this.headersJson = const Value.absent(),
+    this.runtimeConfigId = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.autoConnect = const Value.absent(),
+    this.connectionTimeoutMs = const Value.absent(),
+    this.toolTimeoutMs = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       workspaceId = Value(workspaceId),
+       name = Value(name),
+       transport = Value(transport),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<McpServerRow> custom({
+    Expression<String>? id,
+    Expression<String>? workspaceId,
+    Expression<String>? name,
+    Expression<String>? transport,
+    Expression<String>? endpoint,
+    Expression<String>? command,
+    Expression<String>? argumentsJson,
+    Expression<String>? environmentJson,
+    Expression<String>? headersJson,
+    Expression<String>? runtimeConfigId,
+    Expression<bool>? enabled,
+    Expression<bool>? autoConnect,
+    Expression<int>? connectionTimeoutMs,
+    Expression<int>? toolTimeoutMs,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (workspaceId != null) 'workspace_id': workspaceId,
+      if (name != null) 'name': name,
+      if (transport != null) 'transport': transport,
+      if (endpoint != null) 'endpoint': endpoint,
+      if (command != null) 'command': command,
+      if (argumentsJson != null) 'arguments_json': argumentsJson,
+      if (environmentJson != null) 'environment_json': environmentJson,
+      if (headersJson != null) 'headers_json': headersJson,
+      if (runtimeConfigId != null) 'runtime_config_id': runtimeConfigId,
+      if (enabled != null) 'enabled': enabled,
+      if (autoConnect != null) 'auto_connect': autoConnect,
+      if (connectionTimeoutMs != null)
+        'connection_timeout_ms': connectionTimeoutMs,
+      if (toolTimeoutMs != null) 'tool_timeout_ms': toolTimeoutMs,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  McpServersCompanion copyWith({
+    Value<String>? id,
+    Value<String>? workspaceId,
+    Value<String>? name,
+    Value<String>? transport,
+    Value<String>? endpoint,
+    Value<String>? command,
+    Value<String>? argumentsJson,
+    Value<String>? environmentJson,
+    Value<String>? headersJson,
+    Value<String?>? runtimeConfigId,
+    Value<bool>? enabled,
+    Value<bool>? autoConnect,
+    Value<int>? connectionTimeoutMs,
+    Value<int>? toolTimeoutMs,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return McpServersCompanion(
+      id: id ?? this.id,
+      workspaceId: workspaceId ?? this.workspaceId,
+      name: name ?? this.name,
+      transport: transport ?? this.transport,
+      endpoint: endpoint ?? this.endpoint,
+      command: command ?? this.command,
+      argumentsJson: argumentsJson ?? this.argumentsJson,
+      environmentJson: environmentJson ?? this.environmentJson,
+      headersJson: headersJson ?? this.headersJson,
+      runtimeConfigId: runtimeConfigId ?? this.runtimeConfigId,
+      enabled: enabled ?? this.enabled,
+      autoConnect: autoConnect ?? this.autoConnect,
+      connectionTimeoutMs: connectionTimeoutMs ?? this.connectionTimeoutMs,
+      toolTimeoutMs: toolTimeoutMs ?? this.toolTimeoutMs,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (workspaceId.present) {
+      map['workspace_id'] = Variable<String>(workspaceId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (transport.present) {
+      map['transport'] = Variable<String>(transport.value);
+    }
+    if (endpoint.present) {
+      map['endpoint'] = Variable<String>(endpoint.value);
+    }
+    if (command.present) {
+      map['command'] = Variable<String>(command.value);
+    }
+    if (argumentsJson.present) {
+      map['arguments_json'] = Variable<String>(argumentsJson.value);
+    }
+    if (environmentJson.present) {
+      map['environment_json'] = Variable<String>(environmentJson.value);
+    }
+    if (headersJson.present) {
+      map['headers_json'] = Variable<String>(headersJson.value);
+    }
+    if (runtimeConfigId.present) {
+      map['runtime_config_id'] = Variable<String>(runtimeConfigId.value);
+    }
+    if (enabled.present) {
+      map['enabled'] = Variable<bool>(enabled.value);
+    }
+    if (autoConnect.present) {
+      map['auto_connect'] = Variable<bool>(autoConnect.value);
+    }
+    if (connectionTimeoutMs.present) {
+      map['connection_timeout_ms'] = Variable<int>(connectionTimeoutMs.value);
+    }
+    if (toolTimeoutMs.present) {
+      map['tool_timeout_ms'] = Variable<int>(toolTimeoutMs.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('McpServersCompanion(')
+          ..write('id: $id, ')
+          ..write('workspaceId: $workspaceId, ')
+          ..write('name: $name, ')
+          ..write('transport: $transport, ')
+          ..write('endpoint: $endpoint, ')
+          ..write('command: $command, ')
+          ..write('argumentsJson: $argumentsJson, ')
+          ..write('environmentJson: $environmentJson, ')
+          ..write('headersJson: $headersJson, ')
+          ..write('runtimeConfigId: $runtimeConfigId, ')
+          ..write('enabled: $enabled, ')
+          ..write('autoConnect: $autoConnect, ')
+          ..write('connectionTimeoutMs: $connectionTimeoutMs, ')
+          ..write('toolTimeoutMs: $toolTimeoutMs, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2474,6 +5437,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $MemoryNotesTable memoryNotes = $MemoryNotesTable(this);
+  late final $RuntimeConfigsTable runtimeConfigs = $RuntimeConfigsTable(this);
+  late final $DocumentsTable documents = $DocumentsTable(this);
+  late final $DocumentSectionsTable documentSections = $DocumentSectionsTable(
+    this,
+  );
+  late final $McpServersTable mcpServers = $McpServersTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2484,6 +5453,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     messages,
     providerConfigs,
     memoryNotes,
+    runtimeConfigs,
+    documents,
+    documentSections,
+    mcpServers,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2500,6 +5473,27 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('messages', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'workspaces',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('documents', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'documents',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('document_sections', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'workspaces',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('mcp_servers', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2542,6 +5536,42 @@ final class $$WorkspacesTableReferences
     ).filter((f) => f.workspaceId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_sessionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$DocumentsTable, List<DocumentRow>>
+  _documentsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.documents,
+    aliasName: 'workspaces__id__documents__workspace_id',
+  );
+
+  $$DocumentsTableProcessedTableManager get documentsRefs {
+    final manager = $$DocumentsTableTableManager(
+      $_db,
+      $_db.documents,
+    ).filter((f) => f.workspaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_documentsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$McpServersTable, List<McpServerRow>>
+  _mcpServersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.mcpServers,
+    aliasName: 'workspaces__id__mcp_servers__workspace_id',
+  );
+
+  $$McpServersTableProcessedTableManager get mcpServersRefs {
+    final manager = $$McpServersTableTableManager(
+      $_db,
+      $_db.mcpServers,
+    ).filter((f) => f.workspaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_mcpServersRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2603,6 +5633,56 @@ class $$WorkspacesTableFilterComposer
           }) => $$SessionsTableFilterComposer(
             $db: $db,
             $table: $db.sessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> documentsRefs(
+    Expression<bool> Function($$DocumentsTableFilterComposer f) f,
+  ) {
+    final $$DocumentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.documents,
+      getReferencedColumn: (t) => t.workspaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DocumentsTableFilterComposer(
+            $db: $db,
+            $table: $db.documents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> mcpServersRefs(
+    Expression<bool> Function($$McpServersTableFilterComposer f) f,
+  ) {
+    final $$McpServersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.mcpServers,
+      getReferencedColumn: (t) => t.workspaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$McpServersTableFilterComposer(
+            $db: $db,
+            $table: $db.mcpServers,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2708,6 +5788,56 @@ class $$WorkspacesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> documentsRefs<T extends Object>(
+    Expression<T> Function($$DocumentsTableAnnotationComposer a) f,
+  ) {
+    final $$DocumentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.documents,
+      getReferencedColumn: (t) => t.workspaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DocumentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.documents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> mcpServersRefs<T extends Object>(
+    Expression<T> Function($$McpServersTableAnnotationComposer a) f,
+  ) {
+    final $$McpServersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.mcpServers,
+      getReferencedColumn: (t) => t.workspaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$McpServersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.mcpServers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$WorkspacesTableTableManager
@@ -2723,7 +5853,11 @@ class $$WorkspacesTableTableManager
           $$WorkspacesTableUpdateCompanionBuilder,
           (WorkspaceRow, $$WorkspacesTableReferences),
           WorkspaceRow,
-          PrefetchHooks Function({bool sessionsRefs})
+          PrefetchHooks Function({
+            bool sessionsRefs,
+            bool documentsRefs,
+            bool mcpServersRefs,
+          })
         > {
   $$WorkspacesTableTableManager(_$AppDatabase db, $WorkspacesTable table)
     : super(
@@ -2780,38 +5914,89 @@ class $$WorkspacesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({sessionsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (sessionsRefs) db.sessions],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (sessionsRefs)
-                    await $_getPrefetchedData<
-                      WorkspaceRow,
-                      $WorkspacesTable,
-                      SessionRow
-                    >(
-                      currentTable: table,
-                      referencedTable: $$WorkspacesTableReferences
-                          ._sessionsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$WorkspacesTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).sessionsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where(
-                            (e) => e.workspaceId == item.id,
-                          ),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({
+                sessionsRefs = false,
+                documentsRefs = false,
+                mcpServersRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (sessionsRefs) db.sessions,
+                    if (documentsRefs) db.documents,
+                    if (mcpServersRefs) db.mcpServers,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (sessionsRefs)
+                        await $_getPrefetchedData<
+                          WorkspaceRow,
+                          $WorkspacesTable,
+                          SessionRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorkspacesTableReferences
+                              ._sessionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorkspacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).sessionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workspaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (documentsRefs)
+                        await $_getPrefetchedData<
+                          WorkspaceRow,
+                          $WorkspacesTable,
+                          DocumentRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorkspacesTableReferences
+                              ._documentsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorkspacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).documentsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workspaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (mcpServersRefs)
+                        await $_getPrefetchedData<
+                          WorkspaceRow,
+                          $WorkspacesTable,
+                          McpServerRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorkspacesTableReferences
+                              ._mcpServersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorkspacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).mcpServersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workspaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -2828,7 +6013,11 @@ typedef $$WorkspacesTableProcessedTableManager =
       $$WorkspacesTableUpdateCompanionBuilder,
       (WorkspaceRow, $$WorkspacesTableReferences),
       WorkspaceRow,
-      PrefetchHooks Function({bool sessionsRefs})
+      PrefetchHooks Function({
+        bool sessionsRefs,
+        bool documentsRefs,
+        bool mcpServersRefs,
+      })
     >;
 typedef $$SessionsTableCreateCompanionBuilder =
     SessionsCompanion Function({
@@ -4197,6 +7386,1884 @@ typedef $$MemoryNotesTableProcessedTableManager =
       MemoryRow,
       PrefetchHooks Function()
     >;
+typedef $$RuntimeConfigsTableCreateCompanionBuilder =
+    RuntimeConfigsCompanion Function({
+      required String id,
+      required String label,
+      required String kind,
+      Value<String> optionsJson,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$RuntimeConfigsTableUpdateCompanionBuilder =
+    RuntimeConfigsCompanion Function({
+      Value<String> id,
+      Value<String> label,
+      Value<String> kind,
+      Value<String> optionsJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$RuntimeConfigsTableFilterComposer
+    extends Composer<_$AppDatabase, $RuntimeConfigsTable> {
+  $$RuntimeConfigsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get optionsJson => $composableBuilder(
+    column: $table.optionsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RuntimeConfigsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RuntimeConfigsTable> {
+  $$RuntimeConfigsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get optionsJson => $composableBuilder(
+    column: $table.optionsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RuntimeConfigsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RuntimeConfigsTable> {
+  $$RuntimeConfigsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get optionsJson => $composableBuilder(
+    column: $table.optionsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$RuntimeConfigsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RuntimeConfigsTable,
+          RuntimeConfigRow,
+          $$RuntimeConfigsTableFilterComposer,
+          $$RuntimeConfigsTableOrderingComposer,
+          $$RuntimeConfigsTableAnnotationComposer,
+          $$RuntimeConfigsTableCreateCompanionBuilder,
+          $$RuntimeConfigsTableUpdateCompanionBuilder,
+          (
+            RuntimeConfigRow,
+            BaseReferences<
+              _$AppDatabase,
+              $RuntimeConfigsTable,
+              RuntimeConfigRow
+            >,
+          ),
+          RuntimeConfigRow,
+          PrefetchHooks Function()
+        > {
+  $$RuntimeConfigsTableTableManager(
+    _$AppDatabase db,
+    $RuntimeConfigsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RuntimeConfigsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RuntimeConfigsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RuntimeConfigsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> optionsJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RuntimeConfigsCompanion(
+                id: id,
+                label: label,
+                kind: kind,
+                optionsJson: optionsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String label,
+                required String kind,
+                Value<String> optionsJson = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => RuntimeConfigsCompanion.insert(
+                id: id,
+                label: label,
+                kind: kind,
+                optionsJson: optionsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$RuntimeConfigsTable, RuntimeConfigRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $RuntimeConfigsTable,
+                    RuntimeConfigRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RuntimeConfigsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RuntimeConfigsTable,
+      RuntimeConfigRow,
+      $$RuntimeConfigsTableFilterComposer,
+      $$RuntimeConfigsTableOrderingComposer,
+      $$RuntimeConfigsTableAnnotationComposer,
+      $$RuntimeConfigsTableCreateCompanionBuilder,
+      $$RuntimeConfigsTableUpdateCompanionBuilder,
+      (
+        RuntimeConfigRow,
+        BaseReferences<_$AppDatabase, $RuntimeConfigsTable, RuntimeConfigRow>,
+      ),
+      RuntimeConfigRow,
+      PrefetchHooks Function()
+    >;
+typedef $$DocumentsTableCreateCompanionBuilder =
+    DocumentsCompanion Function({
+      required String id,
+      required String workspaceId,
+      required String displayName,
+      required String sourceUri,
+      required String localPath,
+      required String type,
+      Value<String> mimeType,
+      Value<int> fileSize,
+      Value<String> contentHash,
+      Value<String> title,
+      Value<String> author,
+      Value<String> language,
+      Value<int> pageCount,
+      Value<int> sectionCount,
+      Value<String> parseStatus,
+      Value<String?> parseError,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$DocumentsTableUpdateCompanionBuilder =
+    DocumentsCompanion Function({
+      Value<String> id,
+      Value<String> workspaceId,
+      Value<String> displayName,
+      Value<String> sourceUri,
+      Value<String> localPath,
+      Value<String> type,
+      Value<String> mimeType,
+      Value<int> fileSize,
+      Value<String> contentHash,
+      Value<String> title,
+      Value<String> author,
+      Value<String> language,
+      Value<int> pageCount,
+      Value<int> sectionCount,
+      Value<String> parseStatus,
+      Value<String?> parseError,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$DocumentsTableReferences
+    extends BaseReferences<_$AppDatabase, $DocumentsTable, DocumentRow> {
+  $$DocumentsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorkspacesTable _workspaceIdTable(_$AppDatabase db) =>
+      db.workspaces.createAlias('documents__workspace_id__workspaces__id');
+
+  $$WorkspacesTableProcessedTableManager get workspaceId {
+    final $_column = $_itemColumn<String>('workspace_id')!;
+
+    final manager = $$WorkspacesTableTableManager(
+      $_db,
+      $_db.workspaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workspaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$DocumentSectionsTable, List<DocumentSectionRow>>
+  _documentSectionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.documentSections,
+    aliasName: 'documents__id__document_sections__document_id',
+  );
+
+  $$DocumentSectionsTableProcessedTableManager get documentSectionsRefs {
+    final manager = $$DocumentSectionsTableTableManager(
+      $_db,
+      $_db.documentSections,
+    ).filter((f) => f.documentId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _documentSectionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$DocumentsTableFilterComposer
+    extends Composer<_$AppDatabase, $DocumentsTable> {
+  $$DocumentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceUri => $composableBuilder(
+    column: $table.sourceUri,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get fileSize => $composableBuilder(
+    column: $table.fileSize,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pageCount => $composableBuilder(
+    column: $table.pageCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sectionCount => $composableBuilder(
+    column: $table.sectionCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parseStatus => $composableBuilder(
+    column: $table.parseStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parseError => $composableBuilder(
+    column: $table.parseError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorkspacesTableFilterComposer get workspaceId {
+    final $$WorkspacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableFilterComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> documentSectionsRefs(
+    Expression<bool> Function($$DocumentSectionsTableFilterComposer f) f,
+  ) {
+    final $$DocumentSectionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.documentSections,
+      getReferencedColumn: (t) => t.documentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DocumentSectionsTableFilterComposer(
+            $db: $db,
+            $table: $db.documentSections,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$DocumentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DocumentsTable> {
+  $$DocumentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceUri => $composableBuilder(
+    column: $table.sourceUri,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mimeType => $composableBuilder(
+    column: $table.mimeType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get fileSize => $composableBuilder(
+    column: $table.fileSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get author => $composableBuilder(
+    column: $table.author,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pageCount => $composableBuilder(
+    column: $table.pageCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sectionCount => $composableBuilder(
+    column: $table.sectionCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parseStatus => $composableBuilder(
+    column: $table.parseStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parseError => $composableBuilder(
+    column: $table.parseError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorkspacesTableOrderingComposer get workspaceId {
+    final $$WorkspacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DocumentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DocumentsTable> {
+  $$DocumentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceUri =>
+      $composableBuilder(column: $table.sourceUri, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get mimeType =>
+      $composableBuilder(column: $table.mimeType, builder: (column) => column);
+
+  GeneratedColumn<int> get fileSize =>
+      $composableBuilder(column: $table.fileSize, builder: (column) => column);
+
+  GeneratedColumn<String> get contentHash => $composableBuilder(
+    column: $table.contentHash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => column);
+
+  GeneratedColumn<String> get language =>
+      $composableBuilder(column: $table.language, builder: (column) => column);
+
+  GeneratedColumn<int> get pageCount =>
+      $composableBuilder(column: $table.pageCount, builder: (column) => column);
+
+  GeneratedColumn<int> get sectionCount => $composableBuilder(
+    column: $table.sectionCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get parseStatus => $composableBuilder(
+    column: $table.parseStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get parseError => $composableBuilder(
+    column: $table.parseError,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$WorkspacesTableAnnotationComposer get workspaceId {
+    final $$WorkspacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> documentSectionsRefs<T extends Object>(
+    Expression<T> Function($$DocumentSectionsTableAnnotationComposer a) f,
+  ) {
+    final $$DocumentSectionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.documentSections,
+      getReferencedColumn: (t) => t.documentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DocumentSectionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.documentSections,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$DocumentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DocumentsTable,
+          DocumentRow,
+          $$DocumentsTableFilterComposer,
+          $$DocumentsTableOrderingComposer,
+          $$DocumentsTableAnnotationComposer,
+          $$DocumentsTableCreateCompanionBuilder,
+          $$DocumentsTableUpdateCompanionBuilder,
+          (DocumentRow, $$DocumentsTableReferences),
+          DocumentRow,
+          PrefetchHooks Function({bool workspaceId, bool documentSectionsRefs})
+        > {
+  $$DocumentsTableTableManager(_$AppDatabase db, $DocumentsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DocumentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DocumentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DocumentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> workspaceId = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<String> sourceUri = const Value.absent(),
+                Value<String> localPath = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> mimeType = const Value.absent(),
+                Value<int> fileSize = const Value.absent(),
+                Value<String> contentHash = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> author = const Value.absent(),
+                Value<String> language = const Value.absent(),
+                Value<int> pageCount = const Value.absent(),
+                Value<int> sectionCount = const Value.absent(),
+                Value<String> parseStatus = const Value.absent(),
+                Value<String?> parseError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DocumentsCompanion(
+                id: id,
+                workspaceId: workspaceId,
+                displayName: displayName,
+                sourceUri: sourceUri,
+                localPath: localPath,
+                type: type,
+                mimeType: mimeType,
+                fileSize: fileSize,
+                contentHash: contentHash,
+                title: title,
+                author: author,
+                language: language,
+                pageCount: pageCount,
+                sectionCount: sectionCount,
+                parseStatus: parseStatus,
+                parseError: parseError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String workspaceId,
+                required String displayName,
+                required String sourceUri,
+                required String localPath,
+                required String type,
+                Value<String> mimeType = const Value.absent(),
+                Value<int> fileSize = const Value.absent(),
+                Value<String> contentHash = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> author = const Value.absent(),
+                Value<String> language = const Value.absent(),
+                Value<int> pageCount = const Value.absent(),
+                Value<int> sectionCount = const Value.absent(),
+                Value<String> parseStatus = const Value.absent(),
+                Value<String?> parseError = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => DocumentsCompanion.insert(
+                id: id,
+                workspaceId: workspaceId,
+                displayName: displayName,
+                sourceUri: sourceUri,
+                localPath: localPath,
+                type: type,
+                mimeType: mimeType,
+                fileSize: fileSize,
+                contentHash: contentHash,
+                title: title,
+                author: author,
+                language: language,
+                pageCount: pageCount,
+                sectionCount: sectionCount,
+                parseStatus: parseStatus,
+                parseError: parseError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$DocumentsTable, DocumentRow>(table),
+                  $$DocumentsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({workspaceId = false, documentSectionsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (documentSectionsRefs) db.documentSections,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (workspaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.workspaceId,
+                                    referencedTable: $$DocumentsTableReferences
+                                        ._workspaceIdTable(db),
+                                    referencedColumn: $$DocumentsTableReferences
+                                        ._workspaceIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (documentSectionsRefs)
+                        await $_getPrefetchedData<
+                          DocumentRow,
+                          $DocumentsTable,
+                          DocumentSectionRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$DocumentsTableReferences
+                              ._documentSectionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$DocumentsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).documentSectionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.documentId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$DocumentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DocumentsTable,
+      DocumentRow,
+      $$DocumentsTableFilterComposer,
+      $$DocumentsTableOrderingComposer,
+      $$DocumentsTableAnnotationComposer,
+      $$DocumentsTableCreateCompanionBuilder,
+      $$DocumentsTableUpdateCompanionBuilder,
+      (DocumentRow, $$DocumentsTableReferences),
+      DocumentRow,
+      PrefetchHooks Function({bool workspaceId, bool documentSectionsRefs})
+    >;
+typedef $$DocumentSectionsTableCreateCompanionBuilder =
+    DocumentSectionsCompanion Function({
+      required String id,
+      required String documentId,
+      required int sectionIndex,
+      Value<String?> parentSectionId,
+      required String kind,
+      Value<String> title,
+      required String locator,
+      Value<String> plainText,
+      Value<int> charCount,
+      Value<String> metadataJson,
+      Value<int> rowid,
+    });
+typedef $$DocumentSectionsTableUpdateCompanionBuilder =
+    DocumentSectionsCompanion Function({
+      Value<String> id,
+      Value<String> documentId,
+      Value<int> sectionIndex,
+      Value<String?> parentSectionId,
+      Value<String> kind,
+      Value<String> title,
+      Value<String> locator,
+      Value<String> plainText,
+      Value<int> charCount,
+      Value<String> metadataJson,
+      Value<int> rowid,
+    });
+
+final class $$DocumentSectionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $DocumentSectionsTable,
+          DocumentSectionRow
+        > {
+  $$DocumentSectionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $DocumentsTable _documentIdTable(_$AppDatabase db) =>
+      db.documents.createAlias('document_sections__document_id__documents__id');
+
+  $$DocumentsTableProcessedTableManager get documentId {
+    final $_column = $_itemColumn<String>('document_id')!;
+
+    final manager = $$DocumentsTableTableManager(
+      $_db,
+      $_db.documents,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_documentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$DocumentSectionsTableFilterComposer
+    extends Composer<_$AppDatabase, $DocumentSectionsTable> {
+  $$DocumentSectionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sectionIndex => $composableBuilder(
+    column: $table.sectionIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parentSectionId => $composableBuilder(
+    column: $table.parentSectionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get locator => $composableBuilder(
+    column: $table.locator,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get plainText => $composableBuilder(
+    column: $table.plainText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get charCount => $composableBuilder(
+    column: $table.charCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metadataJson => $composableBuilder(
+    column: $table.metadataJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$DocumentsTableFilterComposer get documentId {
+    final $$DocumentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.documentId,
+      referencedTable: $db.documents,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DocumentsTableFilterComposer(
+            $db: $db,
+            $table: $db.documents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DocumentSectionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DocumentSectionsTable> {
+  $$DocumentSectionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sectionIndex => $composableBuilder(
+    column: $table.sectionIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parentSectionId => $composableBuilder(
+    column: $table.parentSectionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get locator => $composableBuilder(
+    column: $table.locator,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get plainText => $composableBuilder(
+    column: $table.plainText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get charCount => $composableBuilder(
+    column: $table.charCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get metadataJson => $composableBuilder(
+    column: $table.metadataJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$DocumentsTableOrderingComposer get documentId {
+    final $$DocumentsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.documentId,
+      referencedTable: $db.documents,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DocumentsTableOrderingComposer(
+            $db: $db,
+            $table: $db.documents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DocumentSectionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DocumentSectionsTable> {
+  $$DocumentSectionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get sectionIndex => $composableBuilder(
+    column: $table.sectionIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get parentSectionId => $composableBuilder(
+    column: $table.parentSectionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get locator =>
+      $composableBuilder(column: $table.locator, builder: (column) => column);
+
+  GeneratedColumn<String> get plainText =>
+      $composableBuilder(column: $table.plainText, builder: (column) => column);
+
+  GeneratedColumn<int> get charCount =>
+      $composableBuilder(column: $table.charCount, builder: (column) => column);
+
+  GeneratedColumn<String> get metadataJson => $composableBuilder(
+    column: $table.metadataJson,
+    builder: (column) => column,
+  );
+
+  $$DocumentsTableAnnotationComposer get documentId {
+    final $$DocumentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.documentId,
+      referencedTable: $db.documents,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DocumentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.documents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DocumentSectionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DocumentSectionsTable,
+          DocumentSectionRow,
+          $$DocumentSectionsTableFilterComposer,
+          $$DocumentSectionsTableOrderingComposer,
+          $$DocumentSectionsTableAnnotationComposer,
+          $$DocumentSectionsTableCreateCompanionBuilder,
+          $$DocumentSectionsTableUpdateCompanionBuilder,
+          (DocumentSectionRow, $$DocumentSectionsTableReferences),
+          DocumentSectionRow,
+          PrefetchHooks Function({bool documentId})
+        > {
+  $$DocumentSectionsTableTableManager(
+    _$AppDatabase db,
+    $DocumentSectionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DocumentSectionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DocumentSectionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DocumentSectionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> documentId = const Value.absent(),
+                Value<int> sectionIndex = const Value.absent(),
+                Value<String?> parentSectionId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> locator = const Value.absent(),
+                Value<String> plainText = const Value.absent(),
+                Value<int> charCount = const Value.absent(),
+                Value<String> metadataJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DocumentSectionsCompanion(
+                id: id,
+                documentId: documentId,
+                sectionIndex: sectionIndex,
+                parentSectionId: parentSectionId,
+                kind: kind,
+                title: title,
+                locator: locator,
+                plainText: plainText,
+                charCount: charCount,
+                metadataJson: metadataJson,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String documentId,
+                required int sectionIndex,
+                Value<String?> parentSectionId = const Value.absent(),
+                required String kind,
+                Value<String> title = const Value.absent(),
+                required String locator,
+                Value<String> plainText = const Value.absent(),
+                Value<int> charCount = const Value.absent(),
+                Value<String> metadataJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DocumentSectionsCompanion.insert(
+                id: id,
+                documentId: documentId,
+                sectionIndex: sectionIndex,
+                parentSectionId: parentSectionId,
+                kind: kind,
+                title: title,
+                locator: locator,
+                plainText: plainText,
+                charCount: charCount,
+                metadataJson: metadataJson,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$DocumentSectionsTable, DocumentSectionRow>(
+                    table,
+                  ),
+                  $$DocumentSectionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({documentId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (documentId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.documentId,
+                                referencedTable:
+                                    $$DocumentSectionsTableReferences
+                                        ._documentIdTable(db),
+                                referencedColumn:
+                                    $$DocumentSectionsTableReferences
+                                        ._documentIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$DocumentSectionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DocumentSectionsTable,
+      DocumentSectionRow,
+      $$DocumentSectionsTableFilterComposer,
+      $$DocumentSectionsTableOrderingComposer,
+      $$DocumentSectionsTableAnnotationComposer,
+      $$DocumentSectionsTableCreateCompanionBuilder,
+      $$DocumentSectionsTableUpdateCompanionBuilder,
+      (DocumentSectionRow, $$DocumentSectionsTableReferences),
+      DocumentSectionRow,
+      PrefetchHooks Function({bool documentId})
+    >;
+typedef $$McpServersTableCreateCompanionBuilder =
+    McpServersCompanion Function({
+      required String id,
+      required String workspaceId,
+      required String name,
+      required String transport,
+      Value<String> endpoint,
+      Value<String> command,
+      Value<String> argumentsJson,
+      Value<String> environmentJson,
+      Value<String> headersJson,
+      Value<String?> runtimeConfigId,
+      Value<bool> enabled,
+      Value<bool> autoConnect,
+      Value<int> connectionTimeoutMs,
+      Value<int> toolTimeoutMs,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$McpServersTableUpdateCompanionBuilder =
+    McpServersCompanion Function({
+      Value<String> id,
+      Value<String> workspaceId,
+      Value<String> name,
+      Value<String> transport,
+      Value<String> endpoint,
+      Value<String> command,
+      Value<String> argumentsJson,
+      Value<String> environmentJson,
+      Value<String> headersJson,
+      Value<String?> runtimeConfigId,
+      Value<bool> enabled,
+      Value<bool> autoConnect,
+      Value<int> connectionTimeoutMs,
+      Value<int> toolTimeoutMs,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$McpServersTableReferences
+    extends BaseReferences<_$AppDatabase, $McpServersTable, McpServerRow> {
+  $$McpServersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorkspacesTable _workspaceIdTable(_$AppDatabase db) =>
+      db.workspaces.createAlias('mcp_servers__workspace_id__workspaces__id');
+
+  $$WorkspacesTableProcessedTableManager get workspaceId {
+    final $_column = $_itemColumn<String>('workspace_id')!;
+
+    final manager = $$WorkspacesTableTableManager(
+      $_db,
+      $_db.workspaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workspaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$McpServersTableFilterComposer
+    extends Composer<_$AppDatabase, $McpServersTable> {
+  $$McpServersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get transport => $composableBuilder(
+    column: $table.transport,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get endpoint => $composableBuilder(
+    column: $table.endpoint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get command => $composableBuilder(
+    column: $table.command,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get argumentsJson => $composableBuilder(
+    column: $table.argumentsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get environmentJson => $composableBuilder(
+    column: $table.environmentJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get headersJson => $composableBuilder(
+    column: $table.headersJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get runtimeConfigId => $composableBuilder(
+    column: $table.runtimeConfigId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoConnect => $composableBuilder(
+    column: $table.autoConnect,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get connectionTimeoutMs => $composableBuilder(
+    column: $table.connectionTimeoutMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get toolTimeoutMs => $composableBuilder(
+    column: $table.toolTimeoutMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorkspacesTableFilterComposer get workspaceId {
+    final $$WorkspacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableFilterComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$McpServersTableOrderingComposer
+    extends Composer<_$AppDatabase, $McpServersTable> {
+  $$McpServersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get transport => $composableBuilder(
+    column: $table.transport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get endpoint => $composableBuilder(
+    column: $table.endpoint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get command => $composableBuilder(
+    column: $table.command,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get argumentsJson => $composableBuilder(
+    column: $table.argumentsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get environmentJson => $composableBuilder(
+    column: $table.environmentJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get headersJson => $composableBuilder(
+    column: $table.headersJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get runtimeConfigId => $composableBuilder(
+    column: $table.runtimeConfigId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get autoConnect => $composableBuilder(
+    column: $table.autoConnect,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get connectionTimeoutMs => $composableBuilder(
+    column: $table.connectionTimeoutMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get toolTimeoutMs => $composableBuilder(
+    column: $table.toolTimeoutMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorkspacesTableOrderingComposer get workspaceId {
+    final $$WorkspacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$McpServersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $McpServersTable> {
+  $$McpServersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get transport =>
+      $composableBuilder(column: $table.transport, builder: (column) => column);
+
+  GeneratedColumn<String> get endpoint =>
+      $composableBuilder(column: $table.endpoint, builder: (column) => column);
+
+  GeneratedColumn<String> get command =>
+      $composableBuilder(column: $table.command, builder: (column) => column);
+
+  GeneratedColumn<String> get argumentsJson => $composableBuilder(
+    column: $table.argumentsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get environmentJson => $composableBuilder(
+    column: $table.environmentJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get headersJson => $composableBuilder(
+    column: $table.headersJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get runtimeConfigId => $composableBuilder(
+    column: $table.runtimeConfigId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enabled =>
+      $composableBuilder(column: $table.enabled, builder: (column) => column);
+
+  GeneratedColumn<bool> get autoConnect => $composableBuilder(
+    column: $table.autoConnect,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get connectionTimeoutMs => $composableBuilder(
+    column: $table.connectionTimeoutMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get toolTimeoutMs => $composableBuilder(
+    column: $table.toolTimeoutMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$WorkspacesTableAnnotationComposer get workspaceId {
+    final $$WorkspacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$McpServersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $McpServersTable,
+          McpServerRow,
+          $$McpServersTableFilterComposer,
+          $$McpServersTableOrderingComposer,
+          $$McpServersTableAnnotationComposer,
+          $$McpServersTableCreateCompanionBuilder,
+          $$McpServersTableUpdateCompanionBuilder,
+          (McpServerRow, $$McpServersTableReferences),
+          McpServerRow,
+          PrefetchHooks Function({bool workspaceId})
+        > {
+  $$McpServersTableTableManager(_$AppDatabase db, $McpServersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$McpServersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$McpServersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$McpServersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> workspaceId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> transport = const Value.absent(),
+                Value<String> endpoint = const Value.absent(),
+                Value<String> command = const Value.absent(),
+                Value<String> argumentsJson = const Value.absent(),
+                Value<String> environmentJson = const Value.absent(),
+                Value<String> headersJson = const Value.absent(),
+                Value<String?> runtimeConfigId = const Value.absent(),
+                Value<bool> enabled = const Value.absent(),
+                Value<bool> autoConnect = const Value.absent(),
+                Value<int> connectionTimeoutMs = const Value.absent(),
+                Value<int> toolTimeoutMs = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => McpServersCompanion(
+                id: id,
+                workspaceId: workspaceId,
+                name: name,
+                transport: transport,
+                endpoint: endpoint,
+                command: command,
+                argumentsJson: argumentsJson,
+                environmentJson: environmentJson,
+                headersJson: headersJson,
+                runtimeConfigId: runtimeConfigId,
+                enabled: enabled,
+                autoConnect: autoConnect,
+                connectionTimeoutMs: connectionTimeoutMs,
+                toolTimeoutMs: toolTimeoutMs,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String workspaceId,
+                required String name,
+                required String transport,
+                Value<String> endpoint = const Value.absent(),
+                Value<String> command = const Value.absent(),
+                Value<String> argumentsJson = const Value.absent(),
+                Value<String> environmentJson = const Value.absent(),
+                Value<String> headersJson = const Value.absent(),
+                Value<String?> runtimeConfigId = const Value.absent(),
+                Value<bool> enabled = const Value.absent(),
+                Value<bool> autoConnect = const Value.absent(),
+                Value<int> connectionTimeoutMs = const Value.absent(),
+                Value<int> toolTimeoutMs = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => McpServersCompanion.insert(
+                id: id,
+                workspaceId: workspaceId,
+                name: name,
+                transport: transport,
+                endpoint: endpoint,
+                command: command,
+                argumentsJson: argumentsJson,
+                environmentJson: environmentJson,
+                headersJson: headersJson,
+                runtimeConfigId: runtimeConfigId,
+                enabled: enabled,
+                autoConnect: autoConnect,
+                connectionTimeoutMs: connectionTimeoutMs,
+                toolTimeoutMs: toolTimeoutMs,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$McpServersTable, McpServerRow>(table),
+                  $$McpServersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workspaceId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workspaceId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.workspaceId,
+                                referencedTable: $$McpServersTableReferences
+                                    ._workspaceIdTable(db),
+                                referencedColumn: $$McpServersTableReferences
+                                    ._workspaceIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$McpServersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $McpServersTable,
+      McpServerRow,
+      $$McpServersTableFilterComposer,
+      $$McpServersTableOrderingComposer,
+      $$McpServersTableAnnotationComposer,
+      $$McpServersTableCreateCompanionBuilder,
+      $$McpServersTableUpdateCompanionBuilder,
+      (McpServerRow, $$McpServersTableReferences),
+      McpServerRow,
+      PrefetchHooks Function({bool workspaceId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4211,4 +9278,12 @@ class $AppDatabaseManager {
       $$ProviderConfigsTableTableManager(_db, _db.providerConfigs);
   $$MemoryNotesTableTableManager get memoryNotes =>
       $$MemoryNotesTableTableManager(_db, _db.memoryNotes);
+  $$RuntimeConfigsTableTableManager get runtimeConfigs =>
+      $$RuntimeConfigsTableTableManager(_db, _db.runtimeConfigs);
+  $$DocumentsTableTableManager get documents =>
+      $$DocumentsTableTableManager(_db, _db.documents);
+  $$DocumentSectionsTableTableManager get documentSections =>
+      $$DocumentSectionsTableTableManager(_db, _db.documentSections);
+  $$McpServersTableTableManager get mcpServers =>
+      $$McpServersTableTableManager(_db, _db.mcpServers);
 }

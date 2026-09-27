@@ -39,15 +39,14 @@ class RuntimeConfig {
     String? kind,
     Map<String, dynamic>? options,
     DateTime? updatedAt,
-  }) =>
-      RuntimeConfig(
-        id: id,
-        label: label ?? this.label,
-        kind: kind ?? this.kind,
-        options: options ?? this.options,
-        createdAt: createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-      );
+  }) => RuntimeConfig(
+    id: id,
+    label: label ?? this.label,
+    kind: kind ?? this.kind,
+    options: options ?? this.options,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
 }
 
 /// A connected project the agent operates on (design doc §18).
@@ -83,15 +82,14 @@ class Workspace {
     String? rootDirectory,
     String? runtimeId,
     Map<String, dynamic>? settings,
-  }) =>
-      Workspace(
-        id: id,
-        name: name ?? this.name,
-        rootDirectory: rootDirectory ?? this.rootDirectory,
-        createdAt: createdAt,
-        runtimeId: runtimeId ?? this.runtimeId,
-        settings: settings ?? this.settings,
-      );
+  }) => Workspace(
+    id: id,
+    name: name ?? this.name,
+    rootDirectory: rootDirectory ?? this.rootDirectory,
+    createdAt: createdAt,
+    runtimeId: runtimeId ?? this.runtimeId,
+    settings: settings ?? this.settings,
+  );
 }
 
 /// One task/conversation inside a workspace (design doc §19).
@@ -149,32 +147,32 @@ class TranscriptMessage {
 
   /// The model-facing view (drops UI-only metadata).
   ChatMessage toChatMessage() => ChatMessage(
-        role: role,
-        content: content,
-        toolCalls: toolCalls,
-        toolCallId: toolCallId,
-        name: name,
-        createdAt: createdAt,
-      );
+    role: role,
+    content: content,
+    toolCalls: toolCalls,
+    toolCallId: toolCallId,
+    name: name,
+    createdAt: createdAt,
+  );
 
   factory TranscriptMessage.fromChat(ChatMessage m) => TranscriptMessage(
-        role: m.role,
-        content: m.content,
-        toolCalls: m.toolCalls,
-        toolCallId: m.toolCallId,
-        name: m.name,
-        createdAt: m.createdAt,
-      );
+    role: m.role,
+    content: m.content,
+    toolCalls: m.toolCalls,
+    toolCallId: m.toolCallId,
+    name: m.name,
+    createdAt: m.createdAt,
+  );
 
   factory TranscriptMessage.fromToolResult(ToolResult r) => TranscriptMessage(
-        role: MessageRole.tool,
-        content: r.content,
-        toolCallId: r.toolCallId,
-        name: r.name,
-        isError: r.isError,
-        data: r.data,
-        createdAt: DateTime.now(),
-      );
+    role: MessageRole.tool,
+    content: r.content,
+    toolCallId: r.toolCallId,
+    name: r.name,
+    isError: r.isError,
+    data: r.data,
+    createdAt: DateTime.now(),
+  );
 
   /// Serializes tool calls for storage using the OpenAI tool-call shape, which
   /// [ToolCall.fromJson] can read back.
@@ -185,7 +183,10 @@ class TranscriptMessage {
     if (raw == null) return const <ToolCall>[];
     return raw
         .whereType<Map<dynamic, dynamic>>()
-        .map((Map<dynamic, dynamic> e) => ToolCall.fromJson(e.cast<String, dynamic>()))
+        .map(
+          (Map<dynamic, dynamic> e) =>
+              ToolCall.fromJson(e.cast<String, dynamic>()),
+        )
         .toList();
   }
 }

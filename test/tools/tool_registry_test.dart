@@ -15,20 +15,19 @@ class _DynamicTool extends ReadOnlyTool {
 
   @override
   Map<String, dynamic> get inputSchema => const <String, dynamic>{
-        'type': 'object',
-        'properties': <String, dynamic>{},
-      };
+    'type': 'object',
+    'properties': <String, dynamic>{},
+  };
 
   @override
   Future<ToolResult> execute(
     Map<String, dynamic> arguments,
     ToolContext context,
-  ) async =>
-      const ToolResult(
-        toolCallId: 'test',
-        name: 'mcp_example_lookup',
-        content: 'ok',
-      );
+  ) async => const ToolResult(
+    toolCallId: 'test',
+    name: 'mcp_example_lookup',
+    content: 'ok',
+  );
 }
 
 void main() {

@@ -23,19 +23,22 @@ class WorkspaceRepository {
   final AppDatabase _db;
 
   Future<List<Workspace>> all() async {
-    final rows = await (_db.select(_db.workspaces)
-          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-        .get();
+    final rows = await (_db.select(
+      _db.workspaces,
+    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
     return rows.map(_toDomain).toList();
   }
 
   Future<Workspace?> byId(String id) async {
-    final row = await (_db.select(_db.workspaces)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.workspaces,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row == null ? null : _toDomain(row);
   }
 
-  Future<void> upsert(Workspace w) => _db.into(_db.workspaces).insert(
+  Future<void> upsert(Workspace w) => _db
+      .into(_db.workspaces)
+      .insert(
         WorkspacesCompanion.insert(
           id: w.id,
           name: w.name,
@@ -51,13 +54,13 @@ class WorkspaceRepository {
       (_db.delete(_db.workspaces)..where((t) => t.id.equals(id))).go();
 
   Workspace _toDomain(WorkspaceRow row) => Workspace(
-        id: row.id,
-        name: row.name,
-        rootDirectory: row.rootDirectory,
-        createdAt: row.createdAt,
-        runtimeId: row.runtimeId,
-        settings: _decodeMap(row.settingsJson),
-      );
+    id: row.id,
+    name: row.name,
+    rootDirectory: row.rootDirectory,
+    createdAt: row.createdAt,
+    runtimeId: row.runtimeId,
+    settings: _decodeMap(row.settingsJson),
+  );
 }
 
 /// CRUD for sessions and their transcripts.
@@ -66,20 +69,24 @@ class SessionRepository {
   final AppDatabase _db;
 
   Future<List<Session>> forWorkspace(String workspaceId) async {
-    final rows = await (_db.select(_db.sessions)
-          ..where((t) => t.workspaceId.equals(workspaceId))
-          ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-        .get();
+    final rows =
+        await (_db.select(_db.sessions)
+              ..where((t) => t.workspaceId.equals(workspaceId))
+              ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+            .get();
     return rows.map(_sessionFromRow).toList();
   }
 
   Future<Session?> byId(String id) async {
-    final row = await (_db.select(_db.sessions)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.sessions,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row == null ? null : _sessionFromRow(row);
   }
 
-  Future<void> upsert(Session s) => _db.into(_db.sessions).insert(
+  Future<void> upsert(Session s) => _db
+      .into(_db.sessions)
+      .insert(
         SessionsCompanion.insert(
           id: s.id,
           workspaceId: s.workspaceId,
@@ -105,68 +112,73 @@ class SessionRepository {
       (_db.delete(_db.sessions)..where((t) => t.id.equals(id))).go();
 
   Future<List<TranscriptMessage>> loadMessages(String sessionId) async {
-    final rows = await (_db.select(_db.messages)
-          ..where((t) => t.sessionId.equals(sessionId))
-          ..orderBy([(t) => OrderingTerm.asc(t.seq)]))
-        .get();
+    final rows =
+        await (_db.select(_db.messages)
+              ..where((t) => t.sessionId.equals(sessionId))
+              ..orderBy([(t) => OrderingTerm.asc(t.seq)]))
+            .get();
     return rows.map(_messageFromRow).toList();
   }
 
   /// Appends a message, assigning the next sequence number.
   Future<void> appendMessage(String sessionId, TranscriptMessage m) async {
-    final countRow = await (_db.selectOnly(_db.messages)
-          ..addColumns(<Expression<int>>[_db.messages.id.count()])
-          ..where(_db.messages.sessionId.equals(sessionId)))
-        .getSingle();
+    final countRow =
+        await (_db.selectOnly(_db.messages)
+              ..addColumns(<Expression<int>>[_db.messages.id.count()])
+              ..where(_db.messages.sessionId.equals(sessionId)))
+            .getSingle();
     final count = countRow.read(_db.messages.id.count()) ?? 0;
-    await _db.into(_db.messages).insert(MessagesCompanion.insert(
-      sessionId: sessionId,
-      seq: count,
-      role: m.role.name,
-      createdAt: m.createdAt,
-      content: Value(m.content),
-      toolCallsJson: Value(
-        m.toolCalls.isEmpty ? null : jsonEncode(m.toolCallsToJson()),
-      ),
-      toolCallId: Value(m.toolCallId),
-      name: Value(m.name),
-      isError: Value(m.isError),
-      dataJson: Value(m.data == null ? null : jsonEncode(m.data)),
-    ));
+    await _db
+        .into(_db.messages)
+        .insert(
+          MessagesCompanion.insert(
+            sessionId: sessionId,
+            seq: count,
+            role: m.role.name,
+            createdAt: m.createdAt,
+            content: Value(m.content),
+            toolCallsJson: Value(
+              m.toolCalls.isEmpty ? null : jsonEncode(m.toolCallsToJson()),
+            ),
+            toolCallId: Value(m.toolCallId),
+            name: Value(m.name),
+            isError: Value(m.isError),
+            dataJson: Value(m.data == null ? null : jsonEncode(m.data)),
+          ),
+        );
     await touch(sessionId);
   }
 
-  Future<void> clearMessages(String sessionId) =>
-      (_db.delete(_db.messages)..where((t) => t.sessionId.equals(sessionId)))
-          .go();
+  Future<void> clearMessages(String sessionId) => (_db.delete(
+    _db.messages,
+  )..where((t) => t.sessionId.equals(sessionId))).go();
 
   Session _sessionFromRow(SessionRow row) => Session(
-        id: row.id,
-        workspaceId: row.workspaceId,
-        title: row.title,
-        status: row.status,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      );
+    id: row.id,
+    workspaceId: row.workspaceId,
+    title: row.title,
+    status: row.status,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  );
 
   TranscriptMessage _messageFromRow(MessageRow row) => TranscriptMessage(
-        role: MessageRole.values.firstWhere(
-          (MessageRole r) => r.name == row.role,
-          orElse: () => MessageRole.user,
-        ),
-        content: row.content,
-        toolCalls: row.toolCallsJson == null
-            ? const <ToolCall>[]
-            : TranscriptMessage.toolCallsFromJson(
-                jsonDecode(row.toolCallsJson!) as List<dynamic>),
-        toolCallId: row.toolCallId,
-        name: row.name,
-        isError: row.isError,
-        data: row.dataJson == null
-            ? null
-            : _decodeMap(row.dataJson!),
-        createdAt: row.createdAt,
-      );
+    role: MessageRole.values.firstWhere(
+      (MessageRole r) => r.name == row.role,
+      orElse: () => MessageRole.user,
+    ),
+    content: row.content,
+    toolCalls: row.toolCallsJson == null
+        ? const <ToolCall>[]
+        : TranscriptMessage.toolCallsFromJson(
+            jsonDecode(row.toolCallsJson!) as List<dynamic>,
+          ),
+    toolCallId: row.toolCallId,
+    name: row.name,
+    isError: row.isError,
+    data: row.dataJson == null ? null : _decodeMap(row.dataJson!),
+    createdAt: row.createdAt,
+  );
 }
 
 /// Persists model provider configurations (Settings).
@@ -211,10 +223,9 @@ class ProviderRepository {
     } else {
       await _secrets.write(_secretKey(config.id), config.apiKey);
     }
-    await _db.into(_db.providerConfigs).insert(
-          _toRow(config),
-          mode: InsertMode.insertOrReplace,
-        );
+    await _db
+        .into(_db.providerConfigs)
+        .insert(_toRow(config), mode: InsertMode.insertOrReplace);
   }
 
   Future<void> delete(String id) async {
@@ -225,14 +236,16 @@ class ProviderRepository {
   /// Marks [id] as the default, clearing the flag on all others.
   Future<void> setDefault(String id) async {
     await _db.transaction(() async {
-      await _db.update(_db.providerConfigs)
+      await _db
+          .update(_db.providerConfigs)
           .write(const ProviderConfigsCompanion(isDefault: Value(false)));
       await (_db.update(_db.providerConfigs)..where((t) => t.id.equals(id)))
           .write(const ProviderConfigsCompanion(isDefault: Value(true)));
     });
   }
 
-  ProviderConfigsCompanion _toRow(ModelConfig c) => ProviderConfigsCompanion.insert(
+  ProviderConfigsCompanion _toRow(ModelConfig c) =>
+      ProviderConfigsCompanion.insert(
         id: c.id,
         label: c.label,
         provider: c.provider,
@@ -248,17 +261,17 @@ class ProviderRepository {
       );
 
   ModelConfig _toDomain(ProviderRow row, String apiKey) => ModelConfig(
-        id: row.id,
-        label: row.label,
-        provider: row.provider,
-        model: row.model,
-        baseUrl: row.baseUrl,
-        apiKey: apiKey,
-        temperature: row.temperature,
-        maxTokens: row.maxTokens,
-        contextWindow: row.contextWindow,
-        isDefault: row.isDefault,
-      );
+    id: row.id,
+    label: row.label,
+    provider: row.provider,
+    model: row.model,
+    baseUrl: row.baseUrl,
+    apiKey: apiKey,
+    temperature: row.temperature,
+    maxTokens: row.maxTokens,
+    contextWindow: row.contextWindow,
+    isDefault: row.isDefault,
+  );
 }
 
 /// Drift-backed [MemoryStore] for long-term workspace memory.
@@ -268,32 +281,36 @@ class DriftMemoryStore implements MemoryStore {
 
   @override
   Future<List<MemoryEntry>> load(String workspaceId) async {
-    final rows = await (_db.select(_db.memoryNotes)
-          ..where((t) => t.workspaceId.equals(workspaceId))
-          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-        .get();
+    final rows =
+        await (_db.select(_db.memoryNotes)
+              ..where((t) => t.workspaceId.equals(workspaceId))
+              ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+            .get();
     return rows
-        .map((MemoryRow r) => MemoryEntry(
-              id: r.id,
-              content: r.content,
-              createdAt: r.createdAt,
-              tags: (jsonDecode(r.tagsJson) as List<dynamic>).cast<String>(),
-            ))
+        .map(
+          (MemoryRow r) => MemoryEntry(
+            id: r.id,
+            content: r.content,
+            createdAt: r.createdAt,
+            tags: (jsonDecode(r.tagsJson) as List<dynamic>).cast<String>(),
+          ),
+        )
         .toList();
   }
 
   @override
-  Future<void> save(String workspaceId, MemoryEntry entry) =>
-      _db.into(_db.memoryNotes).insert(
-            MemoryNotesCompanion.insert(
-              id: entry.id,
-              workspaceId: workspaceId,
-              content: entry.content,
-              createdAt: entry.createdAt,
-              tagsJson: Value(jsonEncode(entry.tags)),
-            ),
-            mode: InsertMode.insertOrReplace,
-          );
+  Future<void> save(String workspaceId, MemoryEntry entry) => _db
+      .into(_db.memoryNotes)
+      .insert(
+        MemoryNotesCompanion.insert(
+          id: entry.id,
+          workspaceId: workspaceId,
+          content: entry.content,
+          createdAt: entry.createdAt,
+          tagsJson: Value(jsonEncode(entry.tags)),
+        ),
+        mode: InsertMode.insertOrReplace,
+      );
 
   @override
   Future<void> delete(String workspaceId, String id) =>
@@ -318,42 +335,43 @@ class RuntimeConfigRepository {
   final AppDatabase _db;
 
   Future<List<RuntimeConfig>> all() async {
-    final rows = await (_db.select(_db.runtimeConfigs)
-          ..orderBy([(table) => OrderingTerm.asc(table.label)]))
-        .get();
+    final rows = await (_db.select(
+      _db.runtimeConfigs,
+    )..orderBy([(table) => OrderingTerm.asc(table.label)])).get();
     return rows.map(_toDomain).toList(growable: false);
   }
 
   Future<RuntimeConfig?> byId(String id) async {
-    final row = await (_db.select(_db.runtimeConfigs)
-          ..where((table) => table.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.runtimeConfigs,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
     return row == null ? null : _toDomain(row);
   }
 
-  Future<void> upsert(RuntimeConfig config) =>
-      _db.into(_db.runtimeConfigs).insert(
-            RuntimeConfigsCompanion.insert(
-              id: config.id,
-              label: config.label,
-              kind: config.kind,
-              optionsJson: Value(jsonEncode(config.options)),
-              createdAt: config.createdAt,
-              updatedAt: config.updatedAt,
-            ),
-            mode: InsertMode.insertOrReplace,
-          );
+  Future<void> upsert(RuntimeConfig config) => _db
+      .into(_db.runtimeConfigs)
+      .insert(
+        RuntimeConfigsCompanion.insert(
+          id: config.id,
+          label: config.label,
+          kind: config.kind,
+          optionsJson: Value(jsonEncode(config.options)),
+          createdAt: config.createdAt,
+          updatedAt: config.updatedAt,
+        ),
+        mode: InsertMode.insertOrReplace,
+      );
 
-  Future<void> delete(String id) => (_db.delete(_db.runtimeConfigs)
-        ..where((table) => table.id.equals(id)))
-      .go();
+  Future<void> delete(String id) => (_db.delete(
+    _db.runtimeConfigs,
+  )..where((table) => table.id.equals(id))).go();
 
   RuntimeConfig _toDomain(RuntimeConfigRow row) => RuntimeConfig(
-        id: row.id,
-        label: row.label,
-        kind: row.kind,
-        options: _decodeMap(row.optionsJson),
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      );
+    id: row.id,
+    label: row.label,
+    kind: row.kind,
+    options: _decodeMap(row.optionsJson),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  );
 }
