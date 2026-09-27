@@ -299,7 +299,8 @@ class _RuntimeCard extends ConsumerStatefulWidget {
   ConsumerState<_RuntimeCard> createState() => _RuntimeCardState();
 }
 
-class _RuntimeCardState extends ConsumerState<_RuntimeCard> {
+class _RuntimeCardState extends ConsumerState<_RuntimeCard>
+    with WidgetsBindingObserver {
   ShellInfo? _shellInfo;
   bool _requesting = false;
 
@@ -312,7 +313,21 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadShellInfo();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Termux may have been installed or granted while we were in the
+    // background, so re-query the bridge whenever the app comes back.
+    if (state == AppLifecycleState.resumed) _loadShellInfo();
   }
 
   @override

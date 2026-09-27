@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/l10n.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
@@ -21,26 +22,26 @@ class AppShell extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: _goBranch,
-        destinations: const <NavigationDestination>[
+        destinations: <NavigationDestination>[
           NavigationDestination(
             icon: Icon(Icons.smart_toy_outlined),
             selectedIcon: Icon(Icons.smart_toy),
-            label: 'Agent',
+            label: context.l10n.agent,
           ),
           NavigationDestination(
             icon: Icon(Icons.folder_outlined),
             selectedIcon: Icon(Icons.folder),
-            label: 'Files',
+            label: context.l10n.files,
           ),
           NavigationDestination(
             icon: Icon(Icons.terminal),
             selectedIcon: Icon(Icons.terminal),
-            label: 'Terminal',
+            label: context.l10n.terminal,
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
+            label: context.l10n.settings,
           ),
         ],
       ),
