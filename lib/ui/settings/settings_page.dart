@@ -51,10 +51,10 @@ class SettingsPage extends ConsumerWidget {
             title: context.l10n.modelProviders,
             subtitle: activeAsync.when(
               data: (ModelConfig c) => c.provider == 'mock'
-                  ? 'Active: offline demo'
-                  : 'Active: ${c.label}',
-              loading: () => 'Loading…',
-              error: (Object _, StackTrace _) => 'Unavailable',
+                  ? context.l10n.activeOfflineDemo
+                  : context.l10n.activeProvider(c.label),
+              loading: () => context.l10n.loading,
+              error: (Object _, StackTrace _) => context.l10n.unavailable,
             ),
           ),
           configsAsync.when(
@@ -391,25 +391,27 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _kv(context, 'Workspace', widget.workspaceName ?? '— none —'),
+            _kv(context, context.l10n.workspace,
+                widget.workspaceName ?? '— ${context.l10n.none} —'),
             const SizedBox(height: 6),
-            _kv(context, 'Directory', widget.rootDirectory ?? '—'),
+            _kv(context, context.l10n.directory, widget.rootDirectory ?? '—'),
             const SizedBox(height: 6),
             _kv(
               context,
-              'Runtime',
-              widget.runtime == null ? 'resolving…' : widget.runtime!.label,
+              context.l10n.runtime,
+              widget.runtime == null
+                  ? context.l10n.resolving
+                  : widget.runtime!.label,
             ),
             if (info != null) ...<Widget>[
               const SizedBox(height: 6),
-              _kv(context, 'Shell', info.shell),
+              _kv(context, context.l10n.shell, info.shell),
               const SizedBox(height: 6),
-              _kv(context, 'Termux', info.termuxState),
+              _kv(context, context.l10n.termux, info.termuxState),
             ],
             const SizedBox(height: 10),
             Text(
-              'On Android the agent runs commands in Termux when it is set up and '
-              'falls back to on-device execution otherwise.',
+              context.l10n.termuxDescription,
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: scheme.outline),
@@ -418,10 +420,8 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
               const SizedBox(height: 8),
               Text(
                 info.termuxPermission
-                    ? 'Termux also needs allow-external-apps=true in its '
-                          'termux.properties before it accepts commands.'
-                    : 'Grant the “Run commands in Termux environment” permission '
-                          'to let the agent use its toolchain.',
+                    ? context.l10n.termuxExternalAppsHint
+                    : context.l10n.termuxPermissionHint,
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(color: scheme.outline),
@@ -431,7 +431,9 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
                 FilledButton.tonal(
                   onPressed: _requesting ? null : _grantTermuxAccess,
                   child: Text(
-                    _requesting ? 'Waiting for answer…' : 'Grant Termux access',
+                    _requesting
+                        ? context.l10n.waitingForAnswer
+                        : context.l10n.grantTermuxAccess,
                   ),
                 ),
               ],
@@ -476,15 +478,14 @@ class _AboutCard extends StatelessWidget {
             Text('AgentFlow', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
-              'An on-device AI agent workstation. The agent reads and edits code, '
-              'runs commands and operates Git — asking before anything risky.',
+              context.l10n.aboutDescription,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: scheme.outline),
             ),
             const SizedBox(height: 8),
             Text(
-              'MVP build',
+              context.l10n.mvpBuild,
               style: Theme.of(
                 context,
               ).textTheme.labelSmall?.copyWith(color: scheme.outline),

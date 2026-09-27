@@ -242,6 +242,65 @@ class AppLocalizationsZh extends AppLocalizations {
   String get maxTokens => '最大输出 Token';
 
   @override
+  String get loading => '加载中…';
+
+  @override
+  String get unavailable => '不可用';
+
+  @override
+  String get workspace => '工作区';
+
+  @override
+  String get directory => '目录';
+
+  @override
+  String get none => '无';
+
+  @override
+  String get resolving => '正在解析…';
+
+  @override
+  String get shell => 'Shell';
+
+  @override
+  String get termux => 'Termux';
+
+  @override
+  String get termuxDescription =>
+      '在 Android 上，配置完成后智能体会通过 Termux 执行命令，否则使用系统 Shell。';
+
+  @override
+  String get waitingForAnswer => '等待授权结果…';
+
+  @override
+  String get grantTermuxAccess => '授予 Termux 权限';
+
+  @override
+  String get mvpBuild => 'MVP 版本';
+
+  @override
+  String get demo => '演示';
+
+  @override
+  String get activeOfflineDemo => '当前：离线演示';
+
+  @override
+  String activeProvider(String name) {
+    return '当前：$name';
+  }
+
+  @override
+  String get termuxExternalAppsHint =>
+      'Termux 还需要在 termux.properties 中设置 allow-external-apps=true 才能接收命令。';
+
+  @override
+  String get termuxPermissionHint => '请授予“在 Termux 环境中运行命令”权限，以便智能体使用其中的工具链。';
+
+  @override
+  String get aboutDescription =>
+      '运行在设备上的 AI 智能体工作台，可读取和编辑代码、执行命令并操作 Git；进行风险操作前会请求确认。';
+
+  @override
   String temperatureValue(String value) {
     return '温度：$value';
   }

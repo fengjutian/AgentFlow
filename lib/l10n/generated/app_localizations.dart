@@ -530,6 +530,114 @@ abstract class AppLocalizations {
   /// **'Max tokens'**
   String get maxTokens;
 
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get loading;
+
+  /// No description provided for @unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get unavailable;
+
+  /// No description provided for @workspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace'**
+  String get workspace;
+
+  /// No description provided for @directory.
+  ///
+  /// In en, this message translates to:
+  /// **'Directory'**
+  String get directory;
+
+  /// No description provided for @none.
+  ///
+  /// In en, this message translates to:
+  /// **'none'**
+  String get none;
+
+  /// No description provided for @resolving.
+  ///
+  /// In en, this message translates to:
+  /// **'resolving…'**
+  String get resolving;
+
+  /// No description provided for @shell.
+  ///
+  /// In en, this message translates to:
+  /// **'Shell'**
+  String get shell;
+
+  /// No description provided for @termux.
+  ///
+  /// In en, this message translates to:
+  /// **'Termux'**
+  String get termux;
+
+  /// No description provided for @termuxDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'On Android the agent runs commands in Termux when it is set up and falls back to the system shell otherwise.'**
+  String get termuxDescription;
+
+  /// No description provided for @waitingForAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for answer…'**
+  String get waitingForAnswer;
+
+  /// No description provided for @grantTermuxAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant Termux access'**
+  String get grantTermuxAccess;
+
+  /// No description provided for @mvpBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'MVP build'**
+  String get mvpBuild;
+
+  /// No description provided for @demo.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo'**
+  String get demo;
+
+  /// No description provided for @activeOfflineDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Active: offline demo'**
+  String get activeOfflineDemo;
+
+  /// No description provided for @activeProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Active: {name}'**
+  String activeProvider(String name);
+
+  /// No description provided for @termuxExternalAppsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Termux also needs allow-external-apps=true in its termux.properties before it accepts commands.'**
+  String get termuxExternalAppsHint;
+
+  /// No description provided for @termuxPermissionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant the “Run commands in Termux environment” permission to let the agent use its toolchain.'**
+  String get termuxPermissionHint;
+
+  /// No description provided for @aboutDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'An on-device AI agent workstation. The agent reads and edits code, runs commands and operates Git — asking before anything risky.'**
+  String get aboutDescription;
+
   /// No description provided for @temperatureValue.
   ///
   /// In en, this message translates to:

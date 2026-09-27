@@ -251,6 +251,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get maxTokens => 'Max tokens';
 
   @override
+  String get loading => 'Loading…';
+
+  @override
+  String get unavailable => 'Unavailable';
+
+  @override
+  String get workspace => 'Workspace';
+
+  @override
+  String get directory => 'Directory';
+
+  @override
+  String get none => 'none';
+
+  @override
+  String get resolving => 'resolving…';
+
+  @override
+  String get shell => 'Shell';
+
+  @override
+  String get termux => 'Termux';
+
+  @override
+  String get termuxDescription =>
+      'On Android the agent runs commands in Termux when it is set up and falls back to the system shell otherwise.';
+
+  @override
+  String get waitingForAnswer => 'Waiting for answer…';
+
+  @override
+  String get grantTermuxAccess => 'Grant Termux access';
+
+  @override
+  String get mvpBuild => 'MVP build';
+
+  @override
+  String get demo => 'Demo';
+
+  @override
+  String get activeOfflineDemo => 'Active: offline demo';
+
+  @override
+  String activeProvider(String name) {
+    return 'Active: $name';
+  }
+
+  @override
+  String get termuxExternalAppsHint =>
+      'Termux also needs allow-external-apps=true in its termux.properties before it accepts commands.';
+
+  @override
+  String get termuxPermissionHint =>
+      'Grant the “Run commands in Termux environment” permission to let the agent use its toolchain.';
+
+  @override
+  String get aboutDescription =>
+      'An on-device AI agent workstation. The agent reads and edits code, runs commands and operates Git — asking before anything risky.';
+
+  @override
   String temperatureValue(String value) {
     return 'Temperature: $value';
   }

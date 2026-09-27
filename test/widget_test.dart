@@ -7,25 +7,75 @@ import 'package:agentflow/ui/chat/widgets/approval_card.dart';
 import 'package:agentflow/ui/chat/widgets/diff_card.dart';
 import 'package:agentflow/ui/chat/widgets/terminal_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:agentflow/l10n/generated/app_localizations.dart';
 
-Widget _wrap(Widget child) =>
-    MaterialApp(home: Scaffold(body: SingleChildScrollView(child: child)));
+Widget _wrap(Widget child) => MaterialApp(
+  locale: const Locale('en'),
+  localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: Scaffold(body: SingleChildScrollView(child: child)),
+);
 
 void main() {
-  testWidgets('ActivityPanel renders the checklist labels and phase', (tester) async {
-    await tester.pumpWidget(_wrap(ActivityPanel(
-      items: <ActivityItem>[
-        ActivityItem(
-            id: '1',
-            label: 'read_file pubspec.yaml',
-            status: ActivityStatus.done),
-        ActivityItem(
-            id: '2', label: 'search_code TODO', status: ActivityStatus.running),
-        ActivityItem(id: '3', label: 'run_shell flutter test', status: ActivityStatus.pending),
-      ],
-      phase: AgentPhase.executing,
-    )));
+  testWidgets('English and Chinese localization resources are available', (
+    tester,
+  ) async {
+    Future<void> pumpLocale(Locale locale) => tester.pumpWidget(
+      MaterialApp(
+        locale: locale,
+        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) => Text(AppLocalizations.of(context).settings),
+        ),
+      ),
+    );
+
+    await pumpLocale(const Locale('en'));
+    expect(find.text('Settings'), findsOneWidget);
+    await pumpLocale(const Locale('zh'));
+    expect(find.text('设置'), findsOneWidget);
+  });
+
+  testWidgets('ActivityPanel renders the checklist labels and phase', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        ActivityPanel(
+          items: <ActivityItem>[
+            ActivityItem(
+              id: '1',
+              label: 'read_file pubspec.yaml',
+              status: ActivityStatus.done,
+            ),
+            ActivityItem(
+              id: '2',
+              label: 'search_code TODO',
+              status: ActivityStatus.running,
+            ),
+            ActivityItem(
+              id: '3',
+              label: 'run_shell flutter test',
+              status: ActivityStatus.pending,
+            ),
+          ],
+          phase: AgentPhase.executing,
+        ),
+      ),
+    );
 
     expect(find.text('Agent Activity'), findsOneWidget);
     expect(find.text('read_file pubspec.yaml'), findsOneWidget);
@@ -34,27 +84,39 @@ void main() {
     expect(find.text('Executing'), findsOneWidget);
   });
 
-  testWidgets('ActivityPanel with no items shows the phase-only hint', (tester) async {
-    await tester.pumpWidget(_wrap(const ActivityPanel(
-      items: <ActivityItem>[],
-      phase: AgentPhase.thinking,
-    )));
+  testWidgets('ActivityPanel with no items shows the phase-only hint', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        const ActivityPanel(
+          items: <ActivityItem>[],
+          phase: AgentPhase.thinking,
+        ),
+      ),
+    );
     expect(find.text('Agent Activity'), findsOneWidget);
     expect(find.text('Thinking…'), findsOneWidget);
   });
 
-  testWidgets('ApprovalCard shows the summary and reports the decision', (tester) async {
+  testWidgets('ApprovalCard shows the summary and reports the decision', (
+    tester,
+  ) async {
     ApprovalDecision? chosen;
-    await tester.pumpWidget(_wrap(ApprovalCard(
-      request: const ApprovalRequest(
-        id: 'a1',
-        toolName: 'write_file',
-        summary: 'write_file lib/main.dart',
-        risk: ToolRisk.confirm,
-        arguments: <String, dynamic>{},
+    await tester.pumpWidget(
+      _wrap(
+        ApprovalCard(
+          request: const ApprovalRequest(
+            id: 'a1',
+            toolName: 'write_file',
+            summary: 'write_file lib/main.dart',
+            risk: ToolRisk.confirm,
+            arguments: <String, dynamic>{},
+          ),
+          onDecision: (ApprovalDecision d) => chosen = d,
+        ),
       ),
-      onDecision: (ApprovalDecision d) => chosen = d,
-    )));
+    );
 
     expect(find.text('write_file lib/main.dart'), findsOneWidget);
     expect(find.text('Allow'), findsOneWidget);
@@ -65,8 +127,11 @@ void main() {
   });
 
   testWidgets('DiffCard shows the path and +/- counts', (tester) async {
-    final FileDiff diff =
-        buildFileDiff(path: 'a.dart', oldText: 'x\ny', newText: 'x\nz');
+    final FileDiff diff = buildFileDiff(
+      path: 'a.dart',
+      oldText: 'x\ny',
+      newText: 'x\nz',
+    );
     await tester.pumpWidget(_wrap(DiffCard(diff: diff)));
 
     expect(find.text('a.dart'), findsOneWidget);
@@ -74,28 +139,36 @@ void main() {
     expect(find.text('\u22121'), findsOneWidget);
   });
 
-  testWidgets('DiffCard.fromData builds from a write_file payload', (tester) async {
-    final FileDiff diff =
-        buildFileDiff(path: 'b.txt', oldText: '', newText: 'new');
-    final DiffCard? card =
-        DiffCard.fromData(<String, dynamic>{'diff': diff.toJson()});
+  testWidgets('DiffCard.fromData builds from a write_file payload', (
+    tester,
+  ) async {
+    final FileDiff diff = buildFileDiff(
+      path: 'b.txt',
+      oldText: '',
+      newText: 'new',
+    );
+    final DiffCard? card = DiffCard.fromData(<String, dynamic>{
+      'diff': diff.toJson(),
+    });
     expect(card, isNotNull);
     expect(DiffCard.fromData(<String, dynamic>{}), isNull);
   });
 
-  testWidgets('TerminalCard shows the command line and exit badge', (tester) async {
-    await tester.pumpWidget(_wrap(const TerminalCard(
-      command: 'echo hi',
-      output: 'hi',
-      exitCode: 0,
-    )));
+  testWidgets('TerminalCard shows the command line and exit badge', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(const TerminalCard(command: 'echo hi', output: 'hi', exitCode: 0)),
+    );
 
     expect(find.text('\$ echo hi'), findsOneWidget);
     expect(find.text('exit 0'), findsOneWidget);
     expect(find.text('hi'), findsOneWidget);
   });
 
-  testWidgets('TerminalCard.fromData reads a run_shell payload', (tester) async {
+  testWidgets('TerminalCard.fromData reads a run_shell payload', (
+    tester,
+  ) async {
     final TerminalCard? card = TerminalCard.fromData(<String, dynamic>{
       'command': 'git status',
       'stdout': 'clean',
