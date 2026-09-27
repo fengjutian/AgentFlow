@@ -17,70 +17,125 @@ import '../../core/model/provider_catalog.dart';
 import '../../runtime/bridge_runtime.dart';
 import '../../runtime/runtime.dart';
 
-class SettingsPage extends ConsumerWidget {
+class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends ConsumerState<SettingsPage>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this)
+      ..addListener(_handleTabChanged);
+  }
+
+  void _handleTabChanged() {
+    if (!_tabController.indexIsChanging && mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _tabController
+      ..removeListener(_handleTabChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final configsAsync = ref.watch(modelConfigsProvider);
     final activeAsync = ref.watch(activeModelConfigProvider);
     final workspace = ref.watch(currentWorkspaceProvider);
     final runtimeAsync = ref.watch(runtimeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.settings)),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _edit(context, ref, null),
-        icon: const Icon(Icons.add),
-        label: Text(context.l10n.provider),
+      appBar: AppBar(
+        title: Text(context.l10n.settings),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: <Widget>[
+            Tab(icon: const Icon(Icons.hub_outlined), text: context.l10n.modelProviders),
+            Tab(icon: const Icon(Icons.terminal_outlined), text: context.l10n.runtime),
+            Tab(icon: const Icon(Icons.info_outline), text: context.l10n.about),
+          ],
+        ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+      floatingActionButton: _tabController.index == 0
+          ? FloatingActionButton.extended(
+              onPressed: () => _edit(context, ref, null),
+              icon: const Icon(Icons.add),
+              label: Text(context.l10n.provider),
+            )
+          : null,
+      body: TabBarView(
+        controller: _tabController,
         children: <Widget>[
-          _SectionHeader(
-            title: context.l10n.modelProviders,
-            subtitle: activeAsync.when(
-              data: (ModelConfig c) => c.provider == 'mock'
-                  ? context.l10n.activeOfflineDemo
-                  : context.l10n.activeProvider(c.label),
-              loading: () => context.l10n.loading,
-              error: (Object _, StackTrace _) => context.l10n.unavailable,
-            ),
+          ListView(
+            key: const PageStorageKey<String>('settings-providers'),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+            children: <Widget>[
+              _SectionHeader(
+                title: context.l10n.modelProviders,
+                subtitle: activeAsync.when(
+                  data: (ModelConfig c) => c.provider == 'mock'
+                      ? context.l10n.activeOfflineDemo
+                      : context.l10n.activeProvider(c.label),
+                  loading: () => context.l10n.loading,
+                  error: (Object _, StackTrace _) => context.l10n.unavailable,
+                ),
+              ),
+              configsAsync.when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (Object e, StackTrace _) =>
+                    Text(context.l10n.failedToLoad(e)),
+                data: (List<ModelConfig> configs) {
+                  if (configs.isEmpty) {
+                    return const _EmptyProviders();
+                  }
+                  return Column(
+                    children: <Widget>[
+                      for (final config in configs)
+                        _ProviderTile(
+                          config: config,
+                          onTap: () => _edit(context, ref, config),
+                          onSetDefault: () => _setDefault(ref, config),
+                          onDelete: () => _delete(context, ref, config),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ],
           ),
-          configsAsync.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-            error: (Object e, StackTrace _) =>
-                Text(context.l10n.failedToLoad(e)),
-            data: (List<ModelConfig> configs) {
-              if (configs.isEmpty) {
-                return const _EmptyProviders();
-              }
-              return Column(
-                children: <Widget>[
-                  for (final config in configs)
-                    _ProviderTile(
-                      config: config,
-                      onTap: () => _edit(context, ref, config),
-                      onSetDefault: () => _setDefault(ref, config),
-                      onDelete: () => _delete(context, ref, config),
-                    ),
-                ],
-              );
-            },
+          ListView(
+            key: const PageStorageKey<String>('settings-runtime'),
+            padding: const EdgeInsets.all(16),
+            children: <Widget>[
+              _SectionHeader(title: context.l10n.runtime),
+              _RuntimeCard(
+                workspaceName: workspace?.name,
+                rootDirectory: workspace?.rootDirectory,
+                runtime: runtimeAsync.value,
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
-          _SectionHeader(title: context.l10n.runtime),
-          _RuntimeCard(
-            workspaceName: workspace?.name,
-            rootDirectory: workspace?.rootDirectory,
-            runtime: runtimeAsync.value,
+          ListView(
+            key: const PageStorageKey<String>('settings-about'),
+            padding: const EdgeInsets.all(16),
+            children: <Widget>[
+              _SectionHeader(title: context.l10n.about),
+              const _AboutCard(),
+            ],
           ),
-          const SizedBox(height: 24),
-          _SectionHeader(title: context.l10n.about),
-          const _AboutCard(),
         ],
       ),
     );

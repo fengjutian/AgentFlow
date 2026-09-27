@@ -15,42 +15,41 @@ class DriftDocumentStore implements DocumentStore {
 
   @override
   Future<List<AgentDocument>> forWorkspace(String workspaceId) async {
-    final rows = await (_db.select(_db.documents)
-          ..where((table) => table.workspaceId.equals(workspaceId))
-          ..orderBy([(table) => OrderingTerm.desc(table.updatedAt)]))
-        .get();
+    final rows =
+        await (_db.select(_db.documents)
+              ..where((table) => table.workspaceId.equals(workspaceId))
+              ..orderBy([(table) => OrderingTerm.desc(table.updatedAt)]))
+            .get();
     return rows.map(_documentFromRow).toList(growable: false);
   }
 
   @override
   Future<AgentDocument?> byId(String id) async {
-    final row = await (_db.select(_db.documents)
-          ..where((table) => table.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.documents,
+    )..where((table) => table.id.equals(id))).getSingleOrNull();
     return row == null ? null : _documentFromRow(row);
   }
 
   @override
-  Future<AgentDocument?> byHash(
-    String workspaceId,
-    String contentHash,
-  ) async {
-    final row = await (_db.select(_db.documents)
-          ..where(
-            (table) =>
-                table.workspaceId.equals(workspaceId) &
-                table.contentHash.equals(contentHash),
-          ))
-        .getSingleOrNull();
+  Future<AgentDocument?> byHash(String workspaceId, String contentHash) async {
+    final row =
+        await (_db.select(_db.documents)..where(
+              (table) =>
+                  table.workspaceId.equals(workspaceId) &
+                  table.contentHash.equals(contentHash),
+            ))
+            .getSingleOrNull();
     return row == null ? null : _documentFromRow(row);
   }
 
   @override
   Future<List<DocumentSection>> sections(String documentId) async {
-    final rows = await (_db.select(_db.documentSections)
-          ..where((table) => table.documentId.equals(documentId))
-          ..orderBy([(table) => OrderingTerm.asc(table.sectionIndex)]))
-        .get();
+    final rows =
+        await (_db.select(_db.documentSections)
+              ..where((table) => table.documentId.equals(documentId))
+              ..orderBy([(table) => OrderingTerm.asc(table.sectionIndex)]))
+            .get();
     return rows.map(_sectionFromRow).toList(growable: false);
   }
 
@@ -161,4 +160,3 @@ Map<String, dynamic> _decodeMetadata(String source) {
   }
   return <String, dynamic>{};
 }
-

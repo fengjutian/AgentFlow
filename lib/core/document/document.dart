@@ -107,4 +107,3 @@ class DocumentSection {
 
   int get charCount => plainText.length;
 }
-

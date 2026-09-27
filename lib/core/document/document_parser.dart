@@ -96,4 +96,3 @@ class UnsupportedDocumentException implements Exception {
   @override
   String toString() => message;
 }
-
