@@ -319,23 +319,27 @@ class _FilesPageState extends ConsumerState<FilesPage> {
     required String title,
     String initialValue = '',
   }) async {
-    final controller = TextEditingController(text: initialValue);
+    var value = initialValue;
     String? errorText;
-    final result = await showDialog<String>(
+    return showDialog<String>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text(title),
-          content: TextField(
-            controller: controller,
+          content: TextFormField(
+            initialValue: initialValue,
             autofocus: true,
             decoration: InputDecoration(
               labelText: context.l10n.name,
               errorText: errorText,
             ),
-            onSubmitted: (value) {
-              final error = _nameError(value);
-              if (error == null) Navigator.pop(context, value.trim());
+            onChanged: (newValue) => value = newValue,
+            onFieldSubmitted: (submittedValue) {
+              value = submittedValue;
+              final error = _nameError(submittedValue);
+              if (error == null) {
+                Navigator.pop(context, submittedValue.trim());
+              }
               if (error != null) setDialogState(() => errorText = error);
             },
           ),
@@ -346,9 +350,9 @@ class _FilesPageState extends ConsumerState<FilesPage> {
             ),
             FilledButton(
               onPressed: () {
-                final error = _nameError(controller.text);
+                final error = _nameError(value);
                 if (error == null) {
-                  Navigator.pop(context, controller.text.trim());
+                  Navigator.pop(context, value.trim());
                 } else {
                   setDialogState(() => errorText = error);
                 }
@@ -359,8 +363,6 @@ class _FilesPageState extends ConsumerState<FilesPage> {
         ),
       ),
     );
-    controller.dispose();
-    return result;
   }
 
   String? _nameError(String value) {
