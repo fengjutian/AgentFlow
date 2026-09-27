@@ -139,8 +139,8 @@ class GitLogTool extends _GitTool {
 
   @override
   String get description =>
-      'Show recent commits with hash, author, date and subject. Optionally '
-      'scope history to a path.';
+      'Show recent commits with abbreviated hash and subject. Optionally scope '
+      'history to a path.';
 
   @override
   Map<String, dynamic> get inputSchema => <String, dynamic>{
@@ -164,8 +164,8 @@ class GitLogTool extends _GitTool {
     final args = <String>[
       'log',
       '-$limit',
-      '--date=short',
-      '--pretty=format:%h%x1f%an%x1f%ad%x1f%s',
+      '--oneline',
+      '--no-decorate',
     ];
     final path = optionalString(arguments, 'path');
     if (path.isNotEmpty) args.addAll(<String>['--', path]);
@@ -175,12 +175,10 @@ class GitLogTool extends _GitTool {
         .split('\n')
         .where((line) => line.trim().isNotEmpty)
         .map((line) {
-          final fields = line.split('\x1f');
+          final separator = line.indexOf(' ');
           return <String, dynamic>{
-            'hash': fields.isNotEmpty ? fields[0] : '',
-            'author': fields.length > 1 ? fields[1] : '',
-            'date': fields.length > 2 ? fields[2] : '',
-            'subject': fields.length > 3 ? fields.sublist(3).join('\x1f') : '',
+            'hash': separator < 0 ? line : line.substring(0, separator),
+            'subject': separator < 0 ? '' : line.substring(separator + 1),
           };
         })
         .toList(growable: false);
@@ -215,19 +213,20 @@ class GitBranchesTool extends _GitTool {
     Map<String, dynamic> arguments,
     ToolContext context,
   ) async {
-    final result = await _runGit(<String>[
-      'branch',
-      '--format=%(HEAD)|%(refname:short)',
-    ], context);
+    final result = await _runGit(
+      <String>['branch', '--list', '--no-color'],
+      context,
+    );
     if (result.isError) return result;
     final branches = (result.data!['stdout'] as String)
         .split('\n')
         .where((line) => line.trim().isNotEmpty)
         .map((line) {
-          final fields = line.split('|');
+          final trimmed = line.trimLeft();
+          final current = trimmed.startsWith('*');
           return <String, dynamic>{
-            'name': fields.length > 1 ? fields[1] : line.trim(),
-            'current': fields.isNotEmpty && fields[0].trim() == '*',
+            'name': current ? trimmed.substring(1).trim() : trimmed.trim(),
+            'current': current,
           };
         })
         .toList(growable: false);
