@@ -86,6 +86,16 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
+                path: '/terminal',
+                name: 'terminal',
+                builder: (BuildContext context, GoRouterState state) =>
+                    const TerminalPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
                 path: '/settings',
                 name: 'settings',
                 builder: (BuildContext context, GoRouterState state) =>

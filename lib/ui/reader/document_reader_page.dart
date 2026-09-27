@@ -11,7 +11,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
 import '../../core/document/document.dart';
-import '../../core/document/document_service.dart';
 
 class DocumentReaderPage extends ConsumerStatefulWidget {
   const DocumentReaderPage({super.key, required this.documentId});

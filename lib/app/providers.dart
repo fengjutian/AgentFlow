@@ -26,8 +26,11 @@ import '../data/models.dart';
 import '../runtime/bridge_runtime.dart';
 import '../runtime/local_runtime.dart';
 import '../runtime/runtime.dart';
+import '../runtime/ssh/ssh_host_key_store.dart';
+import '../runtime/ssh/ssh_runtime.dart';
 import '../storage/database.dart';
 import '../storage/document_repository.dart';
+import '../storage/mcp_server_repository.dart';
 import '../storage/repositories.dart';
 import '../storage/secret_store.dart';
 import '../tools/default_tools.dart';
@@ -109,6 +112,19 @@ final FutureProvider<DocumentImportService> documentImportServiceProvider =
 
 final Provider<SecretStore> secretStoreProvider = Provider<SecretStore>(
   (Ref ref) => PlatformSecretStore(),
+);
+
+final Provider<SshHostKeyStore> sshHostKeyStoreProvider =
+    Provider<SshHostKeyStore>(
+  (Ref ref) => SshHostKeyStore(ref.watch(secretStoreProvider)),
+);
+
+final Provider<McpServerRepository> mcpServerRepositoryProvider =
+    Provider<McpServerRepository>(
+  (Ref ref) => McpServerRepository(
+    ref.watch(databaseProvider),
+    ref.watch(secretStoreProvider),
+  ),
 );
 
 final Provider<ProviderRepository> providerRepositoryProvider =
@@ -248,11 +264,56 @@ final FutureProvider<Runtime?> runtimeProvider = FutureProvider<Runtime?>((
 /// when available, otherwise the local `dart:io` runtime. The Agent Core is
 /// oblivious to which one it got.
 Future<Runtime> resolveRuntime(Workspace workspace) async {
+  // Check if workspace is bound to a specific runtime config.
+  if (workspace.runtimeId.isNotEmpty &&
+      workspace.runtimeId != 'local' &&
+      workspace.runtimeId != 'termux') {
+    // Look up the runtime config.
+    final config = await _runtimeConfigRepo?.byId(workspace.runtimeId);
+    if (config != null && config.kind == 'ssh') {
+      return _createSshRuntime(config);
+    }
+  }
+
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     final bridge = BridgeRuntime(rootDirectory: workspace.rootDirectory);
     if (await bridge.isAvailable()) return bridge;
   }
   return LocalRuntime(rootDirectory: workspace.rootDirectory);
+}
+
+RuntimeConfigRepository? _runtimeConfigRepo;
+SecretStore? _secretStore;
+
+/// Initializes the runtime resolver with required dependencies.
+void initializeRuntimeResolver({
+  required RuntimeConfigRepository runtimeConfigRepo,
+  required SecretStore secretStore,
+}) {
+  _runtimeConfigRepo = runtimeConfigRepo;
+  _secretStore = secretStore;
+}
+
+/// Creates an SSH runtime from a runtime config.
+SshRuntime _createSshRuntime(RuntimeConfig config) {
+  final options = config.options;
+  final host = options['host'] as String? ?? '';
+  final port = options['port'] as int? ?? 22;
+  final username = options['username'] as String? ?? '';
+  final remoteRoot = options['remoteRoot'] as String? ?? '~';
+
+  // Secrets are read lazily at connection time.
+  return SshRuntime(
+    config: SshConfig(
+      id: config.id,
+      host: host,
+      port: port,
+      username: username,
+      remoteRoot: remoteRoot,
+      label: config.label,
+    ),
+    hostKeyStore: SshHostKeyStore(_secretStore!),
+  );
 }
 
 /// Builds a registry reflecting a workspace's disabled-tool settings.

@@ -34,6 +34,11 @@ class AppShell extends StatelessWidget {
             label: context.l10n.files,
           ),
           NavigationDestination(
+            icon: Icon(Icons.library_books_outlined),
+            selectedIcon: Icon(Icons.library_books),
+            label: 'Docs',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.terminal),
             selectedIcon: Icon(Icons.terminal),
             label: context.l10n.terminal,
