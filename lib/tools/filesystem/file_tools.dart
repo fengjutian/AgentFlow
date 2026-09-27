@@ -7,6 +7,7 @@ library;
 
 import '../../core/message.dart';
 import '../../core/diff/line_diff.dart';
+import '../../runtime/runtime.dart';
 import '../agent_tool.dart';
 import '../tool_args.dart';
 
@@ -130,7 +131,57 @@ class ReadFileTool extends ReadOnlyTool {
 }
 
 /// `write_file` — create or overwrite a file, returning a diff.
-class WriteFileTool extends MutatingTool {
+class _WriteSnapshot {
+  const _WriteSnapshot(this.path, this.existed, this.oldText, this.newText);
+  final String path;
+  final bool existed;
+  final String oldText;
+  final String newText;
+}
+
+class _CommittedWrite {
+  const _CommittedWrite(this.snapshot, this.runtime);
+  final _WriteSnapshot snapshot;
+  final Runtime runtime;
+}
+
+class FileChangeJournal {
+  final Map<String, _CommittedWrite> _entries = <String, _CommittedWrite>{};
+  int _sequence = 0;
+
+  String record(_WriteSnapshot snapshot, Runtime runtime) {
+    final id = '${DateTime.now().microsecondsSinceEpoch}-${_sequence++}';
+    _entries[id] = _CommittedWrite(snapshot, runtime);
+    return id;
+  }
+
+  Future<String> undo(String id) async {
+    final entry = _entries[id];
+    if (entry == null) {
+      throw const ToolExecutionException('Undo is no longer available.');
+    }
+    final snapshot = entry.snapshot;
+    final runtime = entry.runtime;
+    final exists = await runtime.fileExists(snapshot.path);
+    final current = exists ? await runtime.readFile(snapshot.path) : '';
+    if (current != snapshot.newText) {
+      throw ToolExecutionException(
+        'Cannot undo ${snapshot.path}: the file changed after the agent write.',
+      );
+    }
+    if (snapshot.existed) {
+      await runtime.writeFile(snapshot.path, snapshot.oldText);
+    } else {
+      await runtime.deleteFile(snapshot.path);
+    }
+    _entries.remove(id);
+    return 'Undid changes to ${snapshot.path}.';
+  }
+}
+
+final FileChangeJournal fileChangeJournal = FileChangeJournal();
+
+class WriteFileTool extends MutatingTool implements PreviewableTool {
   @override
   String get name => 'write_file';
 
@@ -165,10 +216,15 @@ class WriteFileTool extends MutatingTool {
   Future<ToolResult> execute(
     Map<String, dynamic> arguments,
     ToolContext context,
+  ) async => executePrepared(arguments, context, await preview(arguments, context));
+
+  @override
+  Future<ToolPreview> preview(
+    Map<String, dynamic> arguments,
+    ToolContext context,
   ) async {
     final path = requireString(arguments, 'path');
     final content = optionalString(arguments, 'content');
-
     String oldText = '';
     final exists = await context.runtime.fileExists(path);
     if (exists) {
@@ -178,19 +234,68 @@ class WriteFileTool extends MutatingTool {
         oldText = '';
       }
     }
-
     final diff = buildFileDiff(path: path, oldText: oldText, newText: content);
-    await context.runtime.writeFile(path, content);
+    return ToolPreview(
+      data: <String, dynamic>{'path': path, 'diff': diff.toJson()},
+      state: _WriteSnapshot(path, exists, oldText, content),
+    );
+  }
 
-    final action = !exists ? 'Created' : (diff.isEmpty ? 'Wrote (no change)' : 'Updated');
+  @override
+  Future<ToolResult> executePrepared(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+    ToolPreview preview,
+  ) async {
+    final snapshot = preview.state! as _WriteSnapshot;
+    final existsNow = await context.runtime.fileExists(snapshot.path);
+    final current = existsNow ? await context.runtime.readFile(snapshot.path) : '';
+    if (existsNow != snapshot.existed || current != snapshot.oldText) {
+      throw ToolExecutionException(
+        'Refusing to write "${snapshot.path}": it changed after approval.',
+      );
+    }
+
+    try {
+      await context.runtime.writeFile(snapshot.path, snapshot.newText);
+      final verified = await context.runtime.readFile(snapshot.path);
+      if (verified != snapshot.newText) {
+        throw const ToolExecutionException('Write verification failed.');
+      }
+    } catch (error) {
+      try {
+        if (snapshot.existed) {
+          await context.runtime.writeFile(snapshot.path, snapshot.oldText);
+        } else {
+          await context.runtime.deleteFile(snapshot.path);
+        }
+      } catch (_) {
+        throw ToolExecutionException(
+          'Write and rollback both failed for "${snapshot.path}": $error',
+        );
+      }
+      throw ToolExecutionException(
+        'Write failed; the original file was restored: $error',
+      );
+    }
+
+    final diff = FileDiff.fromJson(
+      (preview.data['diff'] as Map).cast<String, dynamic>(),
+    );
+    final transactionId = fileChangeJournal.record(snapshot, context.runtime);
+    final action = !snapshot.existed
+        ? 'Created'
+        : (diff.isEmpty ? 'Wrote (no change)' : 'Updated');
     return ToolResult(
       toolCallId: '',
       name: name,
-      content: '$action $path (${diff.summary}).',
+      content: '$action ${snapshot.path} (${diff.summary}).',
       data: <String, dynamic>{
-        'path': path,
+        'path': snapshot.path,
         'diff': diff.toJson(),
-        'isNewFile': !exists,
+        'isNewFile': !snapshot.existed,
+        'transactionId': transactionId,
+        'undoAvailable': true,
       },
     );
   }

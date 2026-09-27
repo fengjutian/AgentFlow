@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import '../../../core/message.dart';
 import '../../../app/theme.dart';
 import '../../../data/models.dart';
+import '../../../tools/filesystem/file_tools.dart';
 import 'diff_card.dart';
 import 'terminal_card.dart';
 
@@ -133,7 +134,13 @@ class ToolResultView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = message.data;
-    final diff = DiffCard.fromData(data);
+    final transactionId = data?['transactionId'] as String?;
+    final diff = DiffCard.fromData(
+      data,
+      onUndo: transactionId == null
+          ? null
+          : () => fileChangeJournal.undo(transactionId),
+    );
     if (diff != null) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),

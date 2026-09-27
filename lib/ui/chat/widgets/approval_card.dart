@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme.dart';
 import '../../../core/approval/approval_manager.dart';
 import '../../../tools/agent_tool.dart';
+import 'diff_card.dart';
 
 class ApprovalCard extends StatelessWidget {
   const ApprovalCard({
@@ -66,6 +67,10 @@ class ApprovalCard extends StatelessWidget {
               request.summary,
               style: AppTheme.code.copyWith(fontWeight: FontWeight.w600),
             ),
+            if (DiffCard.fromData(request.previewData) case final preview?) ...[
+              const SizedBox(height: 10),
+              preview,
+            ],
             if (request.arguments.isNotEmpty) ...<Widget>[
               const SizedBox(height: 6),
               Text(
@@ -82,18 +87,20 @@ class ApprovalCard extends StatelessWidget {
               children: <Widget>[
                 TextButton(
                   onPressed: () => onDecision(ApprovalDecision.deny),
-                  child: const Text('Deny'),
+                  child: Text(request.previewData == null ? 'Deny' : 'Reject'),
                 ),
                 const SizedBox(width: 4),
                 TextButton(
                   onPressed: () => onDecision(ApprovalDecision.allowAlways),
-                  child: const Text('Always allow'),
+                  child: Text(
+                    request.previewData == null ? 'Always allow' : 'Accept all',
+                  ),
                 ),
                 const SizedBox(width: 4),
                 FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: accent),
                   onPressed: () => onDecision(ApprovalDecision.allow),
-                  child: const Text('Allow'),
+                  child: Text(request.previewData == null ? 'Allow' : 'Accept'),
                 ),
               ],
             ),

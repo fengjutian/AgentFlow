@@ -62,6 +62,7 @@ class RuntimeManager(
             "requestTermuxPermission" -> requestTermuxPermission(result)
             "readFile" -> readFile(call, result)
             "writeFile" -> writeFile(call, result)
+            "deleteFile" -> deleteFile(call, result)
             "fileExists" -> fileExists(call, result)
             "listFiles" -> listFiles(call, result)
             else -> result.notImplemented()
@@ -299,6 +300,26 @@ class RuntimeManager(
                 } else {
                     result.error("write_failed", "Cannot write file: $path", null)
                 }
+            }
+        }
+    }
+
+    private fun deleteFile(call: MethodCall, result: MethodChannel.Result) {
+        val path = call.argument<String>("path")
+        if (path == null) {
+            result.error("bad_args", "path is required", null)
+            return
+        }
+        executor.execute {
+            val ok = try {
+                val file = File(path)
+                !file.exists() || file.delete()
+            } catch (e: Exception) {
+                false
+            }
+            mainHandler.post {
+                if (ok) result.success(null)
+                else result.error("delete_failed", "Cannot delete file: $path", null)
             }
         }
     }

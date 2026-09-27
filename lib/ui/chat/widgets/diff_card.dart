@@ -11,15 +11,22 @@ import '../../../core/diff/line_diff.dart';
 import '../../../app/theme.dart';
 
 class DiffCard extends StatelessWidget {
-  const DiffCard({super.key, required this.diff});
+  const DiffCard({super.key, required this.diff, this.onUndo});
 
   final FileDiff diff;
+  final Future<String> Function()? onUndo;
 
   /// Builds a card from a tool result's `data['diff']` payload, or null.
-  static DiffCard? fromData(Map<String, dynamic>? data) {
+  static DiffCard? fromData(
+    Map<String, dynamic>? data, {
+    Future<String> Function()? onUndo,
+  }) {
     final raw = data?['diff'];
     if (raw is Map) {
-      return DiffCard(diff: FileDiff.fromJson(raw.cast<String, dynamic>()));
+      return DiffCard(
+        diff: FileDiff.fromJson(raw.cast<String, dynamic>()),
+        onUndo: onUndo,
+      );
     }
     return null;
   }
@@ -67,6 +74,31 @@ class DiffCard extends StatelessWidget {
               ),
             ),
           ),
+          if (onUndo != null) ...<Widget>[
+            const Divider(height: 1),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () async {
+                  try {
+                    final message = await onUndo!();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(message)));
+                    }
+                  } catch (error) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(error.toString())),
+                      );
+                    }
+                  }
+                },
+                icon: const Icon(Icons.undo, size: 16),
+                label: const Text('Undo'),
+              ),
+            ),
+          ],
         ],
       ),
     );
