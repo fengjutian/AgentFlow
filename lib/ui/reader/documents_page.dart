@@ -1,0 +1,153 @@
+/// Document library — lists imported PDFs/EPUBs with import and delete actions.
+///
+/// Each document tile shows title, type badge, parse status and section count.
+/// Tapping opens the reader; long-press shows a delete confirmation.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../app/providers.dart';
+import '../../app/router.dart';
+import '../../core/document/document.dart';
+import '../../core/document/document_service.dart';
+
+class DocumentsPage extends ConsumerStatefulWidget {
+  const DocumentsPage({super.key});
+
+  @override
+  ConsumerState<DocumentsPage> createState() => _DocumentsPageState();
+}
+
+class _DocumentsPageState extends ConsumerState<DocumentsPage> {
+  @override
+  Widget build(BuildContext context) {
+    final workspaceId = ref.watch(activeWorkspaceProvider);
+    final store = ref.watch(documentStoreProvider);
+    if (workspaceId == null) {
+      return const Center(child: Text('Select a workspace first.'));
+    }
+    return FutureBuilder<List<AgentDocument>>(
+      future: store.forWorkspace(workspaceId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final documents = snapshot.data ?? const <AgentDocument>[];
+        if (documents.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.library_books_outlined,
+                    size: 64, color: Theme.of(context).colorScheme.outline),
+                const SizedBox(height: 16),
+                Text('No imported documents.',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                Text('Import a PDF or EPUB to get started.',
+                    style: Theme.of(context).textTheme.bodySmall),
+              ],
+            ),
+          );
+        }
+        return RefreshIndicator(
+          onRefresh: () async => setState(() {}),
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: documents.length,
+            itemBuilder: (context, index) =>
+                _DocumentTile(document: documents[index], store: store),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DocumentTile extends ConsumerWidget {
+  const _DocumentTile({required this.document, required this.store});
+
+  final AgentDocument document;
+  final DocumentStore store;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final title = document.title.isEmpty
+        ? document.displayName
+        : document.title;
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: ListTile(
+        leading: Icon(
+          document.type == DocumentType.pdf
+              ? Icons.picture_as_pdf
+              : Icons.menu_book,
+          color: theme.colorScheme.primary,
+        ),
+        title: Text(title, maxLines: 2, overflow: TextOverflow.ellipsis),
+        subtitle: Text(
+          '${document.type.name.toUpperCase()} · '
+          '${document.parseStatus.name} · '
+          '${document.sectionCount} sections',
+          style: theme.textTheme.bodySmall,
+        ),
+        trailing: _StatusChip(status: document.parseStatus),
+        onTap: () {
+          final router = ref.read(routerProvider);
+          router.push(Uri(
+            path: '/documents/reader',
+            queryParameters: {'id': document.id},
+          ).toString());
+        },
+        onLongPress: () => _confirmDelete(context, ref),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, WidgetRef ref) {
+    showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete document?'),
+        content: Text('Remove "${document.displayName}" and all extracted text?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    ).then((confirmed) async {
+      if (confirmed != true) return;
+      await store.delete(document.id);
+    });
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.status});
+  final DocumentParseStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color) = switch (status) {
+      DocumentParseStatus.ready => ('Ready', Colors.green),
+      DocumentParseStatus.parsing => ('Parsing', Colors.orange),
+      DocumentParseStatus.pending => ('Pending', Colors.grey),
+      DocumentParseStatus.failed => ('Failed', Colors.red),
+      DocumentParseStatus.ocrRequired => ('OCR needed', Colors.deepOrange),
+    };
+    return Chip(
+      label: Text(label, style: const TextStyle(fontSize: 11)),
+      backgroundColor: color.withOpacity(0.15),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+  }
+}

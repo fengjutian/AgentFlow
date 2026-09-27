@@ -12,6 +12,8 @@ import 'package:go_router/go_router.dart';
 import '../ui/chat/chat_page.dart';
 import '../ui/files/files_page.dart';
 import '../ui/editor/editor_page.dart';
+import '../ui/reader/documents_page.dart';
+import '../ui/reader/document_reader_page.dart';
 import '../ui/settings/settings_page.dart';
 import '../ui/terminal/terminal_page.dart';
 import 'shell/app_shell.dart';
@@ -64,10 +66,20 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: '/terminal',
-                name: 'terminal',
+                path: '/documents',
+                name: 'documents',
                 builder: (BuildContext context, GoRouterState state) =>
-                    const TerminalPage(),
+                    const DocumentsPage(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'reader',
+                    name: 'document-reader',
+                    builder: (BuildContext context, GoRouterState state) =>
+                        DocumentReaderPage(
+                          documentId: state.uri.queryParameters['id'] ?? '',
+                        ),
+                  ),
+                ],
               ),
             ],
           ),

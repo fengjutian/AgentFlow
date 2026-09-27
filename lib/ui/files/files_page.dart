@@ -247,12 +247,13 @@ class _FilesPageState extends ConsumerState<FilesPage> {
     final runtime = ref.read(runtimeProvider).value;
     if (runtime == null) return;
     final path = _childPath(name);
+    final entryAlreadyExists = context.l10n.entryAlreadyExists;
     try {
       if (kind == _CreateKind.folder) {
         await runtime.createDirectory(path);
       } else {
         if (await runtime.fileExists(path)) {
-          throw StateError(context.l10n.entryAlreadyExists);
+          throw StateError(entryAlreadyExists);
         }
         await runtime.writeFile(path, '');
       }
