@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Lets the agent run commands in Termux (granted at runtime, only while Termux is installed). -->
+    <uses-permission android:name="com.termux.permission.RUN_COMMAND"/>
 
     <application
         android:label="AgentFlow"
@@ -47,6 +49,11 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Keeps an in-progress agent shell command running while the UI is backgrounded."/>
         </service>
+
+        <!-- Receives Termux RUN_COMMAND results via the PendingIntent we hand it. -->
+        <receiver
+            android:name=".TermuxResultReceiver"
+            android:exported="false"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -58,7 +65,7 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <!-- Package visibility for Termux detection (Android 11+). -->
+        <!-- Package visibility for Termux detection and its RUN_COMMAND service (Android 11+). -->
         <package android:name="com.termux"/>
     </queries>
 </manifest>

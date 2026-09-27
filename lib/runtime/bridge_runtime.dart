@@ -15,6 +15,7 @@ class BridgeRuntime implements Runtime {
     required this.rootDirectory,
     MethodChannel? channel,
     this.id = 'termux',
+    this.preferTermux = true,
   }) : _channel = channel ?? const MethodChannel('agentflow/runtime');
 
   /// Channel name shared with the Kotlin `RuntimeManager`.
@@ -24,6 +25,13 @@ class BridgeRuntime implements Runtime {
   final String id;
   final MethodChannel _channel;
   final String rootDirectory;
+
+  /// Whether commands may be routed into Termux.
+  ///
+  /// The Kotlin side still needs Termux to be installed and its `RUN_COMMAND`
+  /// permission granted; when either is missing it runs the on-device shell
+  /// instead, so leaving this on is safe on any device.
+  final bool preferTermux;
 
   @override
   String get label => 'Termux';
@@ -36,6 +44,39 @@ class BridgeRuntime implements Runtime {
     try {
       final result = await _channel.invokeMethod<bool>('isAvailable');
       return result ?? false;
+    } on PlatformException {
+      return false;
+    } on MissingPluginException {
+      return false;
+    }
+  }
+
+  /// What the Android host reports about its shell environment.
+  ///
+  /// Used by the Settings runtime card to explain why commands run where they
+  /// do; not part of the [Runtime] contract because no other runtime has it.
+  Future<ShellInfo> shellInfo() async {
+    final result = await _channel.invokeMethod<Map<dynamic, dynamic>>('shellInfo');
+    final map = result ?? const <dynamic, dynamic>{};
+    return ShellInfo(
+      shell: (map['shell'] as String?) ?? '',
+      home: (map['home'] as String?) ?? '',
+      termuxInstalled: (map['termuxInstalled'] as bool?) ?? false,
+      termuxPermission: (map['termuxPermission'] as bool?) ?? false,
+      termuxUsable: (map['termuxUsable'] as bool?) ?? false,
+    );
+  }
+
+  /// Asks Android for the Termux `RUN_COMMAND` runtime permission.
+  ///
+  /// Resolves once the user answered the dialog. It is only grantable while
+  /// Termux is installed, and Termux additionally requires
+  /// `allow-external-apps=true` in its own `termux.properties`.
+  Future<bool> requestTermuxPermission() async {
+    try {
+      final granted =
+          await _channel.invokeMethod<bool>('requestTermuxPermission');
+      return granted ?? false;
     } on PlatformException {
       return false;
     } on MissingPluginException {
@@ -58,6 +99,7 @@ class BridgeRuntime implements Runtime {
           'cwd': workingDirectory ?? rootDirectory,
           'timeoutMillis': timeoutMillis,
           'env': ?environment,
+          'useTermux': preferTermux,
         },
       );
       final map = result ?? const <dynamic, dynamic>{};
@@ -126,4 +168,35 @@ class BridgeRuntime implements Runtime {
 
   String _abs(String path) =>
       path.startsWith('/') ? path : '$rootDirectory/$path';
+}
+
+/// Shell environment as reported by the Android host over [BridgeRuntime].
+class ShellInfo {
+  const ShellInfo({
+    required this.shell,
+    required this.home,
+    required this.termuxInstalled,
+    required this.termuxPermission,
+    required this.termuxUsable,
+  });
+
+  /// Absolute path of the shell used for on-device execution.
+  final String shell;
+
+  /// Directory the host treats as home for relative paths.
+  final String home;
+
+  final bool termuxInstalled;
+  final bool termuxPermission;
+
+  /// True when the next command will actually be handed to Termux.
+  final bool termuxUsable;
+
+  /// Short human-readable state, e.g. `usable` or `permission missing`.
+  String get termuxState {
+    if (termuxUsable) return 'usable';
+    if (!termuxInstalled) return 'not installed';
+    if (!termuxPermission) return 'permission missing';
+    return 'unavailable';
+  }
 }

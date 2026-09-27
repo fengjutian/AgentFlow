@@ -7,10 +7,12 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
 import '../../core/model/model_provider.dart';
+import '../../runtime/bridge_runtime.dart';
 import '../../runtime/runtime.dart';
 
 /// Known vendor presets: choosing one prefills a sensible base URL.
@@ -282,7 +284,7 @@ class _ProviderTile extends StatelessWidget {
   }
 }
 
-class _RuntimeCard extends StatelessWidget {
+class _RuntimeCard extends ConsumerStatefulWidget {
   const _RuntimeCard({
     required this.workspaceName,
     required this.rootDirectory,
@@ -294,29 +296,109 @@ class _RuntimeCard extends StatelessWidget {
   final Runtime? runtime;
 
   @override
+  ConsumerState<_RuntimeCard> createState() => _RuntimeCardState();
+}
+
+class _RuntimeCardState extends ConsumerState<_RuntimeCard> {
+  ShellInfo? _shellInfo;
+  bool _requesting = false;
+
+  /// Non-null only on Android, where commands may be routed into Termux.
+  BridgeRuntime? get _bridge {
+    final runtime = widget.runtime;
+    return runtime is BridgeRuntime ? runtime : null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadShellInfo();
+  }
+
+  @override
+  void didUpdateWidget(_RuntimeCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.runtime != widget.runtime) _loadShellInfo();
+  }
+
+  Future<void> _loadShellInfo() async {
+    final bridge = _bridge;
+    if (bridge == null) return;
+    try {
+      final info = await bridge.shellInfo();
+      if (mounted) setState(() => _shellInfo = info);
+    } on PlatformException {
+      // Host without the runtime channel; the card just omits the shell rows.
+    } on MissingPluginException {
+      // Running on a platform that has no Kotlin bridge at all.
+    }
+  }
+
+  Future<void> _grantTermuxAccess() async {
+    final bridge = _bridge;
+    if (bridge == null || _requesting) return;
+    setState(() => _requesting = true);
+    await bridge.requestTermuxPermission();
+    if (!mounted) return;
+    setState(() => _requesting = false);
+    await _loadShellInfo();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final info = _shellInfo;
+    final needsPermission =
+        info != null && info.termuxInstalled && !info.termuxUsable;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _kv(context, 'Workspace', workspaceName ?? '— none —'),
+            _kv(context, 'Workspace', widget.workspaceName ?? '— none —'),
             const SizedBox(height: 6),
-            _kv(context, 'Directory', rootDirectory ?? '—'),
+            _kv(context, 'Directory', widget.rootDirectory ?? '—'),
             const SizedBox(height: 6),
             _kv(context, 'Runtime',
-                runtime == null ? 'resolving…' : runtime!.label),
+                widget.runtime == null ? 'resolving…' : widget.runtime!.label),
+            if (info != null) ...<Widget>[
+              const SizedBox(height: 6),
+              _kv(context, 'Shell', info.shell),
+              const SizedBox(height: 6),
+              _kv(context, 'Termux', info.termuxState),
+            ],
             const SizedBox(height: 10),
             Text(
-              'On Android the agent prefers the Termux bridge when available and '
+              'On Android the agent runs commands in Termux when it is set up and '
               'falls back to on-device execution otherwise.',
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
                   ?.copyWith(color: scheme.outline),
             ),
+            if (needsPermission) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                info.termuxPermission
+                    ? 'Termux also needs allow-external-apps=true in its '
+                          'termux.properties before it accepts commands.'
+                    : 'Grant the “Run commands in Termux environment” permission '
+                          'to let the agent use its toolchain.',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: scheme.outline),
+              ),
+              if (!info.termuxPermission) ...<Widget>[
+                const SizedBox(height: 12),
+                FilledButton.tonal(
+                  onPressed: _requesting ? null : _grantTermuxAccess,
+                  child: Text(
+                      _requesting ? 'Waiting for answer…' : 'Grant Termux access'),
+                ),
+              ],
+            ],
           ],
         ),
       ),

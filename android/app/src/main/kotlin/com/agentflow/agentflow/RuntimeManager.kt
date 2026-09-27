@@ -1,11 +1,12 @@
 package com.agentflow.agentflow
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -14,29 +15,34 @@ import java.io.InputStream
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Kotlin side of the `agentflow/runtime` MethodChannel.
  *
  * Implements the same contract as the Dart `Runtime` abstraction so the Agent
  * Core cannot tell whether it is running on-device, in Termux or (later) over
- * SSH. Commands run through a shell with a hard timeout; a foreground service is
- * held for the duration so the OS is less likely to kill a long agent task when
- * the app is backgrounded.
+ * SSH. Commands run with a hard timeout; a foreground service is held for the
+ * duration so the OS is less likely to kill a long agent task when the app is
+ * backgrounded.
  *
- * Shell selection prefers Termux's bash when this process can actually execute
- * it and falls back to the system shell. Wiring the full Termux `RUN_COMMAND`
- * intent (which requires Termux to be installed and its runtime permission) is a
- * documented next step; the fallback already gives a working on-device shell.
+ * A command is handed to Termux whenever [TermuxExec] can take it, because that
+ * is where a real toolchain (bash, git, python) lives; otherwise it runs through
+ * the system shell of this app's own process. Which of the two was used is
+ * reported by `shellInfo` and surfaced in the Settings runtime card.
  */
 class RuntimeManager(
-    private val context: Context,
+    private val activity: Activity,
     messenger: BinaryMessenger,
 ) : MethodChannel.MethodCallHandler {
 
+    private val context: Context = activity.applicationContext
     private val channel = MethodChannel(messenger, CHANNEL)
     private val mainHandler = Handler(Looper.getMainLooper())
     private val executor = Executors.newCachedThreadPool()
+
+    /** Awaits the outcome of the Termux runtime permission dialog, if any. */
+    private var pendingPermissionResult: MethodChannel.Result? = null
 
     fun attach() {
         channel.setMethodCallHandler(this)
@@ -45,6 +51,7 @@ class RuntimeManager(
     fun detach() {
         channel.setMethodCallHandler(null)
         executor.shutdownNow()
+        pendingPermissionResult = null
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -52,6 +59,7 @@ class RuntimeManager(
             "isAvailable" -> result.success(true)
             "shellInfo" -> result.success(shellInfo())
             "executeCommand" -> executeCommand(call, result)
+            "requestTermuxPermission" -> requestTermuxPermission(result)
             "readFile" -> readFile(call, result)
             "writeFile" -> writeFile(call, result)
             "fileExists" -> fileExists(call, result)
@@ -69,11 +77,12 @@ class RuntimeManager(
         val cwd = call.argument<String>("cwd") ?: context.filesDir.absolutePath
         val timeout = call.argument<Number>("timeoutMillis")?.toLong() ?: DEFAULT_TIMEOUT_MS
         val env = decodeEnv(call.argument<Map<*, *>>("env"))
+        val preferTermux = call.argument<Boolean>("useTermux") ?: true
 
         startExecService()
         executor.execute {
             val out = try {
-                runShell(command, cwd, timeout, env)
+                runInTermux(command, cwd, timeout, preferTermux) ?: runShell(command, cwd, timeout, env)
             } catch (e: Exception) {
                 mapOf(
                     "exitCode" to -1,
@@ -87,6 +96,55 @@ class RuntimeManager(
                 result.success(out)
             }
         }
+    }
+
+    /**
+     * Runs [command] in Termux, blocking this worker thread until the result
+     * arrives or [timeoutMillis] passes.
+     *
+     * Returns null when Termux cannot take the command — not installed, the
+     * runtime permission is missing or the service intent would not start — so
+     * the caller falls back to the on-device shell. A timeout cannot stop the
+     * Termux side, so the command may still be running there.
+     */
+    private fun runInTermux(
+        command: String,
+        cwd: String,
+        timeoutMillis: Long,
+        preferTermux: Boolean,
+    ): Map<String, Any?>? {
+        if (!preferTermux || !TermuxExec.isUsable(context)) return null
+
+        val delivered = AtomicReference<Map<String, Any?>>()
+        val latch = CountDownLatch(1)
+        val requestId = TermuxExec.execute(context, command, cwd) { exitCode, stdout, stderr, errorMessage ->
+            delivered.set(
+                mapOf(
+                    "exitCode" to exitCode,
+                    "stdout" to stdout,
+                    "stderr" to withTermuxError(stderr, errorMessage),
+                    "timedOut" to false,
+                ),
+            )
+            latch.countDown()
+        }
+        if (requestId < 0) return null
+
+        if (latch.await(timeoutMillis, TimeUnit.MILLISECONDS)) return delivered.get()
+        TermuxExec.cancel(requestId)
+        return mapOf(
+            "exitCode" to 124,
+            "stdout" to "",
+            "stderr" to "Timed out after ${timeoutMillis}ms waiting for Termux; " +
+                "the command may still be running there.",
+            "timedOut" to true,
+        )
+    }
+
+    /** Termux reports its own failures (policy violation, bad path) as errmsg. */
+    private fun withTermuxError(stderr: String, errorMessage: String?): String {
+        if (errorMessage.isNullOrBlank()) return stderr
+        return if (stderr.isBlank()) "Termux: $errorMessage" else "Termux: $errorMessage\n$stderr"
     }
 
     private fun runShell(
@@ -149,27 +207,48 @@ class RuntimeManager(
     }
 
     /**
-     * Chooses a shell. Termux's bash is used only when this process can actually
-     * execute it (non-root apps normally cannot reach another app's private data
-     * dir, so this cleanly falls back to the system shell).
+     * The shell used for on-device execution. Termux's bash is deliberately not
+     * probed here: another app's private directory is not executable from this
+     * process, Termux commands go through [TermuxExec] instead.
      */
-    private fun resolveShell(): String {
-        val termuxBash = File("/data/data/com.termux/files/usr/bin/bash")
-        if (termuxBash.canExecute()) return termuxBash.absolutePath
-        return "/system/bin/sh"
-    }
+    private fun resolveShell(): String = "/system/bin/sh"
 
     private fun shellInfo(): Map<String, Any?> = mapOf(
         "shell" to resolveShell(),
-        "termuxInstalled" to isTermuxInstalled(),
+        "termuxInstalled" to TermuxExec.isInstalled(context),
+        "termuxPermission" to TermuxExec.hasPermission(context),
+        "termuxUsable" to TermuxExec.isUsable(context),
         "home" to context.filesDir.absolutePath,
     )
 
-    private fun isTermuxInstalled(): Boolean = try {
-        context.packageManager.getPackageInfo("com.termux", 0)
-        true
-    } catch (_: PackageManager.NameNotFoundException) {
-        false
+    /**
+     * Asks for the `com.termux.permission.RUN_COMMAND` runtime permission and
+     * answers with whether Termux can be used afterwards.
+     */
+    private fun requestTermuxPermission(result: MethodChannel.Result) {
+        if (TermuxExec.hasPermission(context) || !TermuxExec.isInstalled(context)) {
+            result.success(TermuxExec.hasPermission(context))
+            return
+        }
+        if (pendingPermissionResult != null) {
+            // A dialog is already up; only its caller is told the outcome.
+            result.success(false)
+            return
+        }
+        pendingPermissionResult = result
+        Log.d(TAG, "Requesting Termux RUN_COMMAND permission")
+        activity.requestPermissions(
+            arrayOf(TermuxExec.PERMISSION_RUN_COMMAND),
+            REQUEST_TERMUX_PERMISSION,
+        )
+    }
+
+    /** Forwards the permission dialog outcome from [MainActivity]. */
+    fun onPermissionResult(requestCode: Int, granted: Boolean) {
+        if (requestCode != REQUEST_TERMUX_PERMISSION) return
+        Log.d(TAG, "Termux RUN_COMMAND permission granted=$granted")
+        pendingPermissionResult?.success(granted)
+        pendingPermissionResult = null
     }
 
     // ---------------------------------------------------------------------
@@ -329,7 +408,9 @@ class RuntimeManager(
     }
 
     companion object {
+        private const val TAG = "AgentFlowRuntime"
         const val CHANNEL = "agentflow/runtime"
+        const val REQUEST_TERMUX_PERMISSION = 0x5452
         private const val DEFAULT_TIMEOUT_MS = 60_000L
     }
 }

@@ -1,5 +1,6 @@
 package com.agentflow.agentflow
 
+import android.content.pm.PackageManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 
@@ -16,8 +17,9 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // The activity itself is needed for the Termux runtime permission dialog.
         runtimeManager = RuntimeManager(
-            applicationContext,
+            this,
             flutterEngine.dartExecutor.binaryMessenger,
         ).also { it.attach() }
     }
@@ -26,5 +28,16 @@ class MainActivity : FlutterActivity() {
         runtimeManager?.detach()
         runtimeManager = null
         super.cleanUpFlutterEngine(flutterEngine)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        val granted = grantResults.isNotEmpty() &&
+            grantResults.all { it == PackageManager.PERMISSION_GRANTED }
+        runtimeManager?.onPermissionResult(requestCode, granted)
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }
