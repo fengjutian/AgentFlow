@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
 import '../../app/router.dart';
 import '../../core/document/document.dart';
+import '../../l10n/l10n.dart';
 import 'reader_context.dart';
 
 class DocumentReaderPage extends ConsumerStatefulWidget {
@@ -76,8 +77,8 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
     }
     if (_error != null || _document == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Reader')),
-        body: Center(child: Text(_error ?? 'Unknown error')),
+        appBar: AppBar(title: Text(context.l10n.reader)),
+        body: Center(child: Text(_error ?? context.l10n.unknownError)),
       );
     }
     final title = _document!.title.isEmpty
@@ -92,20 +93,20 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
-                  '${_currentIndex + 1} / ${_sections.length}',
+                  context.l10n.pageIndicator(_currentIndex + 1, _sections.length),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
             ),
           IconButton(
             icon: const Icon(Icons.toc),
-            tooltip: 'Table of contents',
+            tooltip: context.l10n.tableOfContents,
             onPressed: _sections.isEmpty ? null : _showToc,
           ),
         ],
       ),
       body: _sections.isEmpty
-          ? const Center(child: Text('No extracted text available.'))
+          ? const Center(child: Text(''))
           : _buildSectionView(),
       bottomNavigationBar: _sections.length > 1
           ? BottomAppBar(

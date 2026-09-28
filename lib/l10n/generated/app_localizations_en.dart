@@ -519,4 +519,83 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get binaryFileNotSupported =>
       'This file appears to be binary and cannot be edited.';
+
+  @override
+  String get import => 'Import';
+
+  @override
+  String get importing => 'Importing…';
+
+  @override
+  String importFailed(Object error) {
+    return 'Import failed: $error';
+  }
+
+  @override
+  String get selectWorkspaceFirst => 'Select a workspace first.';
+
+  @override
+  String get noImportedDocuments => 'No imported documents.';
+
+  @override
+  String get importDocumentHint => 'Import a PDF or EPUB to get started.';
+
+  @override
+  String get deleteDocumentTitle => 'Delete document?';
+
+  @override
+  String deleteDocumentDescription(String name) {
+    return 'Remove \"$name\" and all extracted text?';
+  }
+
+  @override
+  String get reader => 'Reader';
+
+  @override
+  String get documentNotFound => 'Document not found.';
+
+  @override
+  String get unknownError => 'Unknown error';
+
+  @override
+  String get tableOfContents => 'Table of contents';
+
+  @override
+  String get noExtractedText => 'No extracted text available.';
+
+  @override
+  String get askAgentAboutSection => 'Ask Agent about this section';
+
+  @override
+  String get askAboutThisSection => 'Ask about this section';
+
+  @override
+  String get sendSectionToAgent => 'Send section text to the Agent';
+
+  @override
+  String get explainThisSection => 'Please explain this section.';
+
+  @override
+  String get summarizeThisSection => 'Summarize this section';
+
+  @override
+  String get summarizeSectionConcisely =>
+      'Please summarize this section concisely.';
+
+  @override
+  String get extractKeyConcepts => 'Extract key concepts';
+
+  @override
+  String get extractKeyConceptsDescription =>
+      'Extract the key concepts and terms from this section.';
+
+  @override
+  String pageIndicator(int current, int total) {
+    return '$current / $total';
+  }
+
+  @override
+  String sectionsCount(int count) {
+    return '$count sections';
+  }
 }

@@ -507,4 +507,81 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get binaryFileNotSupported => '此文件似乎是二进制文件，无法编辑。';
+
+  @override
+  String get import => '导入';
+
+  @override
+  String get importing => '导入中…';
+
+  @override
+  String importFailed(Object error) {
+    return '导入失败：$error';
+  }
+
+  @override
+  String get selectWorkspaceFirst => '请先选择一个工作区。';
+
+  @override
+  String get noImportedDocuments => '尚未导入任何文档。';
+
+  @override
+  String get importDocumentHint => '导入 PDF 或 EPUB 以开始使用。';
+
+  @override
+  String get deleteDocumentTitle => '删除文档？';
+
+  @override
+  String deleteDocumentDescription(String name) {
+    return '删除 \"$name\" 及所有已提取的文本？';
+  }
+
+  @override
+  String get reader => '阅读器';
+
+  @override
+  String get documentNotFound => '文档未找到。';
+
+  @override
+  String get unknownError => '未知错误';
+
+  @override
+  String get tableOfContents => '目录';
+
+  @override
+  String get noExtractedText => '无可提取的文本。';
+
+  @override
+  String get askAgentAboutSection => '向智能体询问此章节';
+
+  @override
+  String get askAboutThisSection => '询问此章节';
+
+  @override
+  String get sendSectionToAgent => '将章节文本发送给智能体';
+
+  @override
+  String get explainThisSection => '请解释此章节。';
+
+  @override
+  String get summarizeThisSection => '总结此章节';
+
+  @override
+  String get summarizeSectionConcisely => '请简明扼要地总结此章节。';
+
+  @override
+  String get extractKeyConcepts => '提取关键概念';
+
+  @override
+  String get extractKeyConceptsDescription => '提取此章节中的关键概念和术语。';
+
+  @override
+  String pageIndicator(int current, int total) {
+    return '$current / $total';
+  }
+
+  @override
+  String sectionsCount(int count) {
+    return '$count 个章节';
+  }
 }

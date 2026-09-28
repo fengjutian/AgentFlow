@@ -12,6 +12,7 @@ import '../../app/providers.dart';
 import '../../app/router.dart';
 import '../../core/document/document.dart';
 import '../../core/document/document_service.dart';
+import '../../l10n/l10n.dart';
 
 class DocumentsPage extends ConsumerStatefulWidget {
   const DocumentsPage({super.key});
@@ -47,7 +48,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Import failed: $e')),
+          SnackBar(content: Text(context.l10n.importFailed(e))),
         );
       }
     } finally {
@@ -68,11 +69,11 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                       width: 16, height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(Icons.file_upload_outlined),
-              label: Text(_importing ? 'Importing…' : 'Import'),
+              label: Text(_importing ? context.l10n.importing : context.l10n.import),
             )
           : null,
       body: workspaceId == null
-          ? const Center(child: Text('Select a workspace first.'))
+          ? Center(child: Text(context.l10n.selectWorkspaceFirst))
           : FutureBuilder<List<AgentDocument>>(
               future: store.forWorkspace(workspaceId),
               builder: (context, snapshot) {
@@ -89,10 +90,10 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                             size: 64,
                             color: Theme.of(context).colorScheme.outline),
                         const SizedBox(height: 16),
-                        Text('No imported documents.',
+                        Text(context.l10n.noImportedDocuments,
                             style: Theme.of(context).textTheme.titleMedium),
                         const SizedBox(height: 8),
-                        Text('Import a PDF or EPUB to get started.',
+                        Text(context.l10n.importDocumentHint,
                             style: Theme.of(context).textTheme.bodySmall),
                       ],
                     ),
@@ -160,16 +161,16 @@ class _DocumentTile extends ConsumerWidget {
     showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete document?'),
-        content: Text('Remove "${document.displayName}" and all extracted text?'),
+        title: Text(context.l10n.deleteDocumentTitle),
+        content: Text(context.l10n.deleteDocumentDescription(document.displayName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),

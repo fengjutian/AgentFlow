@@ -1015,6 +1015,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This file appears to be binary and cannot be edited.'**
   String get binaryFileNotSupported;
+
+  /// No description provided for @import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get import;
+
+  /// No description provided for @importing.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing…'**
+  String get importing;
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String importFailed(Object error);
+
+  /// No description provided for @selectWorkspaceFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a workspace first.'**
+  String get selectWorkspaceFirst;
+
+  /// No description provided for @noImportedDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'No imported documents.'**
+  String get noImportedDocuments;
+
+  /// No description provided for @importDocumentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a PDF or EPUB to get started.'**
+  String get importDocumentHint;
+
+  /// No description provided for @deleteDocumentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete document?'**
+  String get deleteDocumentTitle;
+
+  /// No description provided for @deleteDocumentDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{name}\" and all extracted text?'**
+  String deleteDocumentDescription(String name);
+
+  /// No description provided for @reader.
+  ///
+  /// In en, this message translates to:
+  /// **'Reader'**
+  String get reader;
+
+  /// No description provided for @documentNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Document not found.'**
+  String get documentNotFound;
+
+  /// No description provided for @unknownError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown error'**
+  String get unknownError;
+
+  /// No description provided for @tableOfContents.
+  ///
+  /// In en, this message translates to:
+  /// **'Table of contents'**
+  String get tableOfContents;
+
+  /// No description provided for @noExtractedText.
+  ///
+  /// In en, this message translates to:
+  /// **'No extracted text available.'**
+  String get noExtractedText;
+
+  /// No description provided for @askAgentAboutSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Agent about this section'**
+  String get askAgentAboutSection;
+
+  /// No description provided for @askAboutThisSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about this section'**
+  String get askAboutThisSection;
+
+  /// No description provided for @sendSectionToAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Send section text to the Agent'**
+  String get sendSectionToAgent;
+
+  /// No description provided for @explainThisSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Please explain this section.'**
+  String get explainThisSection;
+
+  /// No description provided for @summarizeThisSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize this section'**
+  String get summarizeThisSection;
+
+  /// No description provided for @summarizeSectionConcisely.
+  ///
+  /// In en, this message translates to:
+  /// **'Please summarize this section concisely.'**
+  String get summarizeSectionConcisely;
+
+  /// No description provided for @extractKeyConcepts.
+  ///
+  /// In en, this message translates to:
+  /// **'Extract key concepts'**
+  String get extractKeyConcepts;
+
+  /// No description provided for @extractKeyConceptsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Extract the key concepts and terms from this section.'**
+  String get extractKeyConceptsDescription;
+
+  /// No description provided for @pageIndicator.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {total}'**
+  String pageIndicator(int current, int total);
+
+  /// No description provided for @sectionsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sections'**
+  String sectionsCount(int count);
 }
 
 class _AppLocalizationsDelegate
