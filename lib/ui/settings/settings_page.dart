@@ -112,8 +112,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _SectionHeader(
                 title: context.l10n.modelProviders,
                 subtitle: activeAsync.when(
-                  data: (ModelConfig c) => c.provider == 'mock'
-                      ? context.l10n.activeOfflineDemo
+                  data: (ModelConfig? c) => c == null
+                      ? context.l10n.noProviderConfigured
                       : context.l10n.activeProvider(c.label),
                   loading: () => context.l10n.loading,
                   error: (Object _, StackTrace _) => context.l10n.unavailable,
@@ -300,10 +300,10 @@ class _EmptyProviders extends StatelessWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                Icon(Icons.science_outlined, color: scheme.primary),
+                Icon(Icons.cloud_off_outlined, color: scheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  context.l10n.offlineDemoMode,
+                  context.l10n.noProviderConfigured,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
               ],

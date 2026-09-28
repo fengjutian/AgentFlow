@@ -237,6 +237,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get offlineDemoMode => '正在使用离线演示模式';
 
   @override
+  String get noProviderConfigured => '未配置提供商';
+
+  @override
   String get setAsDefault => '设为默认';
 
   @override
@@ -844,7 +847,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noProviderConfiguredHint =>
-      '尚未配置提供商，Agent 使用内置的模拟模型演示循环。添加 OpenAI 兼容的提供商以使用真实模型。';
+      '尚未配置模型提供商。请添加一个 OpenAI 兼容的提供商（如 OpenAI、DeepSeek、Qwen），并填入您的 API Key 后即可使用 Agent。';
+
+  @override
+  String get noProviderConfiguredError => '尚未配置模型提供商。请先在设置中添加提供商，然后再发送消息。';
 
   @override
   String get providerLabelHint => 'DeepSeek（个人）';

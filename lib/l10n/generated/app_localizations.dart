@@ -518,6 +518,12 @@ abstract class AppLocalizations {
   /// **'Running in offline demo mode'**
   String get offlineDemoMode;
 
+  /// No description provided for @noProviderConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'No provider configured'**
+  String get noProviderConfigured;
+
   /// No description provided for @setAsDefault.
   ///
   /// In en, this message translates to:
@@ -1601,8 +1607,14 @@ abstract class AppLocalizations {
   /// No description provided for @noProviderConfiguredHint.
   ///
   /// In en, this message translates to:
-  /// **'No provider is configured yet, so the agent uses a built-in mock that demonstrates the loop without any network. Add an OpenAI-compatible provider to use a real model.'**
+  /// **'No model provider is configured. Add an OpenAI-compatible provider (e.g. OpenAI, DeepSeek, Qwen) with your API key to start using the agent.'**
   String get noProviderConfiguredHint;
+
+  /// No description provided for @noProviderConfiguredError.
+  ///
+  /// In en, this message translates to:
+  /// **'No model provider configured. Please add a provider in Settings before sending messages.'**
+  String get noProviderConfiguredError;
 
   /// No description provided for @providerLabelHint.
   ///

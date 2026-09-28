@@ -245,6 +245,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get offlineDemoMode => 'Running in offline demo mode';
 
   @override
+  String get noProviderConfigured => 'No provider configured';
+
+  @override
   String get setAsDefault => 'Set as default';
 
   @override
@@ -864,7 +867,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noProviderConfiguredHint =>
-      'No provider is configured yet, so the agent uses a built-in mock that demonstrates the loop without any network. Add an OpenAI-compatible provider to use a real model.';
+      'No model provider is configured. Add an OpenAI-compatible provider (e.g. OpenAI, DeepSeek, Qwen) with your API key to start using the agent.';
+
+  @override
+  String get noProviderConfiguredError =>
+      'No model provider configured. Please add a provider in Settings before sending messages.';
 
   @override
   String get providerLabelHint => 'DeepSeek (personal)';

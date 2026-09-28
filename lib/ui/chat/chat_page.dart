@@ -40,6 +40,14 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   void _submit() {
     final text = _input.text;
     if (text.trim().isEmpty) return;
+
+    // Block sending when no model provider is configured.
+    final config = ref.read(activeModelConfigProvider).value;
+    if (config == null) {
+      ref.read(sessionControllerProvider.notifier).setNoProviderError();
+      return;
+    }
+
     _input.clear();
     ref.read(sessionControllerProvider.notifier).send(text);
   }
@@ -199,15 +207,9 @@ class _ModelChip extends ConsumerWidget {
         message: '${config.label} · ${config.model}',
         child: Chip(
           visualDensity: VisualDensity.compact,
-          avatar: Icon(
-            config.provider == 'mock'
-                ? Icons.science_outlined
-                : Icons.cloud_outlined,
-            size: 16,
-            color: scheme.primary,
-          ),
+          avatar: Icon(Icons.cloud_outlined, size: 16, color: scheme.primary),
           label: Text(
-            config.provider == 'mock' ? context.l10n.demo : config.model,
+            config.model,
             style: Theme.of(context).textTheme.labelSmall,
           ),
         ),
@@ -316,9 +318,16 @@ class _Welcome extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: OutlinedButton(
-                  onPressed: () => ref
-                      .read(sessionControllerProvider.notifier)
-                      .send(example),
+                  onPressed: () {
+                    final config = ref.read(activeModelConfigProvider).value;
+                    if (config == null) {
+                      ref
+                          .read(sessionControllerProvider.notifier)
+                          .setNoProviderError();
+                      return;
+                    }
+                    ref.read(sessionControllerProvider.notifier).send(example);
+                  },
                   child: Text(example, textAlign: TextAlign.center),
                 ),
               ),

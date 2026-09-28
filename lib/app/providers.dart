@@ -44,16 +44,6 @@ const Uuid _uuid = Uuid();
 
 String newId() => _uuid.v4();
 
-/// Offline demo config so the app is usable before any API key is entered.
-const ModelConfig kDemoModelConfig = ModelConfig(
-  id: 'demo',
-  label: 'Demo (offline)',
-  provider: 'mock',
-  model: 'mock-agent',
-  baseUrl: '',
-  isDefault: true,
-);
-
 // ---------------------------------------------------------------------------
 // Infrastructure
 // ---------------------------------------------------------------------------
@@ -237,11 +227,13 @@ final FutureProvider<List<ModelConfig>> modelConfigsProvider =
       (Ref ref) => ref.watch(providerRepositoryProvider).all(),
     );
 
-/// The config used for the next run: the stored default, else the offline demo.
-final FutureProvider<ModelConfig> activeModelConfigProvider =
-    FutureProvider<ModelConfig>((Ref ref) async {
+/// The config used for the next run: the stored default, or null if none configured.
+///
+/// When null, the chat layer blocks sending and directs the user to Settings.
+final FutureProvider<ModelConfig?> activeModelConfigProvider =
+    FutureProvider<ModelConfig?>((Ref ref) async {
       final configs = await ref.watch(modelConfigsProvider.future);
-      if (configs.isEmpty) return kDemoModelConfig;
+      if (configs.isEmpty) return null;
       return configs.firstWhere(
         (ModelConfig c) => c.isDefault,
         orElse: () => configs.first,

@@ -146,6 +146,15 @@ class SessionController extends Notifier<ChatState> {
     state = const ChatState();
   }
 
+  /// Called by the UI when the user tries to send while no provider is configured.
+  /// Sets a localized error banner directing the user to Settings.
+  void setNoProviderError() {
+    state = state.withError(
+      'No model provider configured. '
+      'Add a provider in Settings before sending messages.',
+    );
+  }
+
   /// Runs one user turn end-to-end.
   Future<void> send(String text) async {
     final prompt = text.trim();
@@ -154,6 +163,16 @@ class SessionController extends Notifier<ChatState> {
     final workspace = ref.read(currentWorkspaceProvider);
     if (workspace == null) {
       state = state.withError('Select or create a workspace before chatting.');
+      return;
+    }
+
+    // Block execution when no model provider is configured.
+    final config = await ref.read(activeModelConfigProvider.future);
+    if (config == null) {
+      state = state.withError(
+        'No model provider configured. '
+        'Add a provider in Settings before sending messages.',
+      );
       return;
     }
 
@@ -179,7 +198,6 @@ class SessionController extends Notifier<ChatState> {
 
     try {
       final runtime = await resolveRuntime(workspace);
-      final config = await ref.read(activeModelConfigProvider.future);
       final memoryBlock = await ref
           .read(memoryManagerProvider)
           .renderContextBlock(workspace.id);
