@@ -920,4 +920,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noFiles => 'No files found';
+
+  @override
+  String get copiedToClipboard => 'Copied to clipboard';
 }

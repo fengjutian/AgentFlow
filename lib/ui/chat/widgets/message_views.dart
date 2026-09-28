@@ -6,6 +6,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/message.dart';
 import '../../../app/theme.dart';
@@ -93,9 +95,45 @@ class _AssistantBubble extends StatelessWidget {
             bottomRight: Radius.circular(16),
           ),
         ),
-        child: SelectableText(text, style: const TextStyle(height: 1.4)),
+        child: SelectionArea(
+          child: MarkdownBody(
+            data: text,
+            selectable: true,
+            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+              p: const TextStyle(height: 1.5),
+              code: AppTheme.code.copyWith(
+                backgroundColor: scheme.surfaceContainerHighest,
+              ),
+              codeblockDecoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              blockquoteDecoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(color: scheme.primary, width: 4),
+                ),
+              ),
+              blockquotePadding: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
+            ),
+            onTapLink: (String text, String? href, String title) {
+              if (href != null) {
+                launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+              }
+            },
+            syntaxHighlighter: _CodeSyntaxHighlighter(),
+          ),
+        ),
       ),
     );
+  }
+}
+
+/// Simple syntax highlighter that uses the app's code style.
+/// For more advanced highlighting, integrate with SyntaxHighlighter.
+class _CodeSyntaxHighlighter extends SyntaxHighlighter {
+  @override
+  TextSpan format(String source) {
+    return TextSpan(style: AppTheme.code, text: source);
   }
 }
 

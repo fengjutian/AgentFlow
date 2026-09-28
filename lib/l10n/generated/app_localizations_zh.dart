@@ -899,4 +899,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noFiles => '未找到文件';
+
+  @override
+  String get copiedToClipboard => '已复制到剪贴板';
 }

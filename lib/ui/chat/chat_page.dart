@@ -6,10 +6,13 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/providers.dart';
 import '../../app/session_controller.dart';
+import '../../app/theme.dart';
 import '../../core/approval/approval_manager.dart';
 import '../../data/models.dart';
 import '../../l10n/l10n.dart';
@@ -250,10 +253,10 @@ class _Transcript extends StatelessWidget {
   }
 }
 
-/// A lightweight assistant bubble that re-renders on every token. Uses plain
-/// [Text] instead of [SelectableText] so rapid rebuilds don't reset the
-/// selection cursor. Once streaming completes, the persisted message replaces
-/// this bubble with a full [MessageView] (selectable).
+/// A lightweight assistant bubble that re-renders on every token.
+/// Uses [MarkdownBody] without selectability so rapid rebuilds don't reset
+/// the selection cursor. Once streaming completes, the persisted message
+/// replaces this bubble with a full [MessageView] (selectable).
 class _StreamingBubble extends StatelessWidget {
   const _StreamingBubble({required this.text});
   final String text;
@@ -277,7 +280,31 @@ class _StreamingBubble extends StatelessWidget {
             bottomRight: Radius.circular(16),
           ),
         ),
-        child: Text(text, style: const TextStyle(height: 1.4)),
+        child: MarkdownBody(
+          data: text,
+          selectable: false,
+          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+            p: const TextStyle(height: 1.5),
+            code: AppTheme.code.copyWith(
+              backgroundColor: scheme.surfaceContainerHighest,
+            ),
+            codeblockDecoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            blockquoteDecoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(color: scheme.primary, width: 4),
+              ),
+            ),
+            blockquotePadding: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
+          ),
+          onTapLink: (String text, String? href, String title) {
+            if (href != null) {
+              launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+            }
+          },
+        ),
       ),
     );
   }

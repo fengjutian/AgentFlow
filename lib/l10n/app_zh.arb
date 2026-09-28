@@ -296,5 +296,6 @@
   "version": "版本",
   "quickOpen": "快速打开",
   "searchFiles": "搜索文件",
-  "noFiles": "未找到文件"
+  "noFiles": "未找到文件",
+  "copiedToClipboard": "已复制到剪贴板"
 }

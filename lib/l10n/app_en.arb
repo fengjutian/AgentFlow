@@ -307,5 +307,6 @@
   "version": "Version",
   "quickOpen": "Quick open",
   "searchFiles": "Search files",
-  "noFiles": "No files found"
+  "noFiles": "No files found",
+  "copiedToClipboard": "Copied to clipboard"
 }
