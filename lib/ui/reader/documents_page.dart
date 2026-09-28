@@ -164,7 +164,7 @@ class _DocumentTile extends ConsumerWidget {
         subtitle: Text(
           '${document.type.name.toUpperCase()} · '
           '${document.parseStatus.name} · '
-          '${document.sectionCount} sections',
+          '${context.l10n.sectionsCount(document.sectionCount)}',
           style: theme.textTheme.bodySmall,
         ),
         trailing: _StatusChip(status: document.parseStatus),
@@ -211,11 +211,11 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      DocumentParseStatus.ready => ('Ready', Colors.green),
-      DocumentParseStatus.parsing => ('Parsing', Colors.orange),
-      DocumentParseStatus.pending => ('Pending', Colors.grey),
-      DocumentParseStatus.failed => ('Failed', Colors.red),
-      DocumentParseStatus.ocrRequired => ('OCR needed', Colors.deepOrange),
+      DocumentParseStatus.ready => (context.l10n.statusReady, Colors.green),
+      DocumentParseStatus.parsing => (context.l10n.statusParsing, Colors.orange),
+      DocumentParseStatus.pending => (context.l10n.statusPending, Colors.grey),
+      DocumentParseStatus.failed => (context.l10n.statusFailed, Colors.red),
+      DocumentParseStatus.ocrRequired => (context.l10n.statusOcrRequired, Colors.deepOrange),
     };
     return Chip(
       label: Text(label, style: const TextStyle(fontSize: 11)),

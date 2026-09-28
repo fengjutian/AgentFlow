@@ -215,7 +215,7 @@ class _GenericToolCard extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: SelectableText(
-                    message.content.isEmpty ? '(no output)' : message.content,
+                    message.content.isEmpty ? context.l10n.noOutput : message.content,
                     style: AppTheme.code,
                   ),
                 ),
