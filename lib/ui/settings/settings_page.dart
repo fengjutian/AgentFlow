@@ -611,7 +611,6 @@ class _AboutCard extends StatelessWidget {
               onPressed: () => showLicensePage(
                 context: context,
                 applicationName: 'AgentFlow',
-                applicationVersion: '1.0.0',
               ),
               child: Text(
                 Localizations.localeOf(context).languageCode == 'zh'
