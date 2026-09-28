@@ -182,8 +182,8 @@ class _EditorPageState extends ConsumerState<EditorPage>
         : content;
     // Null byte is a strong binary indicator.
     if (sample.contains('\x00')) return true;
-    // Unicode replacement character indicates invalid UTF-8 decoding.
-    if (sample.contains('')) return true;
+    // U+FFFD (Unicode replacement character) indicates invalid UTF-8 decoding.
+    if (sample.contains('\uFFFD')) return true;
     return false;
   }
 

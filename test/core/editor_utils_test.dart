@@ -45,8 +45,8 @@ void main() {
     });
 
     test('returns true for UTF-8 replacement character', () {
-      expect(_isBinaryContent('HelloWorld'), isTrue);
-      expect(_isBinaryContent('text more'), isTrue);
+      expect(_isBinaryContent('Hello\uFFFDWorld'), isTrue);
+      expect(_isBinaryContent('text\uFFFDmore'), isTrue);
     });
 
     test('handles empty content', () {
