@@ -507,4 +507,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get draftRestored => 'Restored unsaved draft from previous session.';
+
+  @override
+  String fileTooLarge(String size, String limit) {
+    return 'File is too large to edit ($size). Maximum size is $limit.';
+  }
+
+  @override
+  String get binaryFileNotSupported =>
+      'This file appears to be binary and cannot be edited.';
 }

@@ -167,5 +167,8 @@
   "deleteFileDescription": "This file will be permanently deleted.",
   "deleteFolderDescription": "This folder and all of its contents will be permanently deleted.",
   "draftRestored": "Restored unsaved draft from previous session.",
-  "discard": "Discard"
+  "discard": "Discard",
+  "fileTooLarge": "File is too large to edit ({size}). Maximum size is {limit}.",
+  "@fileTooLarge": {"placeholders": {"size": {"type": "String"}, "limit": {"type": "String"}}},
+  "binaryFileNotSupported": "This file appears to be binary and cannot be edited."
 }

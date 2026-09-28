@@ -997,6 +997,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restored unsaved draft from previous session.'**
   String get draftRestored;
+
+  /// No description provided for @fileTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'File is too large to edit ({size}). Maximum size is {limit}.'**
+  String fileTooLarge(String size, String limit);
+
+  /// No description provided for @binaryFileNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This file appears to be binary and cannot be edited.'**
+  String get binaryFileNotSupported;
 }
 
 class _AppLocalizationsDelegate

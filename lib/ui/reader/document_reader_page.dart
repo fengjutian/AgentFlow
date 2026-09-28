@@ -48,9 +48,17 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
         return;
       }
       final sections = await store.sections(widget.documentId);
+      // Restore reading position (DOC-07).
+      final savedIndex = doc.lastSectionIndex;
+      final initialIndex = (savedIndex != null &&
+              savedIndex >= 0 &&
+              savedIndex < sections.length)
+          ? savedIndex
+          : 0;
       setState(() {
         _document = doc;
         _sections = sections;
+        _currentIndex = initialIndex;
         _loading = false;
       });
     } catch (e) {
@@ -182,6 +190,11 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
   void _goTo(int index) {
     if (index < 0 || index >= _sections.length) return;
     setState(() => _currentIndex = index);
+    // Persist reading position (DOC-07).
+    ref.read(documentStoreProvider).saveReadingPosition(
+      widget.documentId,
+      index,
+    );
   }
 
   void _showToc() {

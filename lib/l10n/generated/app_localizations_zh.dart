@@ -496,4 +496,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get draftRestored => '已恢复上次未保存的草稿。';
+
+  @override
+  String fileTooLarge(String size, String limit) {
+    return '文件太大无法编辑（$size）。最大大小为 $limit。';
+  }
+
+  @override
+  String get binaryFileNotSupported => '此文件似乎是二进制文件，无法编辑。';
 }

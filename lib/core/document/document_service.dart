@@ -27,6 +27,9 @@ abstract class DocumentStore {
     String query, {
     int limit = 10,
   });
+
+  /// Saves the last-read section index for position persistence (DOC-07).
+  Future<void> saveReadingPosition(String documentId, int sectionIndex);
 }
 
 class DocumentSearchHit {

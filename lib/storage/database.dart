@@ -126,6 +126,9 @@ class Documents extends Table {
   IntColumn get sectionCount => integer().withDefault(const Constant(0))();
   TextColumn get parseStatus => text().withDefault(const Constant('pending'))();
   TextColumn get parseError => text().nullable()();
+
+  /// Last-read section index for position persistence (DOC-07).
+  IntColumn get lastSectionIndex => integer().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -202,8 +205,8 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.connect(super.executor);
 
   @override
-  int get schemaVersion => 3;
-
+  int get schemaVersion => 4;
+  
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) async {
@@ -219,6 +222,12 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await _createFtsTable();
+      }
+      if (from < 4) {
+        // Add reading position column (DOC-07).
+        await customStatement(
+          'ALTER TABLE documents ADD COLUMN last_section_index INTEGER',
+        );
       }
     },
   );

@@ -3060,6 +3060,17 @@ class $DocumentsTable extends Documents
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _lastSectionIndexMeta = const VerificationMeta(
+    'lastSectionIndex',
+  );
+  @override
+  late final GeneratedColumn<int> lastSectionIndex = GeneratedColumn<int>(
+    'last_section_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -3100,6 +3111,7 @@ class $DocumentsTable extends Documents
     sectionCount,
     parseStatus,
     parseError,
+    lastSectionIndex,
     createdAt,
     updatedAt,
   ];
@@ -3235,6 +3247,15 @@ class $DocumentsTable extends Documents
         parseError.isAcceptableOrUnknown(data['parse_error']!, _parseErrorMeta),
       );
     }
+    if (data.containsKey('last_section_index')) {
+      context.handle(
+        _lastSectionIndexMeta,
+        lastSectionIndex.isAcceptableOrUnknown(
+          data['last_section_index']!,
+          _lastSectionIndexMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -3324,6 +3345,10 @@ class $DocumentsTable extends Documents
         DriftSqlType.string,
         data['${effectivePrefix}parse_error'],
       ),
+      lastSectionIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_section_index'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -3358,6 +3383,9 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
   final int sectionCount;
   final String parseStatus;
   final String? parseError;
+
+  /// Last-read section index for position persistence (DOC-07).
+  final int? lastSectionIndex;
   final DateTime createdAt;
   final DateTime updatedAt;
   const DocumentRow({
@@ -3377,6 +3405,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     required this.sectionCount,
     required this.parseStatus,
     this.parseError,
+    this.lastSectionIndex,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -3400,6 +3429,9 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     map['parse_status'] = Variable<String>(parseStatus);
     if (!nullToAbsent || parseError != null) {
       map['parse_error'] = Variable<String>(parseError);
+    }
+    if (!nullToAbsent || lastSectionIndex != null) {
+      map['last_section_index'] = Variable<int>(lastSectionIndex);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -3426,6 +3458,9 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       parseError: parseError == null && nullToAbsent
           ? const Value.absent()
           : Value(parseError),
+      lastSectionIndex: lastSectionIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSectionIndex),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -3453,6 +3488,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       sectionCount: serializer.fromJson<int>(json['sectionCount']),
       parseStatus: serializer.fromJson<String>(json['parseStatus']),
       parseError: serializer.fromJson<String?>(json['parseError']),
+      lastSectionIndex: serializer.fromJson<int?>(json['lastSectionIndex']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -3477,6 +3513,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       'sectionCount': serializer.toJson<int>(sectionCount),
       'parseStatus': serializer.toJson<String>(parseStatus),
       'parseError': serializer.toJson<String?>(parseError),
+      'lastSectionIndex': serializer.toJson<int?>(lastSectionIndex),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -3499,6 +3536,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     int? sectionCount,
     String? parseStatus,
     Value<String?> parseError = const Value.absent(),
+    Value<int?> lastSectionIndex = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => DocumentRow(
@@ -3518,6 +3556,9 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     sectionCount: sectionCount ?? this.sectionCount,
     parseStatus: parseStatus ?? this.parseStatus,
     parseError: parseError.present ? parseError.value : this.parseError,
+    lastSectionIndex: lastSectionIndex.present
+        ? lastSectionIndex.value
+        : this.lastSectionIndex,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -3551,6 +3592,9 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       parseError: data.parseError.present
           ? data.parseError.value
           : this.parseError,
+      lastSectionIndex: data.lastSectionIndex.present
+          ? data.lastSectionIndex.value
+          : this.lastSectionIndex,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -3575,6 +3619,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
           ..write('sectionCount: $sectionCount, ')
           ..write('parseStatus: $parseStatus, ')
           ..write('parseError: $parseError, ')
+          ..write('lastSectionIndex: $lastSectionIndex, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -3599,6 +3644,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     sectionCount,
     parseStatus,
     parseError,
+    lastSectionIndex,
     createdAt,
     updatedAt,
   );
@@ -3622,6 +3668,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
           other.sectionCount == this.sectionCount &&
           other.parseStatus == this.parseStatus &&
           other.parseError == this.parseError &&
+          other.lastSectionIndex == this.lastSectionIndex &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -3643,6 +3690,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
   final Value<int> sectionCount;
   final Value<String> parseStatus;
   final Value<String?> parseError;
+  final Value<int?> lastSectionIndex;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -3663,6 +3711,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     this.sectionCount = const Value.absent(),
     this.parseStatus = const Value.absent(),
     this.parseError = const Value.absent(),
+    this.lastSectionIndex = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3684,6 +3733,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     this.sectionCount = const Value.absent(),
     this.parseStatus = const Value.absent(),
     this.parseError = const Value.absent(),
+    this.lastSectionIndex = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -3712,6 +3762,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     Expression<int>? sectionCount,
     Expression<String>? parseStatus,
     Expression<String>? parseError,
+    Expression<int>? lastSectionIndex,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -3733,6 +3784,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
       if (sectionCount != null) 'section_count': sectionCount,
       if (parseStatus != null) 'parse_status': parseStatus,
       if (parseError != null) 'parse_error': parseError,
+      if (lastSectionIndex != null) 'last_section_index': lastSectionIndex,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -3756,6 +3808,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     Value<int>? sectionCount,
     Value<String>? parseStatus,
     Value<String?>? parseError,
+    Value<int?>? lastSectionIndex,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -3777,6 +3830,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
       sectionCount: sectionCount ?? this.sectionCount,
       parseStatus: parseStatus ?? this.parseStatus,
       parseError: parseError ?? this.parseError,
+      lastSectionIndex: lastSectionIndex ?? this.lastSectionIndex,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -3834,6 +3888,9 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     if (parseError.present) {
       map['parse_error'] = Variable<String>(parseError.value);
     }
+    if (lastSectionIndex.present) {
+      map['last_section_index'] = Variable<int>(lastSectionIndex.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -3865,6 +3922,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
           ..write('sectionCount: $sectionCount, ')
           ..write('parseStatus: $parseStatus, ')
           ..write('parseError: $parseError, ')
+          ..write('lastSectionIndex: $lastSectionIndex, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -7640,6 +7698,7 @@ typedef $$DocumentsTableCreateCompanionBuilder =
       Value<int> sectionCount,
       Value<String> parseStatus,
       Value<String?> parseError,
+      Value<int?> lastSectionIndex,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -7662,6 +7721,7 @@ typedef $$DocumentsTableUpdateCompanionBuilder =
       Value<int> sectionCount,
       Value<String> parseStatus,
       Value<String?> parseError,
+      Value<int?> lastSectionIndex,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -7790,6 +7850,11 @@ class $$DocumentsTableFilterComposer
 
   ColumnFilters<String> get parseError => $composableBuilder(
     column: $table.parseError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastSectionIndex => $composableBuilder(
+    column: $table.lastSectionIndex,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7936,6 +8001,11 @@ class $$DocumentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get lastSectionIndex => $composableBuilder(
+    column: $table.lastSectionIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -8031,6 +8101,11 @@ class $$DocumentsTableAnnotationComposer
 
   GeneratedColumn<String> get parseError => $composableBuilder(
     column: $table.parseError,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastSectionIndex => $composableBuilder(
+    column: $table.lastSectionIndex,
     builder: (column) => column,
   );
 
@@ -8133,6 +8208,7 @@ class $$DocumentsTableTableManager
                 Value<int> sectionCount = const Value.absent(),
                 Value<String> parseStatus = const Value.absent(),
                 Value<String?> parseError = const Value.absent(),
+                Value<int?> lastSectionIndex = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -8153,6 +8229,7 @@ class $$DocumentsTableTableManager
                 sectionCount: sectionCount,
                 parseStatus: parseStatus,
                 parseError: parseError,
+                lastSectionIndex: lastSectionIndex,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -8175,6 +8252,7 @@ class $$DocumentsTableTableManager
                 Value<int> sectionCount = const Value.absent(),
                 Value<String> parseStatus = const Value.absent(),
                 Value<String?> parseError = const Value.absent(),
+                Value<int?> lastSectionIndex = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -8195,6 +8273,7 @@ class $$DocumentsTableTableManager
                 sectionCount: sectionCount,
                 parseStatus: parseStatus,
                 parseError: parseError,
+                lastSectionIndex: lastSectionIndex,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

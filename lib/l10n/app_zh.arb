@@ -156,5 +156,8 @@
   "deleteFileDescription": "此文件将被永久删除。",
   "deleteFolderDescription": "此文件夹及其中的所有内容将被永久删除。",
   "draftRestored": "已恢复上次未保存的草稿。",
-  "discard": "丢弃"
+  "discard": "丢弃",
+  "fileTooLarge": "文件太大无法编辑（{size}）。最大大小为 {limit}。",
+  "@fileTooLarge": {"placeholders": {"size": {"type": "String"}, "limit": {"type": "String"}}},
+  "binaryFileNotSupported": "此文件似乎是二进制文件，无法编辑。"
 }

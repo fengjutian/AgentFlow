@@ -5,6 +5,7 @@ import 'dart:io' as io;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../../app/providers.dart';
@@ -13,6 +14,16 @@ import '../../core/editor/editor_document.dart';
 import '../../core/editor/editor_search.dart';
 import '../../core/editor/syntax_highlighter.dart';
 import '../../l10n/l10n.dart';
+
+/// Maximum file size that can be opened in the editor (1 MB).
+const int _maxEditorFileSize = 1024 * 1024;
+
+/// Formats a byte count as a human-readable string.
+String _formatBytes(int bytes) {
+  if (bytes < 1024) return '$bytes B';
+  if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+  return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+}
 
 class EditorPage extends ConsumerStatefulWidget {
   const EditorPage({super.key, required this.path, required this.name});
@@ -99,9 +110,37 @@ class _EditorPageState extends ConsumerState<EditorPage>
     try {
       final runtime = await ref.read(runtimeProvider.future);
       if (runtime == null) throw StateError('Runtime unavailable.');
+
+      // Check file size before loading to avoid memory issues.
+      final parent = p.dirname(widget.path);
+      final fileName = p.basename(widget.path);
+      final entries = await runtime.listFiles(parent);
+      final entry = entries.where((e) => e.name == fileName).firstOrNull;
+      if (entry != null && entry.size > _maxEditorFileSize) {
+        if (!mounted) return;
+        setState(() {
+          _loading = false;
+          _error = context.l10n.fileTooLarge(
+            _formatBytes(entry.size),
+            _formatBytes(_maxEditorFileSize),
+          );
+        });
+        return;
+      }
+
       final document = EditorDocument(path: widget.path, runtime: runtime);
       final content = await document.load();
       if (!mounted) return;
+
+      // Check for binary content (null bytes or UTF-8 replacement chars).
+      if (_isBinaryContent(content)) {
+        setState(() {
+          _loading = false;
+          _error = context.l10n.binaryFileNotSupported;
+        });
+        return;
+      }
+
       _document = document;
 
       // Check for a saved draft that is newer than the disk version.
@@ -131,6 +170,21 @@ class _EditorPageState extends ConsumerState<EditorPage>
         _error = error.toString();
       });
     }
+  }
+
+  /// Returns true if the content appears to be binary.
+  /// Checks for null bytes and Unicode replacement characters.
+  bool _isBinaryContent(String content) {
+    // Check first 8KB for binary indicators.
+    const sampleSize = 8192;
+    final sample = content.length > sampleSize
+        ? content.substring(0, sampleSize)
+        : content;
+    // Null byte is a strong binary indicator.
+    if (sample.contains('\x00')) return true;
+    // Unicode replacement character indicates invalid UTF-8 decoding.
+    if (sample.contains('')) return true;
+    return false;
   }
 
   void _onTextChanged() {

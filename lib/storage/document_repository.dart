@@ -242,6 +242,7 @@ class DriftDocumentStore implements DocumentStore {
         sectionCount: Value(document.sectionCount),
         parseStatus: Value(document.parseStatus.name),
         parseError: Value(document.parseError),
+        lastSectionIndex: Value(document.lastSectionIndex),
         createdAt: document.createdAt,
         updatedAt: document.updatedAt,
       );
@@ -277,6 +278,7 @@ class DriftDocumentStore implements DocumentStore {
     sectionCount: row.sectionCount,
     parseStatus: DocumentParseStatus.values.byName(row.parseStatus),
     parseError: row.parseError,
+    lastSectionIndex: row.lastSectionIndex,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   );
@@ -292,6 +294,12 @@ class DriftDocumentStore implements DocumentStore {
     plainText: row.plainText,
     metadata: _decodeMetadata(row.metadataJson),
   );
+
+  @override
+  Future<void> saveReadingPosition(String documentId, int sectionIndex) async {
+    await (_db.update(_db.documents)..where((t) => t.id.equals(documentId)))
+        .write(DocumentsCompanion(lastSectionIndex: Value(sectionIndex)));
+  }
 }
 
 Map<String, dynamic> _decodeMetadata(String source) {

@@ -24,6 +24,7 @@ class AgentDocument {
     this.sectionCount = 0,
     this.parseStatus = DocumentParseStatus.pending,
     this.parseError,
+    this.lastSectionIndex,
   });
 
   final String id;
@@ -42,6 +43,9 @@ class AgentDocument {
   final int sectionCount;
   final DocumentParseStatus parseStatus;
   final String? parseError;
+
+  /// Last-read section index for position persistence (DOC-07).
+  final int? lastSectionIndex;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -59,6 +63,8 @@ class AgentDocument {
     DocumentParseStatus? parseStatus,
     String? parseError,
     bool clearParseError = false,
+    int? lastSectionIndex,
+    bool clearLastSectionIndex = false,
     DateTime? updatedAt,
   }) => AgentDocument(
     id: id,
@@ -77,6 +83,9 @@ class AgentDocument {
     sectionCount: sectionCount ?? this.sectionCount,
     parseStatus: parseStatus ?? this.parseStatus,
     parseError: clearParseError ? null : parseError ?? this.parseError,
+    lastSectionIndex: clearLastSectionIndex
+        ? null
+        : (lastSectionIndex ?? this.lastSectionIndex),
     createdAt: createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
