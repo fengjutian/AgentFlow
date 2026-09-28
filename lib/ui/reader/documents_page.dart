@@ -23,6 +23,8 @@ class DocumentsPage extends ConsumerStatefulWidget {
 
 class _DocumentsPageState extends ConsumerState<DocumentsPage> {
   bool _importing = false;
+  double _importProgress = 0;
+  String _importMessage = '';
 
   Future<void> _importDocument() async {
     final workspaceId = ref.read(activeWorkspaceProvider);
@@ -36,14 +38,28 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     final file = result.files.first;
     if (file.path == null) return;
 
-    setState(() => _importing = true);
+    setState(() {
+      _importing = true;
+      _importProgress = 0;
+      _importMessage = '';
+    });
     try {
       final importService = await ref.read(documentImportServiceProvider.future);
-      await importService.import(DocumentImportRequest(
-        workspaceId: workspaceId,
-        sourcePath: file.path!,
-        displayName: file.name,
-      ));
+      await importService.import(
+        DocumentImportRequest(
+          workspaceId: workspaceId,
+          sourcePath: file.path!,
+          displayName: file.name,
+        ),
+        onProgress: (progress) {
+          if (mounted) {
+            setState(() {
+              _importProgress = progress.fraction;
+              _importMessage = progress.message;
+            });
+          }
+        },
+      );
       if (mounted) setState(() {}); // Refresh list.
     } catch (e) {
       if (mounted) {
@@ -65,11 +81,18 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
           ? FloatingActionButton.extended(
               onPressed: _importing ? null : _importDocument,
               icon: _importing
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 16, height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2))
+                      child: CircularProgressIndicator(
+                        value: _importProgress > 0 ? _importProgress : null,
+                        strokeWidth: 2,
+                      ))
                   : const Icon(Icons.file_upload_outlined),
-              label: Text(_importing ? context.l10n.importing : context.l10n.import),
+              label: Text(_importing
+                  ? (_importMessage.isNotEmpty
+                      ? _importMessage
+                      : context.l10n.importing)
+                  : context.l10n.import),
             )
           : null,
       body: workspaceId == null
