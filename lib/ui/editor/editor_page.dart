@@ -1,5 +1,6 @@
 library;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 
@@ -26,10 +27,20 @@ String _formatBytes(int bytes) {
 }
 
 class EditorPage extends ConsumerStatefulWidget {
-  const EditorPage({super.key, required this.path, required this.name});
+  const EditorPage({
+    super.key,
+    required this.path,
+    required this.name,
+    this.initialLine = 1,
+    this.initialColumn = 1,
+    this.embedded = false,
+  });
 
   final String path;
   final String name;
+  final int initialLine;
+  final int initialColumn;
+  final bool embedded;
 
   @override
   ConsumerState<EditorPage> createState() => _EditorPageState();
@@ -80,6 +91,17 @@ class _EditorPageState extends ConsumerState<EditorPage>
   }
 
   @override
+  void didUpdateWidget(covariant EditorPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialLine != widget.initialLine ||
+        oldWidget.initialColumn != widget.initialColumn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_loading) _applyInitialLocation();
+      });
+    }
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused && _dirty) {
       _saveDraft();
@@ -88,6 +110,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
 
   @override
   void dispose() {
+    if (_dirty) unawaited(_saveDraft());
     WidgetsBinding.instance.removeObserver(this);
     _text
       ..removeListener(_onTextChanged)
@@ -161,6 +184,10 @@ class _EditorPageState extends ConsumerState<EditorPage>
         _loading = false;
       });
 
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _applyInitialLocation();
+      });
+
       // If a draft was restored, show a banner offering to discard it.
       if (effectiveText != content && mounted) {
         _showDraftRestoredBanner();
@@ -172,6 +199,19 @@ class _EditorPageState extends ConsumerState<EditorPage>
         _error = error.toString();
       });
     }
+  }
+
+  void _applyInitialLocation() {
+    final lineOffset = offsetForEditorLine(_text.text, widget.initialLine);
+    if (lineOffset == null) return;
+    final lineEnd = _text.text.indexOf('\n', lineOffset);
+    final maxOffset = lineEnd < 0 ? _text.text.length : lineEnd;
+    final offset = (lineOffset + widget.initialColumn - 1).clamp(
+      lineOffset,
+      maxOffset,
+    );
+    _text.selection = TextSelection.collapsed(offset: offset);
+    _editorFocus.requestFocus();
   }
 
   /// Returns true if the content appears to be binary.
@@ -497,6 +537,49 @@ class _EditorPageState extends ConsumerState<EditorPage>
 
   @override
   Widget build(BuildContext context) {
+    final scaffold = Scaffold(
+      appBar: AppBar(
+        title: Text('${_dirty ? '* ' : ''}${widget.name}'),
+        actions: <Widget>[
+          IconButton(
+            tooltip: context.l10n.undo,
+            onPressed: _loading || _error != null || !_undoHistory.value.canUndo
+                ? null
+                : () => _undoHistory.undo(),
+            icon: const Icon(Icons.undo),
+          ),
+          IconButton(
+            tooltip: context.l10n.redo,
+            onPressed: _loading || _error != null || !_undoHistory.value.canRedo
+                ? null
+                : () => _undoHistory.redo(),
+            icon: const Icon(Icons.redo),
+          ),
+          IconButton(
+            tooltip: context.l10n.search,
+            onPressed: _loading || _error != null ? null : _openSearch,
+            icon: const Icon(Icons.search),
+          ),
+          IconButton(
+            tooltip: context.l10n.goToLine,
+            onPressed: _loading || _error != null ? null : _goToLine,
+            icon: const Icon(Icons.format_list_numbered),
+          ),
+          IconButton(
+            tooltip: context.l10n.save,
+            onPressed: _dirty && !_saving ? _save : null,
+            icon: _saving
+                ? const SizedBox.square(
+                    dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.save_outlined),
+          ),
+        ],
+      ),
+      body: _buildBody(),
+    );
+    if (widget.embedded) return scaffold;
     return PopScope<Object?>(
       canPop: !_dirty,
       onPopInvokedWithResult: (didPop, result) async {
@@ -505,48 +588,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
         if (!context.mounted || !discard) return;
         Navigator.of(context).pop();
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('${_dirty ? '* ' : ''}${widget.name}'),
-          actions: <Widget>[
-            IconButton(
-              tooltip: context.l10n.undo,
-              onPressed: _loading || _error != null || !_undoHistory.value.canUndo
-                  ? null
-                  : () => _undoHistory.undo(),
-              icon: const Icon(Icons.undo),
-            ),
-            IconButton(
-              tooltip: context.l10n.redo,
-              onPressed: _loading || _error != null || !_undoHistory.value.canRedo
-                  ? null
-                  : () => _undoHistory.redo(),
-              icon: const Icon(Icons.redo),
-            ),
-            IconButton(
-              tooltip: context.l10n.search,
-              onPressed: _loading || _error != null ? null : _openSearch,
-              icon: const Icon(Icons.search),
-            ),
-            IconButton(
-              tooltip: context.l10n.goToLine,
-              onPressed: _loading || _error != null ? null : _goToLine,
-              icon: const Icon(Icons.format_list_numbered),
-            ),
-            IconButton(
-              tooltip: context.l10n.save,
-              onPressed: _dirty && !_saving ? _save : null,
-              icon: _saving
-                  ? const SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.save_outlined),
-            ),
-          ],
-        ),
-        body: _buildBody(),
-      ),
+      child: scaffold,
     );
   }
 

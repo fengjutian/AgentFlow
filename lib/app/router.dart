@@ -11,7 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import '../ui/chat/chat_page.dart';
 import '../ui/files/files_page.dart';
-import '../ui/editor/editor_page.dart';
+import '../ui/editor/editor_workspace_page.dart';
 import '../ui/reader/documents_page.dart';
 import '../ui/reader/document_reader_page.dart';
 import '../ui/settings/settings_page.dart';
@@ -54,9 +54,17 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
                     path: 'editor',
                     name: 'editor',
                     builder: (BuildContext context, GoRouterState state) =>
-                        EditorPage(
+                        EditorWorkspacePage(
                           path: state.uri.queryParameters['path'] ?? '',
                           name: state.uri.queryParameters['name'] ?? 'Editor',
+                          line: int.tryParse(
+                                state.uri.queryParameters['line'] ?? '',
+                              ) ??
+                              1,
+                          column: int.tryParse(
+                                state.uri.queryParameters['column'] ?? '',
+                              ) ??
+                              1,
                         ),
                   ),
                 ],
