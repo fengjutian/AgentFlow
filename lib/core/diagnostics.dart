@@ -10,10 +10,10 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 
-import '../../core/memory/memory_manager.dart';
-import '../../core/mcp/mcp_connection_manager.dart';
-import '../../core/model/model_provider.dart';
-import '../../storage/database.dart';
+import 'memory/memory_manager.dart';
+import 'mcp/mcp_connection_manager.dart';
+import 'model/model_provider.dart';
+import '../storage/database.dart';
 
 /// Collects a diagnostic text block suitable for pasting into a bug report.
 Future<String> collectDiagnostics({
@@ -61,7 +61,7 @@ Future<String> collectDiagnostics({
   buffer.writeln('--- MCP Servers ---');
   buffer.writeln('Total: ${serverStates.length}');
   for (final state in serverStates) {
-    buffer.writeln('  - ${state.serverName}: status=${state.status}, tools=${state.tools.length}');
+    buffer.writeln('  - ${state.config.name}: status=${state.status}, tools=${state.tools.length}');
   }
   buffer.writeln();
 
@@ -69,7 +69,7 @@ Future<String> collectDiagnostics({
   buffer.writeln('--- Memory ---');
   if (activeWorkspaceId != null) {
     try {
-      final entries = await memoryManager.list(activeWorkspaceId);
+      final entries = await memoryManager.entries(activeWorkspaceId);
       buffer.writeln('Entries for active workspace: ${entries.length}');
     } catch (e) {
       buffer.writeln('Entries: error reading ($e)');
