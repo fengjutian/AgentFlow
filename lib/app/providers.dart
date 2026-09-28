@@ -23,6 +23,7 @@ import '../core/document/document_parser.dart';
 import '../core/document/document_service.dart';
 import '../core/document/epub_parser.dart';
 import '../core/document/pdf_parser.dart';
+import '../core/editor/agent_modifications.dart';
 import '../core/editor/editor_workspace.dart';
 import '../data/models.dart';
 import '../runtime/bridge_runtime.dart';
@@ -170,6 +171,14 @@ editorDiagnosticsProvider =
     NotifierProvider<EditorDiagnosticsNotifier, List<EditorDiagnostic>>(
       EditorDiagnosticsNotifier.new,
     );
+
+/// Tracks line ranges modified by the agent for gutter markers (DIFF-01/02).
+final Provider<AgentModificationStore> agentModificationProvider =
+    Provider<AgentModificationStore>((Ref ref) {
+  final store = AgentModificationStore();
+  ref.onDispose(store.dispose);
+  return store;
+});
 
 final Provider<ApprovalManager> approvalManagerProvider =
     Provider<ApprovalManager>((Ref ref) {

@@ -56,7 +56,7 @@ class BridgeShellSession implements ShellSession {
       <String, dynamic>{
         'rows': rows,
         'cols': cols,
-        if (workingDirectory != null) 'cwd': workingDirectory,
+        ?'cwd': workingDirectory,
       },
     );
     final map = result ?? const <dynamic, dynamic>{};

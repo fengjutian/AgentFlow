@@ -15,6 +15,7 @@ import '../core/agent/agent_engine.dart';
 import '../core/agent/agent_state.dart';
 import '../core/approval/approval_manager.dart';
 import '../core/context/context_manager.dart';
+import '../core/diff/line_diff.dart';
 import '../core/message.dart';
 import '../data/models.dart';
 import '../runtime/runtime.dart';
@@ -279,6 +280,10 @@ class SessionController extends Notifier<ChatState> {
         state = state.clearStreaming();
       case ToolFinishedEvent(:final result):
         await _append(sessionId, TranscriptMessage.fromToolResult(result));
+        // Record agent modifications for gutter markers (DIFF-01).
+        if (!result.isError && result.data != null) {
+          _recordAgentModifications(result);
+        }
       case ActivityUpdatedEvent(:final item):
         _upsertActivity(item);
       case ErrorEvent(:final message):
@@ -311,6 +316,50 @@ class SessionController extends Notifier<ChatState> {
       list.add(item);
     }
     state = state.copyWith(activity: list);
+  }
+
+  /// Records agent-modified line ranges for gutter markers (DIFF-01).
+  void _recordAgentModifications(ToolResult result) {
+    final data = result.data;
+    if (data == null) return;
+
+    final store = ref.read(agentModificationProvider);
+
+    // Handle write_file: single file with diff.
+    final diffJson = data['diff'];
+    if (diffJson is Map) {
+      final diff = FileDiff.fromJson(diffJson.cast<String, dynamic>());
+      final addedLines = diff.lines
+          .where((l) => l.type == DiffLineType.added)
+          .map((l) => l.newNumber)
+          .whereType<int>()
+          .toList();
+      if (addedLines.isNotEmpty) {
+        store.recordLines(path: diff.path, lines: addedLines);
+      }
+    }
+
+    // Handle apply_patch: multiple files with patches.
+    final patches = data['patches'];
+    if (patches is List) {
+      for (final patch in patches) {
+        if (patch is Map) {
+          final path = patch['path'] as String?;
+          final patchDiff = patch['diff'];
+          if (path != null && patchDiff is Map) {
+            final diff = FileDiff.fromJson(patchDiff.cast<String, dynamic>());
+            final addedLines = diff.lines
+                .where((l) => l.type == DiffLineType.added)
+                .map((l) => l.newNumber)
+                .whereType<int>()
+                .toList();
+            if (addedLines.isNotEmpty) {
+              store.recordLines(path: path, lines: addedLines);
+            }
+          }
+        }
+      }
+    }
   }
 
   String _titleFrom(String prompt) {

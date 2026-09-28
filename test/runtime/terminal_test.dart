@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:agentflow/runtime/ansi_parser.dart';
 import 'package:agentflow/runtime/terminal_buffer.dart';
 import 'package:flutter_test/flutter_test.dart';

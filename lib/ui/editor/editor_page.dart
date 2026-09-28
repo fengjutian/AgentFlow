@@ -653,10 +653,14 @@ class _EditorPageState extends ConsumerState<EditorPage>
     );
   }
 
-  /// Builds the line-number gutter with diagnostic markers (DIAG-03).
+  /// Builds the line-number gutter with diagnostic markers (DIAG-03) and
+  /// agent modification markers (DIFF-02).
   Widget _buildGutter(ColorScheme scheme) {
     final allDiagnostics = ref.watch(editorDiagnosticsProvider);
+    final agentMods = ref.watch(agentModificationProvider);
     final normalizedPath = widget.path.replaceAll('\\', '/');
+
+    // Diagnostic markers: line -> highest severity.
     final fileDiagnostics = allDiagnostics
         .where(
           (d) =>
@@ -665,7 +669,6 @@ class _EditorPageState extends ConsumerState<EditorPage>
         )
         .toList(growable: false);
 
-    // Map line -> highest severity on that line.
     final lineSeverity = <int, DiagnosticSeverity>{};
     for (final d in fileDiagnostics) {
       final line = d.location.line;
@@ -675,8 +678,17 @@ class _EditorPageState extends ConsumerState<EditorPage>
       }
     }
 
+    // Agent modification markers: set of lines modified by agent.
+    final agentRanges = agentMods.rangesFor(widget.path);
+    final agentLines = <int>{};
+    for (final range in agentRanges) {
+      for (var line = range.startLine; line <= range.endLine; line++) {
+        agentLines.add(line);
+      }
+    }
+
     return Container(
-      width: 58,
+      width: 62,
       color: scheme.surfaceContainerLow,
       child: SingleChildScrollView(
         controller: _lineScroll,
@@ -690,6 +702,13 @@ class _EditorPageState extends ConsumerState<EditorPage>
                 height: 20,
                 child: Row(
                   children: <Widget>[
+                    // Agent modification marker (DIFF-02).
+                    SizedBox(
+                      width: 4,
+                      child: agentLines.contains(i)
+                          ? Container(color: Colors.green)
+                          : null,
+                    ),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(right: 4),
@@ -703,6 +722,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
                         ),
                       ),
                     ),
+                    // Diagnostic marker (DIAG-03).
                     SizedBox(
                       width: 12,
                       child: lineSeverity.containsKey(i)
