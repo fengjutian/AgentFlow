@@ -1,28 +1,31 @@
-/// Terminal tab (design doc §23).
+/// Terminal tab with persistent interactive shell (design doc §23).
 ///
-/// A minimal interactive shell over the [Runtime] abstraction. Commands run in
-/// the workspace root (or a `cd`-selected subfolder) and their output streams
-/// into a scrollback. This is the human-facing counterpart to the agent's
-/// `run_shell` tool: same runtime, same working directory semantics.
+/// Connects to a [ShellSession] (local, bridge, or SSH) and renders output in
+/// a terminal emulator backed by [TerminalBuffer]. The shell process persists
+/// across commands — unlike the previous stateless `runtime.execute()` approach,
+/// `cd`, environment variables, and running programs survive between keystrokes.
+///
+/// Special keys (Ctrl+C, Ctrl+D) are forwarded via [ShellSession.sendSignal].
+/// Terminal dimensions are reported via [ShellSession.resize] on layout changes.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
 import '../../core/editor/editor_diagnostics.dart';
 import '../../l10n/l10n.dart';
 import '../../app/theme.dart';
-import '../../runtime/runtime.dart';
+import '../../runtime/local_shell_session.dart';
+import '../../runtime/shell_session.dart';
+import '../../runtime/terminal_buffer.dart';
 
-/// One rendered row in the scrollback.
-enum _LineKind { command, stdout, stderr, info }
-
-class _Line {
-  const _Line(this.kind, this.text);
-  final _LineKind kind;
-  final String text;
-}
+/// Provider that manages the current [ShellSession] lifecycle.
+final shellSessionProvider =
+    StateProvider<ShellSession?>((ref) => null);
 
 class TerminalPage extends ConsumerStatefulWidget {
   const TerminalPage({super.key});
@@ -31,85 +34,117 @@ class TerminalPage extends ConsumerStatefulWidget {
   ConsumerState<TerminalPage> createState() => _TerminalPageState();
 }
 
-class _TerminalPageState extends ConsumerState<TerminalPage> {
-  final TextEditingController _input = TextEditingController();
+class _TerminalPageState extends ConsumerState<TerminalPage>
+    with WidgetsBindingObserver {
+  ShellSession? _session;
+  StreamSubscription<String>? _outputSub;
+  final TerminalBuffer _buffer = TerminalBuffer();
   final ScrollController _scroll = ScrollController();
-  final List<String> _history = <String>[];
-  final List<_Line> _lines = <_Line>[];
+  final FocusNode _focusNode = FocusNode();
+  final TextEditingController _input = TextEditingController();
 
-  /// Working directory relative to the workspace root ('' == root).
-  String _cwd = '';
-  bool _running = false;
+  /// Whether the terminal is in "line mode" (user types a full line and
+  /// presses Enter) vs "raw mode" (each keystroke is forwarded immediately).
+  /// Starts in line mode for simplicity; switches to raw mode when the
+  /// shell emits a prompt-like output.
+  bool _rawMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _startShell();
+  }
 
   @override
   void dispose() {
-    _input.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _outputSub?.cancel();
+    _session?.close();
     _scroll.dispose();
+    _input.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    final workspace = ref.watch(currentWorkspaceProvider);
-    final runtimeAsync = ref.watch(runtimeProvider);
-
-    ref.listen<String?>(activeWorkspaceProvider, (
-      String? previous,
-      String? next,
-    ) {
-      if (previous == next) return;
-      setState(() {
-        _cwd = '';
-        _lines.clear();
-      });
-    });
-
-    final runtime = runtimeAsync.value;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          workspace == null
-              ? context.l10n.terminal
-              : '${context.l10n.terminal} · ${workspace.name}',
-        ),
-        actions: <Widget>[
-          IconButton(
-            tooltip: context.l10n.clear,
-            icon: const Icon(Icons.delete_sweep_outlined),
-            onPressed: _lines.isEmpty ? null : () => setState(_lines.clear),
-          ),
-        ],
-      ),
-      body: workspace == null
-          ? _TerminalHint(message: context.l10n.selectWorkspaceForTerminal)
-          : runtime == null
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: <Widget>[
-                Expanded(
-                  child: _Scrollback(lines: _lines, controller: _scroll),
-                ),
-                _Prompt(
-                  cwd: _cwd,
-                  controller: _input,
-                  running: _running,
-                  onSubmit: () => _run(runtime),
-                  onHistory: _cycleHistory,
-                ),
-              ],
-            ),
-    );
+  void didChangeMetrics() {
+    // Terminal resized — update buffer and notify shell.
+    _updateTerminalSize();
   }
 
-  void _append(_LineKind kind, String text) {
-    if (text.isEmpty) return;
-    setState(() {
-      for (final line in text.split('\n')) {
-        _lines.add(_Line(kind, line));
+  Future<void> _startShell() async {
+    final workspace = ref.read(currentWorkspaceProvider);
+    if (workspace == null) return;
+
+    try {
+      final session = await LocalShellSession.start(
+        initialRows: 24,
+        initialCols: 80,
+        workingDirectory: workspace.rootDirectory,
+      );
+      if (!mounted) {
+        await session.close();
+        return;
       }
+      _session = session;
+      ref.read(shellSessionProvider.notifier).state = session;
+
+      _outputSub = session.output.listen(
+        (String chunk) {
+          if (!mounted) return;
+          setState(() {
+            _buffer.feed(chunk);
+          });
+          _scrollToBottom();
+        },
+        onDone: _onShellExit,
+        onError: (Object e) {
+          if (!mounted) return;
+          setState(() {
+            _buffer.feed('\r\n[Shell error: $e]\r\n');
+          });
+        },
+      );
+
+      // Wait a frame for layout, then report the actual terminal size.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _updateTerminalSize();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _buffer.feed('[Failed to start shell: $e]\r\n');
+      });
+    }
+  }
+
+  void _onShellExit() {
+    if (!mounted) return;
+    setState(() {
+      _buffer.feed('\r\n[Shell exited]\r\n');
     });
-    _scrollToBottom();
+    ref.read(shellSessionProvider.notifier).state = null;
+  }
+
+  void _updateTerminalSize() {
+    if (!mounted || _session == null) return;
+    // Estimate terminal dimensions from the available space and font metrics.
+    final context = this.context;
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null || !renderBox.hasSize) return;
+
+    final size = renderBox.size;
+    // Approximate cell dimensions from the code font.
+    const charWidth = 8.0;
+    const charHeight = 16.0;
+    final cols = (size.width / charWidth).floor().clamp(20, 300);
+    final rows = (size.height / charHeight).floor().clamp(5, 100);
+
+    if (rows != _buffer.rows || cols != _buffer.cols) {
+      _buffer.resize(rows, cols);
+      _session!.resize(rows, cols);
+    }
   }
 
   void _scrollToBottom() {
@@ -120,177 +155,197 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     });
   }
 
-  Future<void> _run(Runtime runtime) async {
-    final command = _input.text.trim();
-    if (command.isEmpty || _running) return;
+  void _sendInput(String text) {
+    final session = _session;
+    if (session == null || !session.isAlive) return;
+    session.writeStdin('$text\n');
     _input.clear();
-    setState(() {
-      _history.add(command);
-      _lines.add(_Line(_LineKind.command, '\$ $command'));
+  }
+
+  void _sendSignal(TerminalSignal signal) {
+    _session?.sendSignal(signal);
+  }
+
+  void _sendRawKey(String key) {
+    _session?.writeStdin(key);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final workspace = ref.watch(currentWorkspaceProvider);
+    final scheme = Theme.of(context).colorScheme;
+
+    ref.listen<String?>(activeWorkspaceProvider, (
+      String? previous,
+      String? next,
+    ) {
+      if (previous == next) return;
+      _session?.close();
+      _session = null;
+      ref.read(shellSessionProvider.notifier).state = null;
+      setState(() {
+        _buffer.feed('[Workspace changed, restarting shell...]\r\n');
+      });
+      _startShell();
     });
-    _scrollToBottom();
 
-    // Handle `cd` locally: each execute() is stateless across calls.
-    if (command == 'cd' || command.startsWith('cd ')) {
-      setState(() => _cwd = _resolveCd(command.substring(2).trim()));
-      _scrollToBottom();
-      return;
-    }
-    if (command == 'clear' || command == 'cls') {
-      setState(_lines.clear);
-      return;
-    }
-
-    setState(() => _running = true);
-    _append(_LineKind.info, context.l10n.running);
-    var streamedStdout = false;
-    var streamedStderr = false;
-    final stopwatch = Stopwatch()..start();
-    try {
-      final result = await runtime.execute(
-        command,
-        workingDirectory: _cwd.isEmpty ? null : _cwd,
-        timeoutMillis: 120000,
-        onStdout: (String chunk) {
-          streamedStdout = true;
-          if (mounted) _append(_LineKind.stdout, chunk.trimRight());
-        },
-        onStderr: (String chunk) {
-          streamedStderr = true;
-          if (mounted) _append(_LineKind.stderr, chunk.trimRight());
-        },
-      );
-      if (!streamedStdout && result.stdout.trim().isNotEmpty) {
-        _append(_LineKind.stdout, result.stdout.trimRight());
-      }
-      if (!streamedStderr && result.stderr.trim().isNotEmpty) {
-        _append(_LineKind.stderr, result.stderr.trimRight());
-      }
-      final diagnostics = parseEditorDiagnostics(
-        '${result.stdout}\n${result.stderr}',
-        source: command,
-        basePath: _cwd,
-      );
-      ref.read(editorDiagnosticsProvider.notifier).replace(diagnostics);
-      if (!mounted) return;
-      if (result.timedOut) {
-        _append(_LineKind.info, context.l10n.timedOut);
-      } else if (result.exitCode != 0) {
-        _append(_LineKind.info, context.l10n.exitCode(result.exitCode));
-      } else {
-        _append(
-          _LineKind.info,
-          context.l10n.finishedIn(_formatElapsed(stopwatch.elapsed)),
-        );
-      }
-    } catch (e) {
-      _append(_LineKind.stderr, 'Error: $e');
-    } finally {
-      if (mounted) setState(() => _running = false);
-      _scrollToBottom();
-    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          workspace == null
+              ? context.l10n.terminal
+              : '${context.l10n.terminal} · ${workspace.name}',
+        ),
+        actions: <Widget>[
+          IconButton(
+            tooltip: 'Ctrl+C',
+            icon: const Icon(Icons.stop_circle_outlined),
+            onPressed:
+                _session?.isAlive == true ? () => _sendSignal(TerminalSignal.ctrlC) : null,
+          ),
+          IconButton(
+            tooltip: context.l10n.clear,
+            icon: const Icon(Icons.delete_sweep_outlined),
+            onPressed: () => setState(() {
+              for (var i = 0; i < _buffer.rows; i++) {
+                _buffer.grid[i].clearAll();
+              }
+            }),
+          ),
+        ],
+      ),
+      body: workspace == null
+          ? _TerminalHint(message: context.l10n.selectWorkspaceForTerminal)
+          : KeyboardListener(
+              focusNode: _focusNode,
+              autofocus: true,
+              onKeyEvent: _handleKeyEvent,
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _focusNode.requestFocus(),
+                      child: _TerminalView(buffer: _buffer, scroll: _scroll),
+                    ),
+                  ),
+                  _PromptBar(
+                    controller: _input,
+                    onSubmit: _sendInput,
+                    onTab: () => _sendRawKey('\t'),
+                  ),
+                ],
+              ),
+            ),
+    );
   }
 
-  String _formatElapsed(Duration elapsed) {
-    if (elapsed.inSeconds < 1) return '${elapsed.inMilliseconds} ms';
-    return '${(elapsed.inMilliseconds / 1000).toStringAsFixed(1)} s';
-  }
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return;
+    final key = event.logicalKey;
 
-  /// Resolves a `cd` argument against the current relative working directory.
-  String _resolveCd(String arg) {
-    if (arg.isEmpty) return ''; // `cd` alone → workspace root.
-    if (arg == '.') return _cwd;
-    final absolute =
-        arg.startsWith('/') ||
-        (arg.length > 1 && arg[1] == ':'); // Windows drive letter.
-    if (absolute) return arg;
-
-    final segments = _cwd.isEmpty
-        ? <String>[]
-        : _cwd
-              .split(RegExp(r'[\\/]'))
-              .where((String s) => s.isNotEmpty)
-              .toList();
-    for (final part in arg.split(RegExp(r'[\\/]'))) {
-      if (part.isEmpty || part == '.') continue;
-      if (part == '..') {
-        if (segments.isNotEmpty) segments.removeLast();
-      } else {
-        segments.add(part);
-      }
+    // Handle special keys.
+    if (key == LogicalKeyboardKey.arrowUp) {
+      _sendRawKey('\x1b[A');
+    } else if (key == LogicalKeyboardKey.arrowDown) {
+      _sendRawKey('\x1b[B');
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      _sendRawKey('\x1b[C');
+    } else if (key == LogicalKeyboardKey.arrowLeft) {
+      _sendRawKey('\x1b[D');
+    } else if (key == LogicalKeyboardKey.home) {
+      _sendRawKey('\x1b[H');
+    } else if (key == LogicalKeyboardKey.end) {
+      _sendRawKey('\x1b[F');
+    } else if (key == LogicalKeyboardKey.delete) {
+      _sendRawKey('\x1b[3~');
+    } else if (key == LogicalKeyboardKey.pageUp) {
+      _sendRawKey('\x1b[5~');
+    } else if (key == LogicalKeyboardKey.pageDown) {
+      _sendRawKey('\x1b[6~');
     }
-    return segments.join('/');
-  }
-
-  /// Cycles the input through previous commands (used by the history button).
-  void _cycleHistory() {
-    if (_history.isEmpty) return;
-    final last = _history.last;
-    setState(() => _input.text = last);
-    _input.selection = TextSelection.collapsed(offset: _input.text.length);
   }
 }
 
-class _Scrollback extends StatelessWidget {
-  const _Scrollback({required this.lines, required this.controller});
+/// Renders the [TerminalBuffer] grid using monospaced text spans with ANSI
+/// colors applied as [TextStyle] attributes.
+class _TerminalView extends StatelessWidget {
+  const _TerminalView({required this.buffer, required this.scroll});
 
-  final List<_Line> lines;
-  final ScrollController controller;
+  final TerminalBuffer buffer;
+  final ScrollController scroll;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    if (lines.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            context.l10n.terminalHint,
-            textAlign: TextAlign.center,
-            style: AppTheme.code.copyWith(color: scheme.outline),
-          ),
-        ),
-      );
-    }
+    final defaultFg = scheme.onSurface;
+    final defaultBg = scheme.surfaceContainerLowest;
+
     return Container(
-      color: scheme.surfaceContainerLowest,
+      color: defaultBg,
       child: ListView.builder(
-        controller: controller,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        itemCount: lines.length,
+        controller: scroll,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        itemCount: buffer.rows,
         itemBuilder: (BuildContext context, int i) {
-          final line = lines[i];
-          return SelectableText(
-            line.text.isEmpty ? ' ' : line.text,
-            style: AppTheme.code.copyWith(color: _colorFor(scheme, line.kind)),
+          final row = buffer.grid[i];
+          return RichText(
+            text: _buildRowSpan(row, defaultFg, defaultBg,
+                isCursorRow: i == buffer.cursorRow,
+                cursorCol: buffer.cursorCol),
           );
         },
       ),
     );
   }
 
-  Color _colorFor(ColorScheme scheme, _LineKind kind) => switch (kind) {
-    _LineKind.command => scheme.primary,
-    _LineKind.stderr => scheme.error,
-    _LineKind.info => scheme.outline,
-    _LineKind.stdout => scheme.onSurface,
-  };
+  TextSpan _buildRowSpan(
+    TerminalRow row,
+    Color defaultFg,
+    Color defaultBg, {
+    required bool isCursorRow,
+    required int cursorCol,
+  }) {
+    final spans = <TextSpan>[];
+    for (var col = 0; col < buffer.cols; col++) {
+      final cell = row.cellAt(col);
+      final isCursor = isCursorRow && col == cursorCol;
+      final attrs = cell.attributes;
+
+      Color fg = attrs.foreground ?? defaultFg;
+      Color bg = attrs.background ?? defaultBg;
+      if (attrs.inverse || isCursor) {
+        final tmp = fg;
+        fg = bg;
+        bg = tmp;
+      }
+
+      spans.add(TextSpan(
+        text: cell.char,
+        style: AppTheme.code.copyWith(
+          color: fg,
+          backgroundColor: bg,
+          fontWeight: attrs.bold ? FontWeight.bold : FontWeight.normal,
+          fontStyle: attrs.italic ? FontStyle.italic : FontStyle.normal,
+          decoration: attrs.underline
+              ? TextDecoration.underline
+              : TextDecoration.none,
+        ),
+      ));
+    }
+    return TextSpan(children: spans);
+  }
 }
 
-class _Prompt extends StatelessWidget {
-  const _Prompt({
-    required this.cwd,
+class _PromptBar extends StatelessWidget {
+  const _PromptBar({
     required this.controller,
-    required this.running,
     required this.onSubmit,
-    required this.onHistory,
+    required this.onTab,
   });
 
-  final String cwd;
   final TextEditingController controller;
-  final bool running;
-  final VoidCallback onSubmit;
-  final VoidCallback onHistory;
+  final void Function(String) onSubmit;
+  final VoidCallback onTab;
 
   @override
   Widget build(BuildContext context) {
@@ -306,7 +361,7 @@ class _Prompt extends StatelessWidget {
         child: Row(
           children: <Widget>[
             Text(
-              cwd.isEmpty ? '~\$' : '$cwd\$',
+              '>',
               style: AppTheme.code.copyWith(
                 color: scheme.primary,
                 fontWeight: FontWeight.w600,
@@ -316,38 +371,28 @@ class _Prompt extends StatelessWidget {
             Expanded(
               child: TextField(
                 controller: controller,
-                enabled: !running,
                 style: AppTheme.code,
                 textInputAction: TextInputAction.send,
-                onSubmitted: (_) => onSubmit(),
+                onSubmitted: onSubmit,
                 decoration: InputDecoration(
                   isDense: true,
                   hintText: context.l10n.commandHint,
                   border: InputBorder.none,
                   filled: false,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 ),
               ),
             ),
             IconButton(
-              tooltip: context.l10n.lastCommand,
-              icon: const Icon(Icons.history, size: 20),
-              onPressed: running ? null : onHistory,
+              tooltip: 'Tab',
+              icon: const Icon(Icons.keyboard_tab, size: 20),
+              onPressed: onTab,
             ),
-            running
-                ? const Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : IconButton.filled(
-                    tooltip: context.l10n.run,
-                    icon: const Icon(Icons.play_arrow),
-                    onPressed: onSubmit,
-                  ),
+            IconButton.filled(
+              tooltip: context.l10n.run,
+              icon: const Icon(Icons.play_arrow),
+              onPressed: () => onSubmit(controller.text),
+            ),
           ],
         ),
       ),
@@ -373,9 +418,10 @@ class _TerminalHint extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: scheme.outline),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: scheme.outline),
             ),
           ],
         ),
