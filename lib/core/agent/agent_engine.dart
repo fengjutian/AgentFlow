@@ -137,6 +137,8 @@ class AgentEngine {
 
     var toolCallCount = 0;
     var conversationSummary = request.conversationSummary;
+    var totalPromptTokens = 0;
+    var totalCompletionTokens = 0;
 
     try {
       for (var iteration = 0;
@@ -162,11 +164,29 @@ class AgentEngine {
           sink.add(SummaryUpdatedEvent(conversationSummary!));
         }
 
-        final ModelResponse response;
+        // Consume the provider stream, accumulating content and tool calls
+        // while emitting incremental text for the UI.
+        final contentBuffer = StringBuffer();
+        final toolCalls = <ToolCall>[];
+
         try {
-          response = await provider.generate(buildResult.request);
+          await for (final chunk in provider.generate(buildResult.request)) {
+            if (isCancelled()) break;
+            if (chunk is ContentDelta) {
+              contentBuffer.write(chunk.text);
+              sink.add(AssistantTextEvent(contentBuffer.toString()));
+            } else if (chunk is ToolCallDelta) {
+              toolCalls.add(chunk.call);
+            } else if (chunk is FinishChunk) {
+              // Accumulate token usage across all iterations of this run.
+              final u = chunk.usage;
+              if (u != null) {
+                totalPromptTokens += u['prompt_tokens'] ?? 0;
+                totalCompletionTokens += u['completion_tokens'] ?? 0;
+              }
+            }
+          }
         } on ModelException catch (e) {
-          // For transient errors, attempt recovery before giving up.
           if (_isTransientError(e) && iteration < request.maxIterations - 1) {
             setPhase(AgentPhase.recovering);
             sink.add(ErrorEvent('Transient error: ${e.message}. Retrying...'));
@@ -178,19 +198,29 @@ class AgentEngine {
           return;
         }
 
+        if (isCancelled()) {
+          setPhase(AgentPhase.cancelled);
+          return;
+        }
+
+        final content = contentBuffer.toString();
+        final hasToolCalls = toolCalls.isNotEmpty;
         final assistant = ChatMessage(
           role: MessageRole.assistant,
-          content: response.content,
-          toolCalls: response.toolCalls,
+          content: content,
+          toolCalls: toolCalls,
         );
         messages.add(assistant);
         sink.add(AssistantMessageEvent(assistant));
 
-        if (!response.hasToolCalls) {
+        if (!hasToolCalls) {
           setPhase(AgentPhase.completed);
           sink.add(RunCompletedEvent(
-            finalText: response.content,
+            finalText: content,
             toolCallCount: toolCallCount,
+            totalPromptTokens: totalPromptTokens > 0 ? totalPromptTokens : null,
+            totalCompletionTokens:
+                totalCompletionTokens > 0 ? totalCompletionTokens : null,
           ));
           return;
         }
@@ -199,7 +229,7 @@ class AgentEngine {
         // deliberating on what to do next (design doc §9).
         setPhase(AgentPhase.planning);
 
-        for (final call in response.toolCalls) {
+        for (final call in toolCalls) {
           if (isCancelled()) break;
           toolCallCount++;
           final result = await _executeToolCall(

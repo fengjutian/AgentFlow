@@ -139,9 +139,20 @@ class ErrorEvent extends AgentEvent {
 }
 
 class RunCompletedEvent extends AgentEvent {
-  const RunCompletedEvent({required this.finalText, required this.toolCallCount});
+  const RunCompletedEvent({
+    required this.finalText,
+    required this.toolCallCount,
+    this.totalPromptTokens,
+    this.totalCompletionTokens,
+  });
   final String finalText;
   final int toolCallCount;
+
+  /// Total prompt tokens consumed across all model calls in this run.
+  final int? totalPromptTokens;
+
+  /// Total completion tokens consumed across all model calls in this run.
+  final int? totalCompletionTokens;
 }
 
 /// Emitted when the context manager generates a structural summary of

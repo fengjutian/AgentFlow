@@ -30,7 +30,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     final workspaceId = ref.read(activeWorkspaceProvider);
     if (workspaceId == null) return;
 
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'epub'],
     );

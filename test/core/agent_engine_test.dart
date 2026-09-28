@@ -72,7 +72,12 @@ void main() {
       ).writeAsStringSync('# hello\n');
       final approval = ApprovalManager(autoApprove: true);
       addTearDown(approval.dispose);
-      final engine = buildEngine(ModelProviderFactory(), approval);
+      // Use a scripted factory with the demo provider at zero delay so the
+      // test doesn't wait for simulated typing.
+      final engine = buildEngine(
+        _ScriptedFactory(MockModelProvider.demo(streamDelay: Duration.zero)),
+        approval,
+      );
 
       final run = engine.runTurn(request('explore the workspace'));
       final events = await run.events.toList();
@@ -95,6 +100,8 @@ void main() {
         ),
         contains(AgentPhase.completed),
       );
+      // Streaming: the engine emits AssistantTextEvent deltas during generation.
+      expect(events.whereType<AssistantTextEvent>(), isNotEmpty);
     },
   );
 
@@ -104,6 +111,7 @@ void main() {
     );
     addTearDown(approval.dispose);
     final mock = MockModelProvider(
+      streamDelay: Duration.zero,
       script: <ModelResponse>[
         MockModelProvider.toolCall(
           id: 'call_w1',
@@ -145,6 +153,7 @@ void main() {
       );
       addTearDown(approval.dispose);
       final mock = MockModelProvider(
+        streamDelay: Duration.zero,
         script: <ModelResponse>[
           MockModelProvider.toolCall(
             id: 'call_w1',
@@ -187,6 +196,7 @@ void main() {
     );
     addTearDown(approval.dispose);
     final mock = MockModelProvider(
+      streamDelay: Duration.zero,
       script: <ModelResponse>[
         MockModelProvider.toolCall(
           id: 'call_preview',
@@ -219,6 +229,7 @@ void main() {
       final approval = ApprovalManager(autoApprove: true);
       addTearDown(approval.dispose);
       final mock = MockModelProvider(
+        streamDelay: Duration.zero,
         script: <ModelResponse>[
           MockModelProvider.toolCall(
             id: 'call_x',
@@ -246,6 +257,7 @@ void main() {
     addTearDown(approval.dispose);
     // A script that always asks for another tool call → never terminates on its own.
     final mock = MockModelProvider(
+      streamDelay: Duration.zero,
       script: <ModelResponse>[
         for (var i = 0; i < 5; i++)
           MockModelProvider.toolCall(
@@ -280,6 +292,31 @@ void main() {
         (PhaseChangedEvent e) => e.phase,
       ),
       contains(AgentPhase.error),
+    );
+  });
+
+  test('streaming emits incremental AssistantTextEvent deltas', () async {
+    final approval = ApprovalManager(autoApprove: true);
+    addTearDown(approval.dispose);
+    final mock = MockModelProvider(
+      streamDelay: Duration.zero,
+      finalText: 'Hello world from streaming',
+    );
+    final engine = buildEngine(_ScriptedFactory(mock), approval);
+
+    final run = engine.runTurn(request('say hello'));
+    final events = await run.events.toList();
+    await run.done;
+
+    final textEvents = events.whereType<AssistantTextEvent>().toList();
+    expect(textEvents, isNotEmpty, reason: 'should emit streaming deltas');
+    // Each delta accumulates: 'Hello', 'Hello world', 'Hello world from', ...
+    expect(textEvents.first.text, 'Hello');
+    expect(textEvents.last.text, 'Hello world from streaming');
+    // The final completed event has the same text.
+    expect(
+      events.whereType<RunCompletedEvent>().single.finalText,
+      'Hello world from streaming',
     );
   });
 }

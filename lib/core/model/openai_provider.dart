@@ -1,10 +1,15 @@
-/// OpenAI-compatible model provider.
+/// OpenAI-compatible model provider with SSE streaming.
 ///
 /// Speaks the `/chat/completions` tool-calling protocol used by OpenAI, DeepSeek,
 /// Qwen, Groq, Together, OpenRouter, llama.cpp servers and most self-hosted
 /// gateways. All endpoint/credential data comes from [ModelRequest.config], so a
 /// single provider instance serves any configured backend — matching the design
 /// doc's "OpenAI Compatible API" decision (§33).
+///
+/// Requests include `"stream": true` and the response is consumed as a
+/// Server-Sent Events (SSE) stream. Each `data:` payload is parsed and mapped
+/// to a [ModelChunk]: [ContentDelta] for incremental text, [ToolCallDelta] for
+/// tool invocations, and [FinishChunk] when the model signals completion.
 library;
 
 import 'dart:async';
@@ -16,8 +21,10 @@ import '../message.dart';
 import 'model_provider.dart';
 
 class OpenAiCompatibleProvider implements ModelProvider {
-  OpenAiCompatibleProvider({http.Client? client, this.timeout = const Duration(seconds: 120)})
-      : _client = client ?? http.Client();
+  OpenAiCompatibleProvider({
+    http.Client? client,
+    this.timeout = const Duration(seconds: 120),
+  }) : _client = client ?? http.Client();
 
   final http.Client _client;
   final Duration timeout;
@@ -45,7 +52,7 @@ class OpenAiCompatibleProvider implements ModelProvider {
   }
 
   @override
-  Future<ModelResponse> generate(ModelRequest request) async {
+  Stream<ModelChunk> generate(ModelRequest request) async* {
     final config = request.config;
     final uri = _endpoint(config);
 
@@ -54,6 +61,7 @@ class OpenAiCompatibleProvider implements ModelProvider {
       'messages': request.messages.map((m) => m.toOpenAiJson()).toList(),
       'temperature': config.temperature,
       'max_tokens': config.maxTokens,
+      'stream': true,
       if (request.tools.isNotEmpty)
         'tools': request.tools.map((t) => t.toOpenAiJson()).toList(),
       if (request.tools.isNotEmpty) 'tool_choice': 'auto',
@@ -64,11 +72,12 @@ class OpenAiCompatibleProvider implements ModelProvider {
       if (config.apiKey.isNotEmpty) 'Authorization': 'Bearer ${config.apiKey}',
     };
 
-    final http.Response response;
+    final http.StreamedResponse response;
     try {
-      response = await _client
-          .post(uri, headers: headers, body: jsonEncode(body))
-          .timeout(timeout);
+      final req = http.Request('POST', uri)
+        ..headers.addAll(headers)
+        ..body = jsonEncode(body);
+      response = await _client.send(req).timeout(timeout);
     } on TimeoutException {
       throw ModelException('Request to ${uri.host} timed out.');
     } on http.ClientException catch (e) {
@@ -76,67 +85,114 @@ class OpenAiCompatibleProvider implements ModelProvider {
     }
 
     if (response.statusCode != 200) {
+      final errorBody = await response.stream.bytesToString();
       throw ModelException(
-        _extractError(response.body) ?? 'Provider returned ${response.statusCode}.',
+        _extractError(errorBody) ??
+            'Provider returned ${response.statusCode}.',
         statusCode: response.statusCode,
       );
     }
 
-    return _parse(response.body);
-  }
+    // --- SSE stream parsing ---------------------------------------------------
+    // Each SSE event is delimited by blank lines. We look for `data:` lines,
+    // skip comments and `[DONE]`, and parse the JSON payload into ModelChunks.
+    final lines = response.stream
+        .transform(utf8.decoder)
+        .transform(const LineSplitter());
 
-  ModelResponse _parse(String rawBody) {
-    final dynamic decoded;
-    try {
-      decoded = jsonDecode(rawBody);
-    } on FormatException catch (e) {
-      throw ModelException('Malformed JSON from provider: ${e.message}');
-    }
-    if (decoded is! Map<String, dynamic>) {
-      throw const ModelException('Unexpected provider response shape.');
-    }
+    // Tool call arguments may arrive across multiple SSE deltas keyed by index.
+    final toolCallParts = <int, _ToolCallParts>{};
 
-    final choices = decoded['choices'] as List<dynamic>?;
-    if (choices == null || choices.isEmpty) {
-      throw const ModelException('Provider returned no choices.');
-    }
-    final message = (choices.first as Map<String, dynamic>)['message']
-        as Map<String, dynamic>?;
-    if (message == null) {
-      throw const ModelException('Choice has no message.');
-    }
+    await for (final line in lines) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty || !trimmed.startsWith('data:')) continue;
 
-    final content = (message['content'] as String?) ?? '';
-    final rawToolCalls = message['tool_calls'] as List<dynamic>?;
-    final toolCalls = <ToolCall>[];
-    if (rawToolCalls != null) {
-      for (final raw in rawToolCalls) {
-        if (raw is Map<String, dynamic>) {
-          toolCalls.add(ToolCall.fromJson(raw));
+      final data = trimmed.substring(5).trim();
+      if (data == '[DONE]') break;
+
+      final dynamic decoded;
+      try {
+        decoded = jsonDecode(data);
+      } on FormatException {
+        continue; // Skip malformed SSE payloads.
+      }
+      if (decoded is! Map<String, dynamic>) continue;
+
+      final choices = decoded['choices'] as List<dynamic>?;
+      if (choices == null || choices.isEmpty) continue;
+      final choice = choices.first as Map<String, dynamic>;
+      final delta = choice['delta'] as Map<String, dynamic>?;
+
+      if (delta != null) {
+        // Incremental text.
+        final content = delta['content'] as String?;
+        if (content != null && content.isNotEmpty) {
+          yield ContentDelta(content);
         }
+
+        // Incremental tool calls — arguments can span multiple deltas.
+        final rawToolCalls = delta['tool_calls'] as List<dynamic>?;
+        if (rawToolCalls != null) {
+          for (final raw in rawToolCalls) {
+            if (raw is Map<String, dynamic>) {
+              final index = raw['index'] as int? ?? 0;
+              final parts = toolCallParts.putIfAbsent(
+                index,
+                _ToolCallParts.new,
+              );
+
+              final id = raw['id'] as String?;
+              if (id != null) parts.id = id;
+
+              final function = raw['function'] as Map<String, dynamic>?;
+              if (function != null) {
+                final name = function['name'] as String?;
+                if (name != null) parts.name = name;
+                final arguments = function['arguments'] as String?;
+                if (arguments != null) parts.argumentsBuffer.write(arguments);
+              }
+            }
+          }
+        }
+      }
+
+      // Some providers include finish_reason in the last chunk alongside delta.
+      final finishReason = choice['finish_reason'] as String?;
+      if (finishReason != null && finishReason != 'null') {
+        for (final parts in toolCallParts.values) {
+          if (parts.id.isNotEmpty) {
+            yield ToolCallDelta(parts.toToolCall());
+          }
+        }
+        toolCallParts.clear();
+
+        final usage = decoded['usage'] as Map<String, dynamic>?;
+        yield FinishChunk(
+          reason: _mapFinish(finishReason),
+          usage: usage == null
+              ? null
+              : <String, int>{
+                  for (final entry in usage.entries)
+                    if (entry.value is num)
+                      entry.key: (entry.value as num).toInt(),
+                },
+        );
+        return;
       }
     }
 
-    final finish =
-        ((choices.first as Map<String, dynamic>)['finish_reason'] as String?) ??
-            (toolCalls.isNotEmpty ? 'tool_calls' : 'stop');
-
-    final usage = decoded['usage'] as Map<String, dynamic>?;
-    return ModelResponse(
-      content: content,
-      toolCalls: toolCalls,
-      finishReason: _mapFinish(finish, toolCalls.isNotEmpty),
-      rawUsage: usage == null
-          ? null
-          : <String, int>{
-              for (final entry in usage.entries)
-                if (entry.value is num) entry.key: (entry.value as num).toInt(),
-            },
-    );
+    // Stream ended without an explicit finish_reason — flush any accumulated
+    // tool calls and emit a stop signal.
+    for (final parts in toolCallParts.values) {
+      if (parts.id.isNotEmpty) {
+        yield ToolCallDelta(parts.toToolCall());
+      }
+    }
+    toolCallParts.clear();
+    yield const FinishChunk(reason: FinishReason.stop);
   }
 
-  FinishReason _mapFinish(String finish, bool hasToolCalls) {
-    if (hasToolCalls) return FinishReason.toolCalls;
+  FinishReason _mapFinish(String finish) {
     switch (finish) {
       case 'length':
         return FinishReason.length;
@@ -166,4 +222,25 @@ class OpenAiCompatibleProvider implements ModelProvider {
   }
 
   void close() => _client.close();
+}
+
+/// Accumulates fragments of a single tool call arriving across multiple SSE
+/// deltas. The model streams function `arguments` as partial JSON strings
+/// that must be concatenated before parsing.
+class _ToolCallParts {
+  String id = '';
+  String name = '';
+  final StringBuffer argumentsBuffer = StringBuffer();
+
+  ToolCall toToolCall() {
+    Map<String, dynamic> args;
+    try {
+      final raw = argumentsBuffer.toString();
+      final decoded = raw.isEmpty ? <String, dynamic>{} : jsonDecode(raw);
+      args = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+    } on FormatException {
+      args = <String, dynamic>{'_raw': argumentsBuffer.toString()};
+    }
+    return ToolCall(id: id, name: name, arguments: args);
+  }
 }

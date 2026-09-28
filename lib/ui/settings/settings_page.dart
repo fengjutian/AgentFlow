@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../core/diagnostics.dart';
 import '../../l10n/l10n.dart';
 import '../../core/model/model_provider.dart';
 import '../../core/model/provider_catalog.dart';
@@ -566,11 +567,11 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
   }
 }
 
-class _AboutCard extends StatelessWidget {
+class _AboutCard extends ConsumerWidget {
   const _AboutCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     return Card(
       child: Padding(
@@ -594,6 +595,12 @@ class _AboutCard extends StatelessWidget {
               ).textTheme.labelSmall?.copyWith(color: scheme.outline),
             ),
             const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => _copyDiagnostics(context, ref),
+              icon: const Icon(Icons.bug_report_outlined),
+              label: Text(context.l10n.copyDiagnostics),
+            ),
+            const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -621,6 +628,31 @@ class _AboutCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _copyDiagnostics(BuildContext context, WidgetRef ref) async {
+    final database = ref.read(databaseProvider);
+    final modelConfigs = await ref.read(modelConfigsProvider.future);
+    final mcpManager = ref.read(mcpConnectionManagerProvider);
+    final memoryManager = ref.read(memoryManagerProvider);
+    final activeWorkspaceId = ref.read(activeWorkspaceProvider);
+    final runtime = ref.read(runtimeProvider).value;
+
+    final text = await collectDiagnostics(
+      database: database,
+      modelConfigs: modelConfigs,
+      mcpManager: mcpManager,
+      memoryManager: memoryManager,
+      activeWorkspaceId: activeWorkspaceId,
+      activeRuntimeKind: runtime?.kind.name,
+    );
+
+    if (!context.mounted) return;
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.l10n.diagnosticsCopied)),
     );
   }
 }

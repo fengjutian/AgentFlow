@@ -169,6 +169,52 @@ class ModelException implements Exception {
       'ModelException(${statusCode == null ? '' : '$statusCode '}$message)';
 }
 
+/// A chunk emitted during streaming generation.
+///
+/// Providers emit a sequence of [ModelChunk]s as the model generates output.
+/// The stream always ends with a [FinishChunk]. Non-streaming providers can
+/// wrap a complete [ModelResponse] using [ModelChunk.fromResponse].
+sealed class ModelChunk {
+  const ModelChunk();
+
+  /// Wraps a complete [ModelResponse] as a single-element stream.
+  /// Useful for non-streaming providers or test mocks.
+  static Stream<ModelChunk> fromResponse(ModelResponse response) async* {
+    if (response.content.isNotEmpty) {
+      yield ContentDelta(response.content);
+    }
+    for (final call in response.toolCalls) {
+      yield ToolCallDelta(call);
+    }
+    yield FinishChunk(reason: response.finishReason, usage: response.rawUsage);
+  }
+}
+
+/// An incremental piece of natural-language text from the model.
+class ContentDelta extends ModelChunk {
+  const ContentDelta(this.text);
+
+  /// The text fragment produced in this chunk.
+  final String text;
+}
+
+/// A tool call emitted by the model during generation.
+class ToolCallDelta extends ModelChunk {
+  const ToolCallDelta(this.call);
+
+  final ToolCall call;
+}
+
+/// The final chunk signalling the end of a generation turn.
+class FinishChunk extends ModelChunk {
+  const FinishChunk({required this.reason, this.usage});
+
+  final FinishReason reason;
+
+  /// Token usage reported by the provider (prompt_tokens, completion_tokens, …).
+  final Map<String, int>? usage;
+}
+
 /// A single LLM backend.
 abstract class ModelProvider {
   /// Stable identifier used for logging and Settings.
@@ -177,8 +223,11 @@ abstract class ModelProvider {
   /// Human-readable name.
   String get displayName;
 
-  /// Runs one completion. Implementations must translate [ModelRequest.tools]
-  /// into their native tool-calling schema and map the reply back to
-  /// [ModelResponse].
-  Future<ModelResponse> generate(ModelRequest request);
+  /// Streams one completion as a sequence of [ModelChunk]s.
+  ///
+  /// Implementations must translate [ModelRequest.tools] into their native
+  /// tool-calling schema and emit [ContentDelta], [ToolCallDelta] and
+  /// [FinishChunk] events. Non-streaming providers can wrap a complete
+  /// response using [ModelChunk.fromResponse].
+  Stream<ModelChunk> generate(ModelRequest request);
 }

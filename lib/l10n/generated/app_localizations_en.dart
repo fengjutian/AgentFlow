@@ -889,4 +889,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get modelHint => 'gpt-4o-mini / deepseek-chat';
+
+  @override
+  String get copyDiagnostics => 'Copy diagnostics';
+
+  @override
+  String get diagnosticsCopied => 'Diagnostics copied to clipboard';
+
+  @override
+  String get version => 'Version';
 }

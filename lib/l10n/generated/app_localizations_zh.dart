@@ -869,4 +869,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get modelHint => 'gpt-4o-mini / deepseek-chat';
+
+  @override
+  String get copyDiagnostics => '复制诊断信息';
+
+  @override
+  String get diagnosticsCopied => '诊断信息已复制到剪贴板';
+
+  @override
+  String get version => '版本';
 }

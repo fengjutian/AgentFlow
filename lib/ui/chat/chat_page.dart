@@ -222,16 +222,61 @@ class _Transcript extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (chat.messages.isEmpty) {
+    if (chat.messages.isEmpty && chat.streamingText == null) {
       return const _Welcome();
     }
     final messages = chat.messages.reversed.toList(growable: false);
+
+    // While the model is actively generating, show a streaming bubble at the
+    // very bottom of the transcript (index 0 in the reversed list).
+    final streaming = chat.streamingText;
+    final hasStreaming = streaming != null && streaming.isNotEmpty;
+    final totalItems = messages.length + (hasStreaming ? 1 : 0);
+
     return ListView.builder(
       reverse: true,
       padding: const EdgeInsets.symmetric(vertical: 12),
-      itemCount: messages.length,
-      itemBuilder: (BuildContext context, int i) =>
-          MessageView(message: messages[i]),
+      itemCount: totalItems,
+      itemBuilder: (BuildContext context, int i) {
+        if (hasStreaming && i == 0) {
+          return _StreamingBubble(text: streaming);
+        }
+        final msgIndex = hasStreaming ? i - 1 : i;
+        return MessageView(message: messages[msgIndex]);
+      },
+    );
+  }
+}
+
+/// A lightweight assistant bubble that re-renders on every token. Uses plain
+/// [Text] instead of [SelectableText] so rapid rebuilds don't reset the
+/// selection cursor. Once streaming completes, the persisted message replaces
+/// this bubble with a full [MessageView] (selectable).
+class _StreamingBubble extends StatelessWidget {
+  const _StreamingBubble({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.88,
+        ),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHigh,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
+        ),
+        child: Text(text, style: const TextStyle(height: 1.4)),
+      ),
     );
   }
 }

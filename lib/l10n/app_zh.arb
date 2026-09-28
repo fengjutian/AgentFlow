@@ -286,5 +286,8 @@
   "statusFailed": "失败",
   "statusOcrRequired": "需要 OCR",
   "noOutput": "（无输出）",
-  "modelHint": "gpt-4o-mini / deepseek-chat"
+  "modelHint": "gpt-4o-mini / deepseek-chat",
+  "copyDiagnostics": "复制诊断信息",
+  "diagnosticsCopied": "诊断信息已复制到剪贴板",
+  "version": "版本"
 }

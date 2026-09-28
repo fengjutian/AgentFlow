@@ -31,6 +31,7 @@ class ChatState {
     this.isRunning = false,
     this.pendingApproval,
     this.error,
+    this.streamingText,
   });
 
   final String? sessionId;
@@ -41,6 +42,11 @@ class ChatState {
   final ApprovalRequest? pendingApproval;
   final String? error;
 
+  /// In-progress assistant text being streamed token-by-token. Non-null while
+  /// the model is actively generating; cleared once the complete message is
+  /// persisted via [AssistantMessageEvent].
+  final String? streamingText;
+
   bool get hasPendingApproval => pendingApproval != null;
 
   ChatState copyWith({
@@ -50,6 +56,7 @@ class ChatState {
     AgentPhase? phase,
     bool? isRunning,
     String? error,
+    String? streamingText,
   }) => ChatState(
     sessionId: sessionId ?? this.sessionId,
     messages: messages ?? this.messages,
@@ -58,6 +65,7 @@ class ChatState {
     isRunning: isRunning ?? this.isRunning,
     pendingApproval: pendingApproval,
     error: error ?? this.error,
+    streamingText: streamingText ?? this.streamingText,
   );
 
   /// Sets/clears the pending approval (copyWith cannot express `null`).
@@ -69,6 +77,7 @@ class ChatState {
     isRunning: isRunning,
     pendingApproval: request,
     error: error,
+    streamingText: streamingText,
   );
 
   ChatState withError(String? message) => ChatState(
@@ -79,6 +88,19 @@ class ChatState {
     isRunning: isRunning,
     pendingApproval: pendingApproval,
     error: message,
+    streamingText: streamingText,
+  );
+
+  /// Clears the in-progress streaming text (called when the complete message
+  /// is persisted or when the run ends).
+  ChatState clearStreaming() => ChatState(
+    sessionId: sessionId,
+    messages: messages,
+    activity: activity,
+    phase: phase,
+    isRunning: isRunning,
+    pendingApproval: pendingApproval,
+    error: error,
   );
 }
 
@@ -197,7 +219,7 @@ class SessionController extends Notifier<ChatState> {
       state = state.withError('Run failed: $e\n$st');
     } finally {
       _run = null;
-      state = state.copyWith(isRunning: false);
+      state = state.clearStreaming().copyWith(isRunning: false);
       await _sessions.touch(session.id, status: state.phase.name);
       ref.invalidate(sessionsProvider(workspace.id));
     }
@@ -248,8 +270,13 @@ class SessionController extends Notifier<ChatState> {
     switch (event) {
       case PhaseChangedEvent(:final phase):
         state = state.copyWith(phase: phase);
+      case AssistantTextEvent(:final text):
+        // Update the in-progress streaming text for real-time UI rendering.
+        state = state.copyWith(streamingText: text);
       case AssistantMessageEvent(:final message):
+        // The complete message is ready — persist it and clear streaming text.
         await _append(sessionId, TranscriptMessage.fromChat(message));
+        state = state.clearStreaming();
       case ToolFinishedEvent(:final result):
         await _append(sessionId, TranscriptMessage.fromToolResult(result));
       case ActivityUpdatedEvent(:final item):
@@ -265,8 +292,6 @@ class SessionController extends Notifier<ChatState> {
         break; // Activity row already added via ActivityUpdatedEvent.
       case ApprovalRequiredEvent():
         break; // Surfaced through ApprovalManager.pendingChanges.
-      case AssistantTextEvent():
-        break; // Reserved for future token streaming.
     }
   }
 
