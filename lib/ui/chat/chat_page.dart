@@ -429,24 +429,51 @@ class _SessionsSheet extends ConsumerWidget {
                     itemCount: list.length,
                     itemBuilder: (BuildContext context, int i) {
                       final s = list[i];
-                      return ListTile(
-                        leading: Icon(
-                          s.id == activeId
-                              ? Icons.chat
-                              : Icons.chat_bubble_outline,
+                      return Dismissible(
+                        key: ValueKey(s.id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 16),
+                          color: Theme.of(context).colorScheme.errorContainer,
+                          child: Icon(
+                            Icons.delete_outline,
+                            color: Theme.of(context).colorScheme.onErrorContainer,
+                          ),
                         ),
-                        title: Text(
-                          s.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(_relative(context, s.updatedAt)),
-                        onTap: () async {
+                        confirmDismiss: (_) => _confirmDelete(context, s),
+                        onDismissed: (_) async {
                           await ref
                               .read(sessionControllerProvider.notifier)
-                              .openSession(s);
-                          if (context.mounted) Navigator.pop(context);
+                              .deleteSession(s);
                         },
+                        child: ListTile(
+                          leading: Icon(
+                            s.id == activeId
+                                ? Icons.chat
+                                : Icons.chat_bubble_outline,
+                          ),
+                          title: Text(
+                            s.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(_relative(context, s.updatedAt)),
+                          onTap: () async {
+                            await ref
+                                .read(sessionControllerProvider.notifier)
+                                .openSession(s);
+                            if (context.mounted) Navigator.pop(context);
+                          },
+                          onLongPress: () async {
+                            final confirmed = await _confirmDelete(context, s);
+                            if (confirmed == true) {
+                              await ref
+                                  .read(sessionControllerProvider.notifier)
+                                  .deleteSession(s);
+                            }
+                          },
+                        ),
                       );
                     },
                   ),
@@ -465,5 +492,26 @@ class _SessionsSheet extends ConsumerWidget {
     if (diff.inHours < 1) return context.l10n.minutesAgo(diff.inMinutes);
     if (diff.inDays < 1) return context.l10n.hoursAgo(diff.inHours);
     return context.l10n.daysAgo(diff.inDays);
+  }
+
+  Future<bool> _confirmDelete(BuildContext context, Session s) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(context.l10n.deleteSessionTitle(s.title)),
+            content: Text(context.l10n.deleteSessionDescription),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(context.l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(context.l10n.delete),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }

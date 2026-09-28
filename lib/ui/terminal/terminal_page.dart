@@ -142,6 +142,10 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
 
     setState(() => _running = true);
     _append(_LineKind.info, context.l10n.running);
+    // Pre-capture l10n strings before the async gap to avoid BuildContext
+    // warnings after the await.
+    final timedOutLabel = context.l10n.timedOut;
+    final finishedInLabel = context.l10n.finishedIn;
     var streamedStdout = false;
     var streamedStderr = false;
     final stopwatch = Stopwatch()..start();
@@ -166,13 +170,13 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         _append(_LineKind.stderr, result.stderr.trimRight());
       }
       if (result.timedOut) {
-        _append(_LineKind.info, context.l10n.timedOut);
+        _append(_LineKind.info, timedOutLabel);
       } else if (result.exitCode != 0) {
         _append(_LineKind.info, context.l10n.exitCode(result.exitCode));
       } else {
         _append(
           _LineKind.info,
-          context.l10n.finishedIn(_formatElapsed(stopwatch.elapsed)),
+          finishedInLabel(_formatElapsed(stopwatch.elapsed)),
         );
       }
     } catch (e) {

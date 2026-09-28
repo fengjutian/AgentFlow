@@ -6,8 +6,6 @@
 /// persistence; these tools are the agent's only path to modify it.
 library;
 
-import 'dart:convert';
-
 import '../../core/memory/memory_manager.dart';
 import '../../core/message.dart';
 import '../agent_tool.dart';

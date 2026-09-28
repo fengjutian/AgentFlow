@@ -211,6 +211,20 @@ class SessionController extends Notifier<ChatState> {
   /// Requests cancellation of the in-flight run.
   void cancel() => _run?.cancel();
 
+  /// Deletes a session and clears the view if it was the active one.
+  Future<void> deleteSession(Session session) async {
+    if (_run != null && state.sessionId == session.id) {
+      _run!.cancel();
+    }
+    await _sessions.delete(session.id);
+    if (state.sessionId == session.id) {
+      _conversationSummary = null;
+      ref.read(activeSessionProvider.notifier).select(null);
+      state = const ChatState();
+    }
+    ref.invalidate(sessionsProvider(session.workspaceId));
+  }
+
   Future<Session> _ensureSession(Workspace workspace, String prompt) async {
     final existingId = state.sessionId;
     if (existingId != null) {
