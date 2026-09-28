@@ -47,12 +47,12 @@ class SshSettingsTab extends ConsumerWidget {
                           color: Theme.of(context).colorScheme.outline),
                       const SizedBox(height: 12),
                       Text(
-                        'No SSH connections configured.',
+                        context.l10n.noSshConnections,
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Add an SSH connection to run commands on remote servers.',
+                        context.l10n.addSshHint,
                         style: Theme.of(context).textTheme.bodySmall,
                         textAlign: TextAlign.center,
                       ),
@@ -89,9 +89,9 @@ class SshSettingsTab extends ConsumerWidget {
                     }
                   },
                   itemBuilder: (_) => [
-                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    const PopupMenuItem(value: 'test', child: Text('Test connection')),
-                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                    PopupMenuItem(value: 'edit', child: Text(context.l10n.edit)),
+                    PopupMenuItem(value: 'test', child: Text(context.l10n.testConnection)),
+                    PopupMenuItem(value: 'delete', child: Text(context.l10n.delete)),
                   ],
                 ),
               ),
@@ -155,17 +155,18 @@ class SshSettingsTab extends ConsumerWidget {
         await showDialog<void>(
           context: context,
           builder: (_) => AlertDialog(
-            title: const Text('Host key mismatch!'),
+            title: Text(context.l10n.hostKeyMismatch),
             content: Text(
-              'WARNING: The host key for ${hostKey.host}:${hostKey.port} has changed!\n\n'
-              'Stored: ${verification.storedKey?.fingerprint}\n'
-              'Presented: ${hostKey.fingerprint}\n\n'
-              'This could indicate a man-in-the-middle attack.',
+              context.l10n.hostKeyChanged(
+                hostKey.host, hostKey.port,
+                verification.storedKey?.fingerprint ?? '',
+                hostKey.fingerprint,
+              ),
             ),
             actions: [
               FilledButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Reject'),
+                child: Text(context.l10n.reject),
               ),
             ],
           ),
@@ -175,30 +176,30 @@ class SshSettingsTab extends ConsumerWidget {
           context: context,
           builder: (_) => AlertDialog(
             title: Text(verification.isUnknown
-                ? 'New host key'
-                : 'Host key verified'),
+                ? context.l10n.newHostKey
+                : context.l10n.hostKeyVerified),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('${hostKey.host}:${hostKey.port}'),
                 const SizedBox(height: 8),
-                Text('Algorithm: ${hostKey.algorithm}'),
-                Text('Fingerprint: ${hostKey.fingerprint}'),
+                Text(context.l10n.algorithmLabel(hostKey.algorithm)),
+                Text(context.l10n.fingerprintLabel(hostKey.fingerprint)),
                 if (verification.isUnknown) ...[
                   const SizedBox(height: 12),
-                  const Text('Trust this host key for future connections?'),
+                  Text(context.l10n.trustHostKeyQuestion),
                 ],
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Reject'),
+                child: Text(context.l10n.reject),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: Text(verification.isUnknown ? 'Trust' : 'OK'),
+                child: Text(verification.isUnknown ? context.l10n.trust : context.l10n.accept),
               ),
             ],
           ),
@@ -211,7 +212,7 @@ class SshSettingsTab extends ConsumerWidget {
       if (context.mounted) Navigator.pop(context); // dismiss spinner
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connection failed: $e')),
+          SnackBar(content: Text(context.l10n.connectionFailed(e))),
         );
       }
     } finally {
@@ -224,15 +225,15 @@ class SshSettingsTab extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Delete "${config.label}"?'),
-        content: const Text('This SSH connection will be removed.'),
+        title: Text(context.l10n.deleteSshConfigTitle(config.label)),
+        content: Text(context.l10n.deleteSshConfigDescription),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+              child: Text(context.l10n.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete')),
+              child: Text(context.l10n.delete)),
         ],
       ),
     );
@@ -333,7 +334,7 @@ class _SshConfigDialogState extends ConsumerState<SshConfigDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.existing == null ? 'Add SSH Connection' : 'Edit SSH Connection'),
+      title: Text(widget.existing == null ? context.l10n.addSshConnection : context.l10n.editSshConnection),
       content: SizedBox(
         width: 420,
         child: Form(
@@ -344,8 +345,8 @@ class _SshConfigDialogState extends ConsumerState<SshConfigDialog> {
               children: [
                 TextFormField(
                   controller: _label,
-                  decoration: const InputDecoration(labelText: 'Label'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  decoration: InputDecoration(labelText: context.l10n.label),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? context.l10n.requiredField : null,
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -354,16 +355,16 @@ class _SshConfigDialogState extends ConsumerState<SshConfigDialog> {
                       flex: 3,
                       child: TextFormField(
                         controller: _host,
-                        decoration: const InputDecoration(labelText: 'Host'),
+                        decoration: InputDecoration(labelText: context.l10n.host),
                         validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
+                            (v == null || v.trim().isEmpty) ? context.l10n.requiredField : null,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextFormField(
                         controller: _port,
-                        decoration: const InputDecoration(labelText: 'Port'),
+                        decoration: InputDecoration(labelText: context.l10n.port),
                         keyboardType: TextInputType.number,
                       ),
                     ),
@@ -372,17 +373,17 @@ class _SshConfigDialogState extends ConsumerState<SshConfigDialog> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _username,
-                  decoration: const InputDecoration(labelText: 'Username'),
+                  decoration: InputDecoration(labelText: context.l10n.username),
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      (v == null || v.trim().isEmpty) ? context.l10n.requiredField : null,
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   initialValue: _authMethod,
-                  decoration: const InputDecoration(labelText: 'Auth method'),
-                  items: const [
-                    DropdownMenuItem(value: 'password', child: Text('Password')),
-                    DropdownMenuItem(value: 'key', child: Text('Private key')),
+                  decoration: InputDecoration(labelText: context.l10n.authMethod),
+                  items: [
+                    DropdownMenuItem(value: 'password', child: Text(context.l10n.password)),
+                    DropdownMenuItem(value: 'key', child: Text(context.l10n.privateKey)),
                   ],
                   onChanged: (v) {
                     if (v != null) setState(() => _authMethod = v);
@@ -394,7 +395,7 @@ class _SshConfigDialogState extends ConsumerState<SshConfigDialog> {
                     controller: _password,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: context.l10n.password,
                       suffixIcon: IconButton(
                         icon: Icon(_obscurePassword
                             ? Icons.visibility_outlined
@@ -408,8 +409,8 @@ class _SshConfigDialogState extends ConsumerState<SshConfigDialog> {
                   TextFormField(
                     controller: _privateKey,
                     maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Private key (PEM)',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.privateKeyPem,
                       hintText: '-----BEGIN OPENSSH PRIVATE KEY-----',
                     ),
                   ),
@@ -417,16 +418,16 @@ class _SshConfigDialogState extends ConsumerState<SshConfigDialog> {
                   TextFormField(
                     controller: _passphrase,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Key passphrase (optional)',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.keyPassphrase,
                     ),
                   ),
                 ],
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _remoteRoot,
-                  decoration: const InputDecoration(
-                    labelText: 'Remote root',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.remoteRoot,
                     hintText: '~',
                   ),
                 ),
@@ -438,8 +439,8 @@ class _SshConfigDialogState extends ConsumerState<SshConfigDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel')),
-        FilledButton(onPressed: _submit, child: const Text('Save')),
+            child: Text(context.l10n.cancel)),
+        FilledButton(onPressed: _submit, child: Text(context.l10n.save)),
       ],
     );
   }

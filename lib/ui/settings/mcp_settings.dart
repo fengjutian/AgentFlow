@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
 import '../../core/mcp/mcp_connection_manager.dart';
+import '../../l10n/l10n.dart';
 import '../../storage/mcp_server_repository.dart';
 
 /// MCP servers provider for the active workspace.
@@ -28,17 +29,17 @@ class McpSettingsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final workspaceId = ref.watch(activeWorkspaceProvider);
     if (workspaceId == null) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text('Select a workspace first.'),
+          padding: const EdgeInsets.all(24),
+          child: Text(context.l10n.selectWorkspaceFirstMcp),
         ),
       );
     }
     final serversAsync = ref.watch(mcpServersProvider);
     return serversAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(child: Text(context.l10n.errorGeneric(e))),
       data: (servers) {
         if (servers.isEmpty) {
           return ListView(
@@ -54,12 +55,12 @@ class McpSettingsTab extends ConsumerWidget {
                           color: Theme.of(context).colorScheme.outline),
                       const SizedBox(height: 12),
                       Text(
-                        'No MCP servers configured.',
+                        context.l10n.noMcpServers,
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Add an MCP server to extend the agent with external tools.',
+                        context.l10n.addMcpHint,
                         style: Theme.of(context).textTheme.bodySmall,
                         textAlign: TextAlign.center,
                       ),

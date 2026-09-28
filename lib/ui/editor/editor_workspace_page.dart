@@ -246,6 +246,9 @@ String _label(BuildContext context, String key) {
     'recentFiles' => zh ? '最近文件' : 'Recent files',
     'diagnostics' => zh ? '诊断' : 'Diagnostics',
     'noDiagnostics' => zh ? '暂无诊断' : 'No diagnostics',
+    'quickOpen' => zh ? '快速打开' : 'Quick open',
+    'searchFiles' => zh ? '搜索文件' : 'Search files',
+    'noFiles' => zh ? '未找到文件' : 'No files found',
     _ => key,
   };
 }
