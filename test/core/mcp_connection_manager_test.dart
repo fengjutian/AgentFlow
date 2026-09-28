@@ -248,4 +248,81 @@ void main() {
       expect(manager.stateFor('srv1')!.config.name, 'Updated');
     });
   });
+
+  group('testConnection', () {
+    test('returns failure for HTTP server with invalid endpoint', () async {
+      final repo = _FakeMcpServerRepository([]);
+      final registry = ToolRegistry();
+      final manager = McpConnectionManager(
+        repository: repo,
+        registry: registry,
+      );
+
+      final config = McpServerConfig(
+        id: 'test',
+        workspaceId: 'ws',
+        name: 'Test',
+        transport: 'http',
+        endpoint: 'http://localhost:1', // unreachable port
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        connectionTimeoutMs: 500,
+      );
+
+      final (success, toolCount, error) = await manager.testConnection(config);
+      expect(success, false);
+      expect(toolCount, 0);
+      expect(error, isNotNull);
+    });
+
+    test('returns failure for stdio server without runtime resolver', () async {
+      final repo = _FakeMcpServerRepository([]);
+      final registry = ToolRegistry();
+      final manager = McpConnectionManager(
+        repository: repo,
+        registry: registry,
+        // No runtimeResolver provided.
+      );
+
+      final config = McpServerConfig(
+        id: 'test',
+        workspaceId: 'ws',
+        name: 'Test',
+        transport: 'stdio',
+        command: 'echo',
+        runtimeConfigId: 'some-runtime',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      final (success, toolCount, error) = await manager.testConnection(config);
+      expect(success, false);
+      expect(toolCount, 0);
+      expect(error, contains('runtime'));
+    });
+
+    test('returns failure for stdio server without runtimeConfigId', () async {
+      final repo = _FakeMcpServerRepository([]);
+      final registry = ToolRegistry();
+      final manager = McpConnectionManager(
+        repository: repo,
+        registry: registry,
+      );
+
+      final config = McpServerConfig(
+        id: 'test',
+        workspaceId: 'ws',
+        name: 'Test',
+        transport: 'stdio',
+        command: 'echo',
+        // No runtimeConfigId
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      final (success, toolCount, error) = await manager.testConnection(config);
+      expect(success, false);
+      expect(error, contains('runtime config'));
+    });
+  });
 }

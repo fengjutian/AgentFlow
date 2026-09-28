@@ -44,7 +44,9 @@ class McpServerConfig {
   final List<String> arguments;
   final Map<String, String> environment;
 
-  /// Non-secret headers. Secret headers are in SecretStore.
+  /// Headers including sensitive values like Authorization and API keys.
+  /// All headers are stored in SecretStore (not the database) for security.
+  /// This map is populated from SecretStore when reading configs.
   final Map<String, String> headers;
 
   /// Optional runtime config ID for stdio transport.

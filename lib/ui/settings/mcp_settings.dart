@@ -175,11 +175,15 @@ class McpSettingsTab extends ConsumerWidget {
                         await manager.refreshTools(server.id);
                       } catch (_) {}
                       ref.invalidate(mcpServersProvider);
+                    } else if (value == 'test') {
+                      await _testConnection(context, ref, server);
                     } else if (value == 'delete') {
                       await _deleteServer(context, ref, server);
                     }
                   },
                   itemBuilder: (_) => [
+                    const PopupMenuItem(
+                        value: 'test', child: Text('Test connection')),
                     if (status != McpConnectionStatus.connected)
                       const PopupMenuItem(value: 'connect', child: Text('Connect')),
                     if (status == McpConnectionStatus.connected) ...[
@@ -286,6 +290,51 @@ class McpSettingsTab extends ConsumerWidget {
     if (result == null) return;
     await ref.read(mcpServerRepositoryProvider).upsert(result);
     ref.invalidate(mcpServersProvider);
+  }
+
+  Future<void> _testConnection(
+    BuildContext context,
+    WidgetRef ref,
+    McpServerConfig server,
+  ) async {
+    // Show a progress dialog while testing.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final manager = ref.read(mcpConnectionManagerProvider);
+    final (success, toolCount, error) = await manager.testConnection(server);
+
+    if (!context.mounted) return;
+    Navigator.of(context).pop(); // dismiss progress dialog
+
+    final theme = Theme.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              success ? Icons.check_circle : Icons.error,
+              color: success ? Colors.green : theme.colorScheme.error,
+            ),
+            const SizedBox(width: 8),
+            Text(success ? 'Connection successful' : 'Connection failed'),
+          ],
+        ),
+        content: success
+            ? Text('Connected successfully. Found $toolCount tool(s).')
+            : Text(error ?? 'Unknown error.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _deleteServer(

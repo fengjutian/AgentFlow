@@ -159,6 +159,7 @@ class AgentEngine {
         // future turns preserve awareness of trimmed context.
         if (buildResult.droppedSummary != null) {
           conversationSummary = buildResult.droppedSummary;
+          sink.add(SummaryUpdatedEvent(conversationSummary!));
         }
 
         final ModelResponse response;

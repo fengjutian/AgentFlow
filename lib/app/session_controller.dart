@@ -17,6 +17,7 @@ import '../core/approval/approval_manager.dart';
 import '../core/context/context_manager.dart';
 import '../core/message.dart';
 import '../data/models.dart';
+import '../runtime/runtime.dart';
 import '../storage/repositories.dart';
 import 'providers.dart';
 
@@ -85,6 +86,11 @@ class SessionController extends Notifier<ChatState> {
   AgentRun? _run;
   StreamSubscription<ApprovalRequest?>? _approvalSub;
 
+  /// Accumulated structural summary of trimmed conversation turns.
+  /// Threaded across `send()` calls so the model retains awareness of
+  /// earlier work that no longer fits the context window.
+  String? _conversationSummary;
+
   @override
   ChatState build() {
     final approval = ref.watch(approvalManagerProvider);
@@ -103,6 +109,7 @@ class SessionController extends Notifier<ChatState> {
   /// Loads an existing session's transcript (navigation from the session list).
   Future<void> openSession(Session session) async {
     _run?.cancel();
+    _conversationSummary = null;
     final messages = await _sessions.loadMessages(session.id);
     ref.read(activeSessionProvider.notifier).select(session.id);
     state = ChatState(sessionId: session.id, messages: messages);
@@ -111,6 +118,7 @@ class SessionController extends Notifier<ChatState> {
   /// Clears the view for a brand-new session in [workspaceId].
   void startNewSession() {
     _run?.cancel();
+    _conversationSummary = null;
     ref.read(activeSessionProvider.notifier).select(null);
     state = const ChatState();
   }
@@ -152,6 +160,7 @@ class SessionController extends Notifier<ChatState> {
       final memoryBlock = await ref
           .read(memoryManagerProvider)
           .renderContextBlock(workspace.id);
+      final projectSummary = await _buildProjectSummary(runtime);
       final registry = registryForWorkspace(
         workspace,
         ref.read(toolRegistryProvider),
@@ -168,10 +177,12 @@ class SessionController extends Notifier<ChatState> {
         registry: registry,
         workspaceId: workspace.id,
         sessionId: session.id,
+        conversationSummary: _conversationSummary,
         workspace: WorkspaceContext(
           workspaceName: workspace.name,
           rootDirectory: workspace.rootDirectory,
           runtimeLabel: runtime.label,
+          projectSummary: projectSummary,
           memoryBlock: memoryBlock,
         ),
       );
@@ -233,6 +244,9 @@ class SessionController extends Notifier<ChatState> {
         state = state.withError(message);
       case RunCompletedEvent():
         state = state.withError(null).copyWith(phase: AgentPhase.completed);
+      case SummaryUpdatedEvent(:final summary):
+        // Capture the structural summary so the next turn preserves it.
+        _conversationSummary = summary;
       case ToolStartedEvent():
         break; // Activity row already added via ActivityUpdatedEvent.
       case ApprovalRequiredEvent():
@@ -266,6 +280,58 @@ class SessionController extends Notifier<ChatState> {
       return firstLine.isEmpty ? 'New session' : firstLine;
     }
     return '${firstLine.substring(0, 42)}…';
+  }
+
+  /// Builds a brief project summary from the workspace root for context
+  /// injection. Reads key manifest files (README, package.json, pubspec,
+  /// Cargo.toml, etc.) up to a total character budget.
+  Future<String> _buildProjectSummary(Runtime runtime) async {
+    const maxChars = 2000;
+    const keyFiles = <String>[
+      'README.md',
+      'README',
+      'pubspec.yaml',
+      'package.json',
+      'Cargo.toml',
+      'go.mod',
+      'pyproject.toml',
+      'build.gradle',
+      'build.gradle.kts',
+      'pom.xml',
+      'Makefile',
+    ];
+
+    final buffer = StringBuffer();
+    try {
+      final entries = await runtime.listFiles('.');
+      final topLevel = entries
+          .where((e) => !e.name.startsWith('.'))
+          .map((e) => e.name)
+          .take(40)
+          .join(', ');
+      if (topLevel.isNotEmpty) {
+        buffer.writeln('Top-level: $topLevel');
+      }
+    } catch (_) {
+      // listing may fail on some runtimes — that's fine
+    }
+
+    for (final name in keyFiles) {
+      if (buffer.length >= maxChars) break;
+      try {
+        final content = await runtime.readFile(name);
+        if (content.trim().isEmpty) continue;
+        final remaining = maxChars - buffer.length;
+        final excerpt = content.length > remaining
+            ? '${content.substring(0, remaining)}…'
+            : content;
+        buffer.writeln('--- $name ---');
+        buffer.writeln(excerpt.trim());
+      } catch (_) {
+        // file doesn't exist or can't be read — skip
+      }
+    }
+    return buffer.toString().trim();
   }
 }
 

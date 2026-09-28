@@ -94,6 +94,64 @@ class McpConnectionManager {
     await _connectServer(serverId);
   }
 
+  /// Tests a server connection without keeping it active.
+  /// Returns a tuple of (success, tools count, error message).
+  Future<(bool, int, String?)> testConnection(McpServerConfig config) async {
+    if (config.transport == 'stdio') {
+      return _testStdioConnection(config);
+    } else {
+      return _testHttpConnection(config);
+    }
+  }
+
+  Future<(bool, int, String?)> _testHttpConnection(McpServerConfig config) async {
+    McpHttpClient? client;
+    try {
+      client = McpHttpClient(
+        endpoint: config.endpoint,
+        headers: config.headers,
+        timeout: Duration(milliseconds: config.connectionTimeoutMs),
+      );
+      await client.initialize();
+      final tools = await client.listTools();
+      return (true, tools.length, null);
+    } catch (e) {
+      return (false, 0, e.toString());
+    } finally {
+      client?.close();
+    }
+  }
+
+  Future<(bool, int, String?)> _testStdioConnection(McpServerConfig config) async {
+    if (config.runtimeConfigId == null || runtimeResolver == null) {
+      return (false, 0,
+          'Stdio server "${config.name}" requires a runtime config and resolver.');
+    }
+    ProcessSession? session;
+    McpStdioClient? client;
+    try {
+      final runtime = await runtimeResolver!(config.runtimeConfigId!);
+      final processConfig = ProcessConfig(
+        command: config.command,
+        arguments: config.arguments,
+        environment: config.environment,
+      );
+      session = await runtime.startProcess(processConfig);
+      client = McpStdioClient(
+        session: session,
+        timeout: Duration(milliseconds: config.toolTimeoutMs),
+      );
+      await client.initialize();
+      final tools = await client.listTools();
+      return (true, tools.length, null);
+    } catch (e) {
+      return (false, 0, e.toString());
+    } finally {
+      await client?.close();
+      await session?.terminate();
+    }
+  }
+
   /// Disconnects from a specific server.
   Future<void> disconnect(String serverId) async {
     final state = _connections[serverId];

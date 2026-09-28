@@ -141,3 +141,11 @@ class RunCompletedEvent extends AgentEvent {
   final String finalText;
   final int toolCallCount;
 }
+
+/// Emitted when the context manager generates a structural summary of
+/// messages trimmed to fit the budget. The controller threads this across
+/// turns so the model retains awareness of earlier work.
+class SummaryUpdatedEvent extends AgentEvent {
+  const SummaryUpdatedEvent(this.summary);
+  final String summary;
+}
