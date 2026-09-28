@@ -86,6 +86,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
     _session?.close();
     _scroll.dispose();
     _input.dispose();
+    _searchController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -320,6 +321,77 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
     _clearSelection();
   }
 
+  // --- Sprint 5: Scrollback search ---
+
+  void _toggleSearch() {
+    setState(() {
+      _searchVisible = !_searchVisible;
+      if (!_searchVisible) {
+        _searchController.clear();
+        _searchMatches = <int>[];
+        _currentMatchIndex = -1;
+      }
+    });
+  }
+
+  void _performSearch(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _searchMatches = <int>[];
+        _currentMatchIndex = -1;
+      });
+      return;
+    }
+
+    final matches = <int>[];
+    final lowerQuery = query.toLowerCase();
+    final totalRows = _buffer.scrollback.length + _buffer.rows;
+
+    for (var i = 0; i < totalRows; i++) {
+      final row = _buffer.rowAtIndex(i);
+      if (row == null) continue;
+      if (row.text.toLowerCase().contains(lowerQuery)) {
+        matches.add(i);
+      }
+    }
+
+    setState(() {
+      _searchMatches = matches;
+      _currentMatchIndex = matches.isNotEmpty ? 0 : -1;
+    });
+
+    if (matches.isNotEmpty) {
+      _scrollToMatch(matches[0]);
+    }
+  }
+
+  void _nextMatch() {
+    if (_searchMatches.isEmpty) return;
+    setState(() {
+      _currentMatchIndex = (_currentMatchIndex + 1) % _searchMatches.length;
+    });
+    _scrollToMatch(_searchMatches[_currentMatchIndex]);
+  }
+
+  void _prevMatch() {
+    if (_searchMatches.isEmpty) return;
+    setState(() {
+      _currentMatchIndex = (_currentMatchIndex - 1 + _searchMatches.length) %
+          _searchMatches.length;
+    });
+    _scrollToMatch(_searchMatches[_currentMatchIndex]);
+  }
+
+  void _scrollToMatch(int absoluteRow) {
+    if (!_fontMeasured) return;
+    final targetOffset = absoluteRow * _charHeight;
+    _scroll.animateTo(
+      targetOffset.clamp(0.0, _scroll.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    );
+  }
+
   // --- Build ---
 
   @override
@@ -354,6 +426,14 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
               icon: const Icon(Icons.copy),
               onPressed: _copySelection,
             ),
+          // Sprint 5: Search toggle.
+          IconButton(
+            tooltip: context.l10n.search,
+            icon: Icon(
+              _searchVisible ? Icons.search_off : Icons.search,
+            ),
+            onPressed: _toggleSearch,
+          ),
           IconButton(
             tooltip: 'Ctrl+C',
             icon: const Icon(Icons.stop_circle_outlined),
@@ -384,6 +464,17 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
                   onKeyEvent: _handleKeyEvent,
                   child: Column(
                     children: <Widget>[
+                      // Sprint 5: Search bar.
+                      if (_searchVisible)
+                        _SearchBar(
+                          controller: _searchController,
+                          matchCount: _searchMatches.length,
+                          currentMatch: _currentMatchIndex,
+                          onChanged: _performSearch,
+                          onNext: _nextMatch,
+                          onPrev: _prevMatch,
+                          onClose: _toggleSearch,
+                        ),
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
@@ -606,6 +697,88 @@ class _TerminalHint extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Sprint 5: Search bar for finding text in the terminal scrollback.
+class _SearchBar extends StatelessWidget {
+  const _SearchBar({
+    required this.controller,
+    required this.matchCount,
+    required this.currentMatch,
+    required this.onChanged,
+    required this.onNext,
+    required this.onPrev,
+    required this.onClose,
+  });
+
+  final TextEditingController controller;
+  final int matchCount;
+  final int currentMatch;
+  final void Function(String) onChanged;
+  final VoidCallback onNext;
+  final VoidCallback onPrev;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      color: scheme.surfaceContainerHigh,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: TextField(
+              controller: controller,
+              autofocus: true,
+              style: AppTheme.code,
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: 'Search...',
+                prefixIcon: const Icon(Icons.search, size: 18),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          if (matchCount > 0)
+            Text(
+              '${currentMatch + 1}/$matchCount',
+              style: Theme.of(context).textTheme.bodySmall,
+            )
+          else if (controller.text.isNotEmpty)
+            Text(
+              '0/0',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: scheme.error,
+                  ),
+            ),
+          IconButton(
+            icon: const Icon(Icons.keyboard_arrow_up, size: 20),
+            onPressed: matchCount > 0 ? onPrev : null,
+            tooltip: 'Previous',
+          ),
+          IconButton(
+            icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+            onPressed: matchCount > 0 ? onNext : null,
+            tooltip: 'Next',
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 20),
+            onPressed: onClose,
+            tooltip: 'Close',
+          ),
+        ],
       ),
     );
   }

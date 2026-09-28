@@ -315,6 +315,10 @@ class TerminalBuffer {
   int cursorCol = 0;
   TerminalAttributes currentAttributes = TerminalAttributes.defaultAttributes;
 
+  // Saved cursor position for \e7/\e8 and \e[s/\e[u.
+  int _savedCursorRow = 0;
+  int _savedCursorCol = 0;
+
   final List<TerminalRow> _grid;
   final AnsiParser _parser = AnsiParser();
 
@@ -398,6 +402,32 @@ class TerminalBuffer {
               _grid[cursorRow].clearAll();
             }
         }
+      case AnsiSaveCursor():
+        _savedCursorRow = cursorRow;
+        _savedCursorCol = cursorCol;
+      case AnsiRestoreCursor():
+        cursorRow = _savedCursorRow.clamp(0, rows - 1);
+        cursorCol = _savedCursorCol.clamp(0, cols - 1);
+      case AnsiInsertLines(:final count):
+        _insertLines(cursorRow, count);
+      case AnsiDeleteLines(:final count):
+        _deleteLines(cursorRow, count);
+      case AnsiInsertChars(:final count):
+        _insertChars(cursorRow, cursorCol, count);
+      case AnsiDeleteChars(:final count):
+        _deleteChars(cursorRow, cursorCol, count);
+      case AnsiScrollRegion():
+        // Scroll region is parsed but not yet used for scroll operations.
+        // Future: restrict scroll up/down to the specified region.
+        break;
+      case AnsiScrollUp(:final count):
+        for (var i = 0; i < count; i++) {
+          _scrollUp();
+        }
+      case AnsiScrollDown(:final count):
+        for (var i = 0; i < count; i++) {
+          _scrollDown();
+        }
     }
   }
 
@@ -421,6 +451,69 @@ class TerminalBuffer {
       _grid.add(TerminalRow(cols));
     }
     cursorCol = 0;
+  }
+
+  // --- Sprint 6: Line/char insert/delete helpers ---
+
+  void _insertLines(int atRow, int count) {
+    for (var i = 0; i < count && atRow < rows; i++) {
+      _grid.insert(atRow, TerminalRow(cols));
+      if (_grid.length > rows) {
+        _grid.removeLast();
+      }
+    }
+  }
+
+  void _deleteLines(int atRow, int count) {
+    for (var i = 0; i < count && atRow < _grid.length; i++) {
+      _grid.removeAt(atRow);
+      _grid.add(TerminalRow(cols));
+    }
+  }
+
+  void _insertChars(int row, int atCol, int count) {
+    if (row >= rows) return;
+    final r = _grid[row];
+    for (var i = 0; i < count; i++) {
+      if (atCol < cols) {
+        // Shift cells right.
+        for (var c = cols - 1; c > atCol; c--) {
+          final src = r.cellAt(c - 1);
+          r.setChar(c, src.char, src.attributes);
+        }
+        r.setChar(atCol, ' ', TerminalAttributes.defaultAttributes);
+      }
+    }
+  }
+
+  void _deleteChars(int row, int atCol, int count) {
+    if (row >= rows) return;
+    final r = _grid[row];
+    for (var i = 0; i < count; i++) {
+      if (atCol < cols) {
+        // Shift cells left.
+        for (var c = atCol; c < cols - 1; c++) {
+          final src = r.cellAt(c + 1);
+          r.setChar(c, src.char, src.attributes);
+        }
+        r.setChar(cols - 1, ' ', TerminalAttributes.defaultAttributes);
+      }
+    }
+  }
+
+  void _scrollUp() {
+    if (scrollback.length >= maxScrollback) {
+      scrollback.removeAt(0);
+    }
+    scrollback.add(_grid.removeAt(0));
+    _grid.add(TerminalRow(cols));
+  }
+
+  void _scrollDown() {
+    if (_grid.isNotEmpty) {
+      _grid.removeLast();
+      _grid.insert(0, TerminalRow(cols));
+    }
   }
 
   void _applySgr(List<int> params) {
@@ -539,12 +632,15 @@ class TerminalBuffer {
     return buf.toString().trimRight();
   }
 
-  TerminalRow? _rowAtIndex(int absoluteRow) {
+  /// Returns the [TerminalRow] at the given absolute row index (scrollback + grid).
+  TerminalRow? rowAtIndex(int absoluteRow) {
     if (absoluteRow < scrollback.length) return scrollback[absoluteRow];
     final gridIndex = absoluteRow - scrollback.length;
     if (gridIndex >= 0 && gridIndex < _grid.length) return _grid[gridIndex];
     return null;
   }
+
+  TerminalRow? _rowAtIndex(int absoluteRow) => rowAtIndex(absoluteRow);
 
   /// Standard 16 ANSI colors.
   static Color _ansi16Color(int index) {

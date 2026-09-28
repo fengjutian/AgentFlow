@@ -2,8 +2,8 @@
 ///
 /// Parses a subset of ANSI escape sequences commonly used by shells and
 /// terminal applications: SGR (Select Graphic Rendition) for colors and text
-/// attributes, cursor movement, and screen clearing. The parser is designed
-/// to be fed chunks of output as they arrive from a [ShellSession].
+/// attributes, cursor movement, screen clearing, and line editing. The parser
+/// is designed to be fed chunks of output as they arrive from a [ShellSession].
 ///
 /// Supported sequences:
 /// - SGR: `\e[<params>m` — foreground/background colors (8/16/256), bold, italic,
@@ -11,7 +11,10 @@
 /// - Cursor movement: `\e[<n>A/B/C/D` — up/down/forward/back
 /// - Cursor position: `\e[<row>;<col>H` or `\e[<row>;<col>f`
 /// - Erase: `\e[<n>J` (clear screen), `\e[<n>K` (clear line)
-/// - Save/restore cursor: `\e7` / `\e8`
+/// - Save/restore cursor: `\e7` / `\e8` and `\e[s` / `\e[u`
+/// - Insert/delete: `\e[<n>L` / `\e[<n>M` (lines), `\e[<n>P` (chars), `\e[<n>@` (chars)
+/// - Scroll region: `\e[<top>;<bottom>r`
+/// - Scroll: `\e[<n>S` (up), `\e[<n>T` (down)
 ///
 /// Unsupported sequences are silently discarded.
 library;
@@ -63,6 +66,59 @@ class AnsiText extends AnsiSequence {
   final String text;
 }
 
+/// Save cursor position (`\e7` or `\e[s`).
+class AnsiSaveCursor extends AnsiSequence {
+  const AnsiSaveCursor();
+}
+
+/// Restore cursor position (`\e8` or `\e[u`).
+class AnsiRestoreCursor extends AnsiSequence {
+  const AnsiRestoreCursor();
+}
+
+/// Insert [count] lines at the current row.
+class AnsiInsertLines extends AnsiSequence {
+  const AnsiInsertLines(this.count);
+  final int count;
+}
+
+/// Delete [count] lines at the current row.
+class AnsiDeleteLines extends AnsiSequence {
+  const AnsiDeleteLines(this.count);
+  final int count;
+}
+
+/// Insert [count] characters at the current cursor position.
+class AnsiInsertChars extends AnsiSequence {
+  const AnsiInsertChars(this.count);
+  final int count;
+}
+
+/// Delete [count] characters at the current cursor position.
+class AnsiDeleteChars extends AnsiSequence {
+  const AnsiDeleteChars(this.count);
+  final int count;
+}
+
+/// Set the scroll region (`\e[<top>;<bottom>r`).
+class AnsiScrollRegion extends AnsiSequence {
+  const AnsiScrollRegion(this.top, this.bottom);
+  final int top;
+  final int bottom;
+}
+
+/// Scroll the screen up by [count] lines.
+class AnsiScrollUp extends AnsiSequence {
+  const AnsiScrollUp(this.count);
+  final int count;
+}
+
+/// Scroll the screen down by [count] lines.
+class AnsiScrollDown extends AnsiSequence {
+  const AnsiScrollDown(this.count);
+  final int count;
+}
+
 /// Stateful ANSI parser that accumulates partial escape sequences across
 /// chunks. Feed output via [feed] and receive parsed sequences.
 class AnsiParser {
@@ -87,10 +143,10 @@ class AnsiParser {
             _state = _ParserState.csi;
             _buffer.clear();
           } else if (ch == '7') {
-            // Save cursor — not implemented, discard.
+            results.add(const AnsiSaveCursor());
             _state = _ParserState.text;
           } else if (ch == '8') {
-            // Restore cursor — not implemented, discard.
+            results.add(const AnsiRestoreCursor());
             _state = _ParserState.text;
           } else {
             // Unknown escape — discard.
@@ -122,6 +178,45 @@ class AnsiParser {
             _state = _ParserState.text;
           } else if (ch == 'K') {
             results.add(AnsiErase(EraseType.line, _parseInts().firstOrNull ?? 0));
+            _state = _ParserState.text;
+          } else if (ch == 's') {
+            // Save cursor position.
+            results.add(const AnsiSaveCursor());
+            _state = _ParserState.text;
+          } else if (ch == 'u') {
+            // Restore cursor position.
+            results.add(const AnsiRestoreCursor());
+            _state = _ParserState.text;
+          } else if (ch == 'L') {
+            final n = _parseInts().firstOrNull ?? 1;
+            results.add(AnsiInsertLines(n));
+            _state = _ParserState.text;
+          } else if (ch == 'M') {
+            final n = _parseInts().firstOrNull ?? 1;
+            results.add(AnsiDeleteLines(n));
+            _state = _ParserState.text;
+          } else if (ch == 'P') {
+            final n = _parseInts().firstOrNull ?? 1;
+            results.add(AnsiDeleteChars(n));
+            _state = _ParserState.text;
+          } else if (ch == '@') {
+            final n = _parseInts().firstOrNull ?? 1;
+            results.add(AnsiInsertChars(n));
+            _state = _ParserState.text;
+          } else if (ch == 'r') {
+            // Set scroll region.
+            final parts = _parseInts();
+            final top = parts.isNotEmpty ? parts[0] : 1;
+            final bottom = parts.length > 1 ? parts[1] : 0; // 0 means "default"
+            results.add(AnsiScrollRegion(top, bottom));
+            _state = _ParserState.text;
+          } else if (ch == 'S') {
+            final n = _parseInts().firstOrNull ?? 1;
+            results.add(AnsiScrollUp(n));
+            _state = _ParserState.text;
+          } else if (ch == 'T') {
+            final n = _parseInts().firstOrNull ?? 1;
+            results.add(AnsiScrollDown(n));
             _state = _ParserState.text;
           } else if (_isCsiParamChar(ch)) {
             _buffer.write(ch);
