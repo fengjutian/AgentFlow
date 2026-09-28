@@ -16,6 +16,7 @@
   "create": "Create",
   "save": "Save",
   "undo": "Undo",
+  "redo": "Redo",
   "send": "Send",
   "stop": "Stop",
   "run": "Run",

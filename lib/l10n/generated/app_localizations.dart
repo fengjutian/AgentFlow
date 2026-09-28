@@ -194,6 +194,12 @@ abstract class AppLocalizations {
   /// **'Undo'**
   String get undo;
 
+  /// No description provided for @redo.
+  ///
+  /// In en, this message translates to:
+  /// **'Redo'**
+  String get redo;
+
   /// No description provided for @send.
   ///
   /// In en, this message translates to:

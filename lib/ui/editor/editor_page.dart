@@ -44,6 +44,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
   final ScrollController _lineScroll = ScrollController();
   final FocusNode _editorFocus = FocusNode();
   final FocusNode _searchFocus = FocusNode();
+  final UndoHistoryController _undoHistory = UndoHistoryController();
   EditorDocument? _document;
   bool _loading = true;
   bool _saving = false;
@@ -99,6 +100,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
     _lineScroll.dispose();
     _editorFocus.dispose();
     _searchFocus.dispose();
+    _undoHistory.dispose();
     super.dispose();
   }
 
@@ -498,6 +500,20 @@ class _EditorPageState extends ConsumerState<EditorPage>
           title: Text('${_dirty ? '* ' : ''}${widget.name}'),
           actions: <Widget>[
             IconButton(
+              tooltip: context.l10n.undo,
+              onPressed: _loading || _error != null || !_undoHistory.value.canUndo
+                  ? null
+                  : () => _undoHistory.undo(),
+              icon: const Icon(Icons.undo),
+            ),
+            IconButton(
+              tooltip: context.l10n.redo,
+              onPressed: _loading || _error != null || !_undoHistory.value.canRedo
+                  ? null
+                  : () => _undoHistory.redo(),
+              icon: const Icon(Icons.redo),
+            ),
+            IconButton(
               tooltip: context.l10n.search,
               onPressed: _loading || _error != null ? null : _openSearch,
               icon: const Icon(Icons.search),
@@ -580,6 +596,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
                   controller: _text,
                   scrollController: _editorScroll,
                   focusNode: _editorFocus,
+                  undoController: _undoHistory,
                   expands: true,
                   maxLines: null,
                   minLines: null,

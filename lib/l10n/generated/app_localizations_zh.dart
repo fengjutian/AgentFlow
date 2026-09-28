@@ -57,6 +57,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get undo => '撤销';
 
   @override
+  String get redo => '重做';
+
+  @override
   String get send => '发送';
 
   @override
