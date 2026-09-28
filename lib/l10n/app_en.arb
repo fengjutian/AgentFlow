@@ -130,6 +130,7 @@
   "phaseWaitingApproval": "Waiting for approval",
   "phaseExecuting": "Executing",
   "phaseObserving": "Observing",
+  "phaseRecovering": "Recovering",
   "phaseCompleted": "Completed",
   "phaseError": "Error",
   "phaseCancelled": "Cancelled",
