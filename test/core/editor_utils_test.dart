@@ -55,11 +55,11 @@ void main() {
 
     test('samples only first 8KB for large content', () {
       // Binary at the start should be detected.
-      final binaryStart = 'Hello\x00World' + 'x' * 10000;
+      final binaryStart = 'Hello\x00World${'x' * 10000}';
       expect(_isBinaryContent(binaryStart), isTrue);
 
       // Binary after 8KB should NOT be detected (by design for performance).
-      final binaryEnd = 'x' * 10000 + '\x00';
+      final binaryEnd = '${'x' * 10000}\x00';
       expect(_isBinaryContent(binaryEnd), isFalse);
     });
   });
@@ -81,6 +81,7 @@ bool _isBinaryContent(String content) {
       ? content.substring(0, sampleSize)
       : content;
   if (sample.contains('\x00')) return true;
-  if (sample.contains('')) return true;
+  // U+FFFD is the Unicode replacement character.
+  if (sample.contains('\uFFFD')) return true;
   return false;
 }

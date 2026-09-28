@@ -47,6 +47,9 @@ class _TestStore implements DocumentStore {
     int limit = 10,
   }) async =>
       const <DocumentSearchHit>[];
+
+  @override
+  Future<void> saveReadingPosition(String documentId, int sectionIndex) async {}
 }
 
 void main() {

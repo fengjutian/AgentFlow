@@ -84,6 +84,9 @@ class _MemoryDocumentStore implements DocumentStore {
     }
     return hits;
   }
+
+  @override
+  Future<void> saveReadingPosition(String documentId, int sectionIndex) async {}
 }
 
 class _FakeEpubParser implements DocumentParser {

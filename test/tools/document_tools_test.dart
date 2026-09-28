@@ -70,6 +70,9 @@ class _DocumentStore implements DocumentStore {
     }
     return hits;
   }
+
+  @override
+  Future<void> saveReadingPosition(String documentId, int sectionIndex) async {}
 }
 
 void main() {
