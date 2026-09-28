@@ -206,10 +206,9 @@ class _EditorPageState extends ConsumerState<EditorPage>
     if (lineOffset == null) return;
     final lineEnd = _text.text.indexOf('\n', lineOffset);
     final maxOffset = lineEnd < 0 ? _text.text.length : lineEnd;
-    final offset = (lineOffset + widget.initialColumn - 1).clamp(
-      lineOffset,
-      maxOffset,
-    );
+    final offset = (lineOffset + widget.initialColumn - 1)
+        .clamp(lineOffset, maxOffset)
+        .toInt();
     _text.selection = TextSelection.collapsed(offset: offset);
     _editorFocus.requestFocus();
   }

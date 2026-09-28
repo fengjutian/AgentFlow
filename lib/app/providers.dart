@@ -23,6 +23,7 @@ import '../core/document/document_parser.dart';
 import '../core/document/document_service.dart';
 import '../core/document/epub_parser.dart';
 import '../core/document/pdf_parser.dart';
+import '../core/editor/editor_workspace.dart';
 import '../data/models.dart';
 import '../runtime/bridge_runtime.dart';
 import '../runtime/local_runtime.dart';
@@ -150,6 +151,25 @@ final Provider<MemoryManager> memoryManagerProvider = Provider<MemoryManager>(
   (Ref ref) =>
       MemoryManager(store: DriftMemoryStore(ref.watch(databaseProvider))),
 );
+
+/// Shared diagnostic sink for analyzers, test runners and future LSP clients.
+/// The editor watches this provider and turns every item into a navigable row.
+class EditorDiagnosticsNotifier extends Notifier<List<EditorDiagnostic>> {
+  @override
+  List<EditorDiagnostic> build() => const <EditorDiagnostic>[];
+
+  void replace(List<EditorDiagnostic> diagnostics) {
+    state = List<EditorDiagnostic>.unmodifiable(diagnostics);
+  }
+
+  void clear() => state = const <EditorDiagnostic>[];
+}
+
+final NotifierProvider<EditorDiagnosticsNotifier, List<EditorDiagnostic>>
+editorDiagnosticsProvider =
+    NotifierProvider<EditorDiagnosticsNotifier, List<EditorDiagnostic>>(
+      EditorDiagnosticsNotifier.new,
+    );
 
 final Provider<ApprovalManager> approvalManagerProvider =
     Provider<ApprovalManager>((Ref ref) {

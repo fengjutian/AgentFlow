@@ -86,13 +86,13 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
   }
 
   void _showDiagnostics() {
-    final diagnostics = _controller.state.diagnostics;
+    final diagnostics = ref.read(editorDiagnosticsProvider);
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
         child: diagnostics.isEmpty
-            ? Center(child: Text(context.l10n.noDiagnostics))
+            ? Center(child: Text(_label(context, 'noDiagnostics')))
             : ListView.builder(
                 itemCount: diagnostics.length,
                 itemBuilder: (context, index) {
@@ -119,12 +119,13 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
   @override
   Widget build(BuildContext context) {
     final state = _controller.state;
+    final diagnostics = ref.watch(editorDiagnosticsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.l10n.openFiles),
+        title: Text(_label(context, 'openFiles')),
         actions: <Widget>[
           PopupMenuButton<String>(
-            tooltip: context.l10n.recentFiles,
+            tooltip: _label(context, 'recentFiles'),
             icon: const Icon(Icons.history),
             onSelected: (path) => _open(
               EditorLocation(path: path),
@@ -148,10 +149,10 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
                 .toList(growable: false),
           ),
           Badge(
-            isLabelVisible: state.diagnostics.isNotEmpty,
-            label: Text('${state.diagnostics.length}'),
+            isLabelVisible: diagnostics.isNotEmpty,
+            label: Text('${diagnostics.length}'),
             child: IconButton(
-              tooltip: context.l10n.diagnostics,
+              tooltip: _label(context, 'diagnostics'),
               onPressed: _showDiagnostics,
               icon: const Icon(Icons.rule_folder_outlined),
             ),
@@ -223,3 +224,14 @@ IconData _diagnosticIcon(DiagnosticSeverity severity) => switch (severity) {
       DiagnosticSeverity.warning => Icons.warning_amber_outlined,
       DiagnosticSeverity.information => Icons.info_outline,
     };
+
+String _label(BuildContext context, String key) {
+  final zh = Localizations.localeOf(context).languageCode == 'zh';
+  return switch (key) {
+    'openFiles' => zh ? '打开的文件' : 'Open files',
+    'recentFiles' => zh ? '最近文件' : 'Recent files',
+    'diagnostics' => zh ? '诊断' : 'Diagnostics',
+    'noDiagnostics' => zh ? '暂无诊断' : 'No diagnostics',
+    _ => key,
+  };
+}
