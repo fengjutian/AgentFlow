@@ -9,12 +9,14 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/providers.dart';
 import '../../core/diagnostics.dart';
 import '../../l10n/l10n.dart';
 import '../../core/model/model_provider.dart';
 import '../../core/model/provider_catalog.dart';
+import '../../core/legal/legal_config.dart';
 import '../../data/models.dart';
 import '../../runtime/bridge_runtime.dart';
 import '../../runtime/runtime.dart';
@@ -75,14 +77,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               icon: const Icon(Icons.terminal_outlined),
               text: context.l10n.runtime,
             ),
-            Tab(
-              icon: const Icon(Icons.cloud_outlined),
-              text: 'SSH',
-            ),
-            Tab(
-              icon: const Icon(Icons.extension_outlined),
-              text: 'MCP',
-            ),
+            Tab(icon: const Icon(Icons.cloud_outlined), text: 'SSH'),
+            Tab(icon: const Icon(Icons.extension_outlined), text: 'MCP'),
             Tab(icon: const Icon(Icons.info_outline), text: context.l10n.about),
           ],
         ),
@@ -94,18 +90,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               label: Text(context.l10n.provider),
             )
           : _tabController.index == 2
-              ? FloatingActionButton.extended(
-                  onPressed: () => _addSsh(context, ref),
-                  icon: const Icon(Icons.add),
-                  label: const Text('SSH'),
-                )
-              : _tabController.index == 3
-                  ? FloatingActionButton.extended(
-                      onPressed: () => _addMcp(context, ref),
-                      icon: const Icon(Icons.add),
-                      label: Text(context.l10n.settings),
-                    )
-                  : null,
+          ? FloatingActionButton.extended(
+              onPressed: () => _addSsh(context, ref),
+              icon: const Icon(Icons.add),
+              label: const Text('SSH'),
+            )
+          : _tabController.index == 3
+          ? FloatingActionButton.extended(
+              onPressed: () => _addMcp(context, ref),
+              icon: const Icon(Icons.add),
+              label: Text(context.l10n.settings),
+            )
+          : null,
       body: TabBarView(
         controller: _tabController,
         children: <Widget>[
@@ -625,6 +621,32 @@ class _AboutCard extends ConsumerWidget {
                     : 'Open-source licenses',
               ),
             ),
+            const Divider(height: 24),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.verified_user_outlined),
+              title: Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                    ? 'APP 备案编号'
+                    : 'App filing number',
+              ),
+              subtitle: Text(
+                LegalConfig.appFilingNumber.isEmpty
+                    ? (Localizations.localeOf(context).languageCode == 'zh'
+                          ? '待配置'
+                          : 'Not configured')
+                    : LegalConfig.appFilingNumber,
+              ),
+              trailing: LegalConfig.appFilingNumber.isEmpty
+                  ? null
+                  : const Icon(Icons.open_in_new, size: 18),
+              onTap: LegalConfig.appFilingNumber.isEmpty
+                  ? null
+                  : () => launchUrl(
+                      Uri.parse(LegalConfig.appFilingQueryUrl),
+                      mode: LaunchMode.externalApplication,
+                    ),
+            ),
           ],
         ),
       ),
@@ -651,9 +673,9 @@ class _AboutCard extends ConsumerWidget {
     if (!context.mounted) return;
     await Clipboard.setData(ClipboardData(text: text));
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.l10n.diagnosticsCopied)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(context.l10n.diagnosticsCopied)));
   }
 }
 

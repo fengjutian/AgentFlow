@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../core/legal/legal_config.dart';
 
 /// Offline copy of the privacy policy shown before a network-hosted policy is
 /// available. Keep this text aligned with the public URL used in store listings.
@@ -18,6 +21,18 @@ class PrivacyPolicyPage extends StatelessWidget {
               zh ? 'AgentFlow 隐私政策' : 'AgentFlow Privacy Policy',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
+            if (LegalConfig.privacyPolicyUrl.isNotEmpty)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => launchUrl(
+                    Uri.parse(LegalConfig.privacyPolicyUrl),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                  icon: const Icon(Icons.open_in_new, size: 18),
+                  label: Text(zh ? '查看公开政策网页' : 'Open public policy page'),
+                ),
+              ),
             const SizedBox(height: 8),
             Text(zh ? '生效日期：2026年9月28日' : 'Effective: September 28, 2026'),
             const SizedBox(height: 20),
@@ -60,8 +75,8 @@ class PrivacyPolicyPage extends StatelessWidget {
             _Section(
               title: zh ? '联系与变更' : 'Contact and changes',
               body: zh
-                  ? '发布前请在此处及公开网页中填入开发者支持邮箱。政策发生重大变化时，将通过应用更新或公开政策页面说明。'
-                  : 'Before release, add the developer support email here and on the public policy page. Material changes will be announced through an app update or the public policy page.',
+                  ? '联系邮箱：${LegalConfig.supportEmail.isEmpty ? '待配置' : LegalConfig.supportEmail}。政策发生重大变化时，将通过应用更新或公开政策页面说明。'
+                  : 'Contact: ${LegalConfig.supportEmail.isEmpty ? 'not configured' : LegalConfig.supportEmail}. Material changes will be announced through an app update or the public policy page.',
             ),
           ],
         ),
