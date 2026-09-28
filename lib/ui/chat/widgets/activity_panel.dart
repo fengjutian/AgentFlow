@@ -162,6 +162,7 @@ String _phaseLabel(BuildContext context, AgentPhase phase) => switch (phase) {
   AgentPhase.waitingApproval => context.l10n.phaseWaitingApproval,
   AgentPhase.executing => context.l10n.phaseExecuting,
   AgentPhase.observing => context.l10n.phaseObserving,
+  AgentPhase.recovering => context.l10n.phaseRecovering,
   AgentPhase.completed => context.l10n.phaseCompleted,
   AgentPhase.error => context.l10n.phaseError,
   AgentPhase.cancelled => context.l10n.phaseCancelled,

@@ -812,6 +812,12 @@ abstract class AppLocalizations {
   /// **'Observing'**
   String get phaseObserving;
 
+  /// No description provided for @phaseRecovering.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovering'**
+  String get phaseRecovering;
+
   /// No description provided for @phaseCompleted.
   ///
   /// In en, this message translates to:

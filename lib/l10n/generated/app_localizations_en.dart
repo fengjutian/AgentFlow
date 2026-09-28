@@ -403,6 +403,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phaseObserving => 'Observing';
 
   @override
+  String get phaseRecovering => 'Recovering';
+
+  @override
   String get phaseCompleted => 'Completed';
 
   @override

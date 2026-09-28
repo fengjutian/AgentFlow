@@ -120,6 +120,7 @@
   "phaseWaitingApproval": "等待批准",
   "phaseExecuting": "执行中",
   "phaseObserving": "分析结果中",
+  "phaseRecovering": "恢复中",
   "phaseCompleted": "已完成",
   "phaseError": "错误",
   "phaseCancelled": "已取消",

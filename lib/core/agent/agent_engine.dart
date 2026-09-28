@@ -166,6 +166,13 @@ class AgentEngine {
         try {
           response = await provider.generate(buildResult.request);
         } on ModelException catch (e) {
+          // For transient errors, attempt recovery before giving up.
+          if (_isTransientError(e) && iteration < request.maxIterations - 1) {
+            setPhase(AgentPhase.recovering);
+            sink.add(ErrorEvent('Transient error: ${e.message}. Retrying...'));
+            await Future<void>.delayed(const Duration(seconds: 1));
+            continue;
+          }
           sink.add(ErrorEvent(e.message));
           setPhase(AgentPhase.error);
           return;
@@ -371,5 +378,26 @@ class AgentEngine {
           orElse: () => '',
         );
     return line.length > 120 ? '${line.substring(0, 120)}…' : line;
+  }
+
+  /// Returns true if the error is likely transient and worth retrying.
+  /// Transient errors include timeouts, rate limits, and server errors.
+  bool _isTransientError(ModelException e) {
+    final code = e.statusCode;
+    if (code == null) {
+      // Network errors without status code are often transient
+      final msg = e.message.toLowerCase();
+      return msg.contains('timeout') ||
+          msg.contains('connection') ||
+          msg.contains('network') ||
+          msg.contains('socket');
+    }
+    // HTTP status codes that indicate transient errors
+    return code == 408 || // Request Timeout
+        code == 429 || // Too Many Requests
+        code == 500 || // Internal Server Error
+        code == 502 || // Bad Gateway
+        code == 503 || // Service Unavailable
+        code == 504; // Gateway Timeout
   }
 }

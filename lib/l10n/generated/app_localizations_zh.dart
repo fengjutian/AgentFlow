@@ -393,6 +393,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get phaseObserving => '分析结果中';
 
   @override
+  String get phaseRecovering => '恢复中';
+
+  @override
   String get phaseCompleted => '已完成';
 
   @override
