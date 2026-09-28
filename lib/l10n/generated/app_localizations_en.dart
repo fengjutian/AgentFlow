@@ -72,7 +72,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lastCommand => 'Last command';
 
   @override
-  String get commandHint => 'command';
+  String get commandHint => 'npx';
 
   @override
   String failedToLoad(Object error) {
@@ -649,6 +649,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noExtractableText => '(No extractable text for this section.)';
 
   @override
+  String get openFiles => 'Open files';
+
+  @override
+  String get recentFiles => 'Recent files';
+
+  @override
+  String get diagnostics => 'Diagnostics';
+
+  @override
+  String get noDiagnostics => 'No diagnostics';
+
+  @override
   String cannotListFolder(Object error) {
     return 'Cannot list folder: $error';
   }
@@ -657,4 +669,224 @@ class AppLocalizationsEn extends AppLocalizations {
   String fileTooLargeToPreview(String name, String size) {
     return '$name is too large to preview ($size).';
   }
+
+  @override
+  String errorGeneric(Object error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get noSshConnections => 'No SSH connections configured.';
+
+  @override
+  String get addSshHint =>
+      'Add an SSH connection to run commands on remote servers.';
+
+  @override
+  String get testConnection => 'Test connection';
+
+  @override
+  String get hostKeyMismatch => 'Host key mismatch!';
+
+  @override
+  String hostKeyChanged(
+    String host,
+    int port,
+    String stored,
+    String presented,
+  ) {
+    return 'WARNING: The host key for $host:$port has changed!\n\nStored: $stored\nPresented: $presented\n\nThis could indicate a man-in-the-middle attack.';
+  }
+
+  @override
+  String get newHostKey => 'New host key';
+
+  @override
+  String get hostKeyVerified => 'Host key verified';
+
+  @override
+  String algorithmLabel(String algorithm) {
+    return 'Algorithm: $algorithm';
+  }
+
+  @override
+  String fingerprintLabel(String fingerprint) {
+    return 'Fingerprint: $fingerprint';
+  }
+
+  @override
+  String get trustHostKeyQuestion =>
+      'Trust this host key for future connections?';
+
+  @override
+  String get trust => 'Trust';
+
+  @override
+  String connectionFailed(Object error) {
+    return 'Connection failed: $error';
+  }
+
+  @override
+  String deleteSshConfigTitle(String name) {
+    return 'Delete \"$name\"?';
+  }
+
+  @override
+  String get deleteSshConfigDescription =>
+      'This SSH connection will be removed.';
+
+  @override
+  String get addSshConnection => 'Add SSH Connection';
+
+  @override
+  String get editSshConnection => 'Edit SSH Connection';
+
+  @override
+  String get label => 'Label';
+
+  @override
+  String get host => 'Host';
+
+  @override
+  String get port => 'Port';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get authMethod => 'Auth method';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get privateKey => 'Private key';
+
+  @override
+  String get privateKeyPem => 'Private key (PEM)';
+
+  @override
+  String get keyPassphrase => 'Key passphrase (optional)';
+
+  @override
+  String get remoteRoot => 'Remote root';
+
+  @override
+  String get selectWorkspaceFirstMcp => 'Select a workspace first.';
+
+  @override
+  String get noMcpServers => 'No MCP servers configured.';
+
+  @override
+  String get addMcpHint =>
+      'Add an MCP server to extend the agent with external tools.';
+
+  @override
+  String get connect => 'Connect';
+
+  @override
+  String get disconnect => 'Disconnect';
+
+  @override
+  String get refreshTools => 'Refresh tools';
+
+  @override
+  String get mcpConnected => 'Connected';
+
+  @override
+  String get mcpConnecting => 'Connecting';
+
+  @override
+  String get mcpDisconnected => 'Disconnected';
+
+  @override
+  String toolsAvailable(int count) {
+    return '$count tool(s) available';
+  }
+
+  @override
+  String get connectionSuccessful => 'Connection successful';
+
+  @override
+  String get connectionFailedTitle => 'Connection failed';
+
+  @override
+  String connectionSuccessfulDetail(int count) {
+    return 'Connected successfully. Found $count tool(s).';
+  }
+
+  @override
+  String deleteMcpConfigTitle(String name) {
+    return 'Delete \"$name\"?';
+  }
+
+  @override
+  String get deleteMcpConfigDescription => 'This MCP server will be removed.';
+
+  @override
+  String get addMcpServer => 'Add MCP Server';
+
+  @override
+  String get editMcpServer => 'Edit MCP Server';
+
+  @override
+  String get transport => 'Transport';
+
+  @override
+  String get endpointUrl => 'Endpoint URL';
+
+  @override
+  String get endpointUrlHint => 'https://mcp.example.com/mcp';
+
+  @override
+  String get command => 'Command';
+
+  @override
+  String get argumentsLabel => 'Arguments (space-separated)';
+
+  @override
+  String get argumentsHint => '-y @modelcontextprotocol/server-name';
+
+  @override
+  String get authorizationHeader => 'Authorization header (optional)';
+
+  @override
+  String get mcpEnabled => 'Enabled';
+
+  @override
+  String get mcpEnabledDescription => 'Agent can use this server';
+
+  @override
+  String get mcpAutoConnect => 'Auto-connect';
+
+  @override
+  String get mcpAutoConnectDescription => 'Connect when workspace opens';
+
+  @override
+  String get noProviderConfiguredHint =>
+      'No provider is configured yet, so the agent uses a built-in mock that demonstrates the loop without any network. Add an OpenAI-compatible provider to use a real model.';
+
+  @override
+  String get providerLabelHint => 'DeepSeek (personal)';
+
+  @override
+  String get statusReady => 'Ready';
+
+  @override
+  String get statusParsing => 'Parsing';
+
+  @override
+  String get statusPending => 'Pending';
+
+  @override
+  String get statusFailed => 'Failed';
+
+  @override
+  String get statusOcrRequired => 'OCR needed';
+
+  @override
+  String get noOutput => '(no output)';
+
+  @override
+  String get modelHint => 'gpt-4o-mini / deepseek-chat';
 }

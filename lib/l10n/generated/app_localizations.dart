@@ -227,7 +227,7 @@ abstract class AppLocalizations {
   /// No description provided for @commandHint.
   ///
   /// In en, this message translates to:
-  /// **'command'**
+  /// **'npx'**
   String get commandHint;
 
   /// No description provided for @failedToLoad.
@@ -1232,6 +1232,30 @@ abstract class AppLocalizations {
   /// **'(No extractable text for this section.)'**
   String get noExtractableText;
 
+  /// No description provided for @openFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Open files'**
+  String get openFiles;
+
+  /// No description provided for @recentFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent files'**
+  String get recentFiles;
+
+  /// No description provided for @diagnostics.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics'**
+  String get diagnostics;
+
+  /// No description provided for @noDiagnostics.
+  ///
+  /// In en, this message translates to:
+  /// **'No diagnostics'**
+  String get noDiagnostics;
+
   /// No description provided for @cannotListFolder.
   ///
   /// In en, this message translates to:
@@ -1243,6 +1267,390 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} is too large to preview ({size}).'**
   String fileTooLargeToPreview(String name, String size);
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorGeneric(Object error);
+
+  /// No description provided for @noSshConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'No SSH connections configured.'**
+  String get noSshConnections;
+
+  /// No description provided for @addSshHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an SSH connection to run commands on remote servers.'**
+  String get addSshHint;
+
+  /// No description provided for @testConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get testConnection;
+
+  /// No description provided for @hostKeyMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Host key mismatch!'**
+  String get hostKeyMismatch;
+
+  /// No description provided for @hostKeyChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'WARNING: The host key for {host}:{port} has changed!\n\nStored: {stored}\nPresented: {presented}\n\nThis could indicate a man-in-the-middle attack.'**
+  String hostKeyChanged(String host, int port, String stored, String presented);
+
+  /// No description provided for @newHostKey.
+  ///
+  /// In en, this message translates to:
+  /// **'New host key'**
+  String get newHostKey;
+
+  /// No description provided for @hostKeyVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Host key verified'**
+  String get hostKeyVerified;
+
+  /// No description provided for @algorithmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Algorithm: {algorithm}'**
+  String algorithmLabel(String algorithm);
+
+  /// No description provided for @fingerprintLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint: {fingerprint}'**
+  String fingerprintLabel(String fingerprint);
+
+  /// No description provided for @trustHostKeyQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust this host key for future connections?'**
+  String get trustHostKeyQuestion;
+
+  /// No description provided for @trust.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust'**
+  String get trust;
+
+  /// No description provided for @connectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed: {error}'**
+  String connectionFailed(Object error);
+
+  /// No description provided for @deleteSshConfigTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String deleteSshConfigTitle(String name);
+
+  /// No description provided for @deleteSshConfigDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This SSH connection will be removed.'**
+  String get deleteSshConfigDescription;
+
+  /// No description provided for @addSshConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Add SSH Connection'**
+  String get addSshConnection;
+
+  /// No description provided for @editSshConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit SSH Connection'**
+  String get editSshConnection;
+
+  /// No description provided for @label.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get label;
+
+  /// No description provided for @host.
+  ///
+  /// In en, this message translates to:
+  /// **'Host'**
+  String get host;
+
+  /// No description provided for @port.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get port;
+
+  /// No description provided for @username.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get username;
+
+  /// No description provided for @authMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Auth method'**
+  String get authMethod;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @privateKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Private key'**
+  String get privateKey;
+
+  /// No description provided for @privateKeyPem.
+  ///
+  /// In en, this message translates to:
+  /// **'Private key (PEM)'**
+  String get privateKeyPem;
+
+  /// No description provided for @keyPassphrase.
+  ///
+  /// In en, this message translates to:
+  /// **'Key passphrase (optional)'**
+  String get keyPassphrase;
+
+  /// No description provided for @remoteRoot.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote root'**
+  String get remoteRoot;
+
+  /// No description provided for @selectWorkspaceFirstMcp.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a workspace first.'**
+  String get selectWorkspaceFirstMcp;
+
+  /// No description provided for @noMcpServers.
+  ///
+  /// In en, this message translates to:
+  /// **'No MCP servers configured.'**
+  String get noMcpServers;
+
+  /// No description provided for @addMcpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an MCP server to extend the agent with external tools.'**
+  String get addMcpHint;
+
+  /// No description provided for @connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connect;
+
+  /// No description provided for @disconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get disconnect;
+
+  /// No description provided for @refreshTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh tools'**
+  String get refreshTools;
+
+  /// No description provided for @mcpConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get mcpConnected;
+
+  /// No description provided for @mcpConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting'**
+  String get mcpConnecting;
+
+  /// No description provided for @mcpDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get mcpDisconnected;
+
+  /// No description provided for @toolsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tool(s) available'**
+  String toolsAvailable(int count);
+
+  /// No description provided for @connectionSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection successful'**
+  String get connectionSuccessful;
+
+  /// No description provided for @connectionFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed'**
+  String get connectionFailedTitle;
+
+  /// No description provided for @connectionSuccessfulDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected successfully. Found {count} tool(s).'**
+  String connectionSuccessfulDetail(int count);
+
+  /// No description provided for @deleteMcpConfigTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String deleteMcpConfigTitle(String name);
+
+  /// No description provided for @deleteMcpConfigDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This MCP server will be removed.'**
+  String get deleteMcpConfigDescription;
+
+  /// No description provided for @addMcpServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add MCP Server'**
+  String get addMcpServer;
+
+  /// No description provided for @editMcpServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit MCP Server'**
+  String get editMcpServer;
+
+  /// No description provided for @transport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get transport;
+
+  /// No description provided for @endpointUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Endpoint URL'**
+  String get endpointUrl;
+
+  /// No description provided for @endpointUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://mcp.example.com/mcp'**
+  String get endpointUrlHint;
+
+  /// No description provided for @command.
+  ///
+  /// In en, this message translates to:
+  /// **'Command'**
+  String get command;
+
+  /// No description provided for @argumentsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Arguments (space-separated)'**
+  String get argumentsLabel;
+
+  /// No description provided for @argumentsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'-y @modelcontextprotocol/server-name'**
+  String get argumentsHint;
+
+  /// No description provided for @authorizationHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorization header (optional)'**
+  String get authorizationHeader;
+
+  /// No description provided for @mcpEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get mcpEnabled;
+
+  /// No description provided for @mcpEnabledDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent can use this server'**
+  String get mcpEnabledDescription;
+
+  /// No description provided for @mcpAutoConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-connect'**
+  String get mcpAutoConnect;
+
+  /// No description provided for @mcpAutoConnectDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect when workspace opens'**
+  String get mcpAutoConnectDescription;
+
+  /// No description provided for @noProviderConfiguredHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No provider is configured yet, so the agent uses a built-in mock that demonstrates the loop without any network. Add an OpenAI-compatible provider to use a real model.'**
+  String get noProviderConfiguredHint;
+
+  /// No description provided for @providerLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'DeepSeek (personal)'**
+  String get providerLabelHint;
+
+  /// No description provided for @statusReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get statusReady;
+
+  /// No description provided for @statusParsing.
+  ///
+  /// In en, this message translates to:
+  /// **'Parsing'**
+  String get statusParsing;
+
+  /// No description provided for @statusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get statusPending;
+
+  /// No description provided for @statusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get statusFailed;
+
+  /// No description provided for @statusOcrRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'OCR needed'**
+  String get statusOcrRequired;
+
+  /// No description provided for @noOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'(no output)'**
+  String get noOutput;
+
+  /// No description provided for @modelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'gpt-4o-mini / deepseek-chat'**
+  String get modelHint;
 }
 
 class _AppLocalizationsDelegate

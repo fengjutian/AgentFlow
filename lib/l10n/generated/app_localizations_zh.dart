@@ -72,7 +72,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lastCommand => '上一条命令';
 
   @override
-  String get commandHint => '输入命令';
+  String get commandHint => 'npx';
 
   @override
   String failedToLoad(Object error) {
@@ -633,6 +633,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noExtractableText => '（此章节无可提取的文本。）';
 
   @override
+  String get openFiles => '打开的文件';
+
+  @override
+  String get recentFiles => '最近文件';
+
+  @override
+  String get diagnostics => '诊断';
+
+  @override
+  String get noDiagnostics => '暂无诊断';
+
+  @override
   String cannotListFolder(Object error) {
     return '无法列出文件夹：$error';
   }
@@ -641,4 +653,220 @@ class AppLocalizationsZh extends AppLocalizations {
   String fileTooLargeToPreview(String name, String size) {
     return '$name 太大无法预览（$size）。';
   }
+
+  @override
+  String errorGeneric(Object error) {
+    return '错误：$error';
+  }
+
+  @override
+  String get noSshConnections => '尚未配置 SSH 连接。';
+
+  @override
+  String get addSshHint => '添加 SSH 连接以在远程服务器上执行命令。';
+
+  @override
+  String get testConnection => '测试连接';
+
+  @override
+  String get hostKeyMismatch => '主机密钥不匹配！';
+
+  @override
+  String hostKeyChanged(
+    String host,
+    int port,
+    String stored,
+    String presented,
+  ) {
+    return '警告：$host:$port 的主机密钥已更改！\n\n存储的：$stored\n当前的：$presented\n\n这可能表示存在中间人攻击。';
+  }
+
+  @override
+  String get newHostKey => '新主机密钥';
+
+  @override
+  String get hostKeyVerified => '主机密钥已验证';
+
+  @override
+  String algorithmLabel(String algorithm) {
+    return '算法：$algorithm';
+  }
+
+  @override
+  String fingerprintLabel(String fingerprint) {
+    return '指纹：$fingerprint';
+  }
+
+  @override
+  String get trustHostKeyQuestion => '是否信任此主机密钥以供后续连接使用？';
+
+  @override
+  String get trust => '信任';
+
+  @override
+  String connectionFailed(Object error) {
+    return '连接失败：$error';
+  }
+
+  @override
+  String deleteSshConfigTitle(String name) {
+    return '删除\"$name\"？';
+  }
+
+  @override
+  String get deleteSshConfigDescription => '此 SSH 连接将被移除。';
+
+  @override
+  String get addSshConnection => '添加 SSH 连接';
+
+  @override
+  String get editSshConnection => '编辑 SSH 连接';
+
+  @override
+  String get label => '标签';
+
+  @override
+  String get host => '主机';
+
+  @override
+  String get port => '端口';
+
+  @override
+  String get username => '用户名';
+
+  @override
+  String get authMethod => '认证方式';
+
+  @override
+  String get password => '密码';
+
+  @override
+  String get privateKey => '私钥';
+
+  @override
+  String get privateKeyPem => '私钥（PEM）';
+
+  @override
+  String get keyPassphrase => '密钥口令（可选）';
+
+  @override
+  String get remoteRoot => '远程根目录';
+
+  @override
+  String get selectWorkspaceFirstMcp => '请先选择一个工作区。';
+
+  @override
+  String get noMcpServers => '尚未配置 MCP 服务器。';
+
+  @override
+  String get addMcpHint => '添加 MCP 服务器以使用外部工具扩展 Agent。';
+
+  @override
+  String get connect => '连接';
+
+  @override
+  String get disconnect => '断开连接';
+
+  @override
+  String get refreshTools => '刷新工具';
+
+  @override
+  String get mcpConnected => '已连接';
+
+  @override
+  String get mcpConnecting => '连接中';
+
+  @override
+  String get mcpDisconnected => '已断开';
+
+  @override
+  String toolsAvailable(int count) {
+    return '$count 个工具可用';
+  }
+
+  @override
+  String get connectionSuccessful => '连接成功';
+
+  @override
+  String get connectionFailedTitle => '连接失败';
+
+  @override
+  String connectionSuccessfulDetail(int count) {
+    return '连接成功。发现 $count 个工具。';
+  }
+
+  @override
+  String deleteMcpConfigTitle(String name) {
+    return '删除\"$name\"？';
+  }
+
+  @override
+  String get deleteMcpConfigDescription => '此 MCP 服务器将被移除。';
+
+  @override
+  String get addMcpServer => '添加 MCP 服务器';
+
+  @override
+  String get editMcpServer => '编辑 MCP 服务器';
+
+  @override
+  String get transport => '传输方式';
+
+  @override
+  String get endpointUrl => '端点 URL';
+
+  @override
+  String get endpointUrlHint => 'https://mcp.example.com/mcp';
+
+  @override
+  String get command => '命令';
+
+  @override
+  String get argumentsLabel => '参数（以空格分隔）';
+
+  @override
+  String get argumentsHint => '-y @modelcontextprotocol/server-name';
+
+  @override
+  String get authorizationHeader => '授权标头（可选）';
+
+  @override
+  String get mcpEnabled => '已启用';
+
+  @override
+  String get mcpEnabledDescription => 'Agent 可以使用此服务器';
+
+  @override
+  String get mcpAutoConnect => '自动连接';
+
+  @override
+  String get mcpAutoConnectDescription => '工作区打开时连接';
+
+  @override
+  String get noProviderConfiguredHint =>
+      '尚未配置提供商，Agent 使用内置的模拟模型演示循环。添加 OpenAI 兼容的提供商以使用真实模型。';
+
+  @override
+  String get providerLabelHint => 'DeepSeek（个人）';
+
+  @override
+  String get statusReady => '就绪';
+
+  @override
+  String get statusParsing => '解析中';
+
+  @override
+  String get statusPending => '待处理';
+
+  @override
+  String get statusFailed => '失败';
+
+  @override
+  String get statusOcrRequired => '需要 OCR';
+
+  @override
+  String get noOutput => '（无输出）';
+
+  @override
+  String get modelHint => 'gpt-4o-mini / deepseek-chat';
 }
