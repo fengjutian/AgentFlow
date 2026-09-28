@@ -18,6 +18,7 @@ import '../../data/models.dart';
 import '../../runtime/bridge_runtime.dart';
 import '../../runtime/runtime.dart';
 import '../../storage/mcp_server_repository.dart';
+import '../legal/privacy_policy_page.dart';
 import 'ssh_settings.dart';
 import 'mcp_settings.dart';
 
@@ -591,6 +592,32 @@ class _AboutCard extends StatelessWidget {
               style: Theme.of(
                 context,
               ).textTheme.labelSmall?.copyWith(color: scheme.outline),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const PrivacyPolicyPage(),
+                ),
+              ),
+              icon: const Icon(Icons.privacy_tip_outlined),
+              label: Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                    ? '隐私政策'
+                    : 'Privacy Policy',
+              ),
+            ),
+            TextButton(
+              onPressed: () => showLicensePage(
+                context: context,
+                applicationName: 'AgentFlow',
+                applicationVersion: '1.0.0',
+              ),
+              child: Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                    ? '开源许可'
+                    : 'Open-source licenses',
+              ),
             ),
           ],
         ),
