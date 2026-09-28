@@ -453,7 +453,7 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-          widget.existing == null ? 'Add MCP Server' : 'Edit MCP Server'),
+          widget.existing == null ? context.l10n.addMcpServer : context.l10n.editMcpServer),
       content: SizedBox(
         width: 420,
         child: Form(
@@ -464,18 +464,18 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
               children: [
                 TextFormField(
                   controller: _name,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: InputDecoration(labelText: context.l10n.name),
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      (v == null || v.trim().isEmpty) ? context.l10n.requiredField : null,
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _transport,
-                  decoration: const InputDecoration(labelText: 'Transport'),
-                  items: const [
+                  decoration: InputDecoration(labelText: context.l10n.transport),
+                  items: [
                     DropdownMenuItem(value: 'http', child: Text('HTTP (streamable)')),
                     DropdownMenuItem(
-                        value: 'stdio', child: Text('stdio (local command)')),
+                        value: 'stdio', child: Text('stdio (${context.l10n.command})')),
                   ],
                   onChanged: (v) {
                     if (v != null) setState(() => _transport = v);
@@ -485,34 +485,34 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
                 if (_transport == 'http')
                   TextFormField(
                     controller: _endpoint,
-                    decoration: const InputDecoration(
-                      labelText: 'Endpoint URL',
-                      hintText: 'https://mcp.example.com/mcp',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.endpointUrl,
+                      hintText: context.l10n.endpointUrlHint,
                     ),
                     keyboardType: TextInputType.url,
                     validator: (v) =>
                         _transport == 'http' && (v == null || v.trim().isEmpty)
-                            ? 'Required'
+                            ? context.l10n.requiredField
                             : null,
                   ),
                 if (_transport == 'stdio') ...[
                   TextFormField(
                     controller: _command,
-                    decoration: const InputDecoration(
-                      labelText: 'Command',
-                      hintText: 'npx',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.command,
+                      hintText: context.l10n.commandHint,
                     ),
                     validator: (v) =>
                         _transport == 'stdio' && (v == null || v.trim().isEmpty)
-                            ? 'Required'
+                            ? context.l10n.requiredField
                             : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _arguments,
-                    decoration: const InputDecoration(
-                      labelText: 'Arguments (space-separated)',
-                      hintText: '-y @modelcontextprotocol/server-name',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.argumentsLabel,
+                      hintText: context.l10n.argumentsHint,
                     ),
                   ),
                 ],
@@ -520,21 +520,21 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
                 TextFormField(
                   controller: _authHeader,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Authorization header (optional)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.authorizationHeader,
                     hintText: 'Bearer ...',
                   ),
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  title: const Text('Enabled'),
-                  subtitle: const Text('Agent can use this server'),
+                  title: Text(context.l10n.mcpEnabled),
+                  subtitle: Text(context.l10n.mcpEnabledDescription),
                   value: _enabled,
                   onChanged: (v) => setState(() => _enabled = v),
                 ),
                 SwitchListTile(
-                  title: const Text('Auto-connect'),
-                  subtitle: const Text('Connect when workspace opens'),
+                  title: Text(context.l10n.mcpAutoConnect),
+                  subtitle: Text(context.l10n.mcpAutoConnectDescription),
                   value: _autoConnect,
                   onChanged: (v) => setState(() => _autoConnect = v),
                 ),
@@ -546,8 +546,8 @@ class _McpServerDialogState extends ConsumerState<McpServerDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel')),
-        FilledButton(onPressed: _submit, child: const Text('Save')),
+            child: Text(context.l10n.cancel)),
+        FilledButton(onPressed: _submit, child: Text(context.l10n.save)),
       ],
     );
   }

@@ -101,7 +101,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   ? FloatingActionButton.extended(
                       onPressed: () => _addMcp(context, ref),
                       icon: const Icon(Icons.add),
-                      label: const Text('MCP'),
+                      label: Text(context.l10n.settings),
                     )
                   : null,
       body: TabBarView(
@@ -312,9 +312,7 @@ class _EmptyProviders extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'No provider is configured yet, so the agent uses a built-in mock '
-              'that demonstrates the loop without any network. Add an '
-              'OpenAI-compatible provider to use a real model.',
+              context.l10n.noProviderConfiguredHint,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: scheme.outline),
@@ -728,7 +726,7 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                   controller: _label,
                   decoration: InputDecoration(
                     labelText: context.l10n.providerLabel,
-                    hintText: 'DeepSeek (personal)',
+                    hintText: context.l10n.providerLabelHint,
                   ),
                   validator: (String? v) => (v == null || v.trim().isEmpty)
                       ? context.l10n.requiredField
@@ -739,7 +737,7 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                   controller: _model,
                   decoration: InputDecoration(
                     labelText: context.l10n.model,
-                    hintText: 'gpt-4o-mini / deepseek-chat',
+                    hintText: context.l10n.modelHint,
                   ),
                   enabled: !isMock,
                   validator: (String? v) =>
