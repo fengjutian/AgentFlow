@@ -191,7 +191,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
       setState(() {
         _entries = const <FileEntry>[];
         _loading = false;
-        _error = 'Cannot list folder: $e';
+        _error = context.l10n.cannotListFolder(e);
       });
     }
   }
@@ -225,8 +225,7 @@ class _FilesPageState extends ConsumerState<FilesPage> {
   Future<void> _openFile(FileEntry entry) async {
     if (entry.size > _maxPreviewBytes) {
       _snack(
-        '${entry.name} is too large to preview '
-        '(${_humanSize(entry.size)}).',
+        context.l10n.fileTooLargeToPreview(entry.name, _humanSize(entry.size)),
       );
       return;
     }

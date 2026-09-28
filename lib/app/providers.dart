@@ -168,7 +168,9 @@ final Provider<ModelProviderFactory> modelProviderFactoryProvider =
 final Provider<ToolRegistry> toolRegistryProvider = Provider<ToolRegistry>((
   Ref ref,
 ) {
-  final registry = defaultToolRegistry();
+  final registry = defaultToolRegistry(
+    memoryManager: ref.watch(memoryManagerProvider),
+  );
   registry.registerAll(documentTools(ref.watch(documentStoreProvider)));
   return registry;
 });

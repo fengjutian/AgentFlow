@@ -141,7 +141,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     }
 
     setState(() => _running = true);
-    _append(_LineKind.info, '(running…)');
+    _append(_LineKind.info, context.l10n.running);
     var streamedStdout = false;
     var streamedStderr = false;
     final stopwatch = Stopwatch()..start();
@@ -166,13 +166,13 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         _append(_LineKind.stderr, result.stderr.trimRight());
       }
       if (result.timedOut) {
-        _append(_LineKind.info, '(timed out)');
+        _append(_LineKind.info, context.l10n.timedOut);
       } else if (result.exitCode != 0) {
-        _append(_LineKind.info, '(exit ${result.exitCode})');
+        _append(_LineKind.info, context.l10n.exitCode(result.exitCode));
       } else {
         _append(
           _LineKind.info,
-          '(finished in ${_formatElapsed(stopwatch.elapsed)})',
+          context.l10n.finishedIn(_formatElapsed(stopwatch.elapsed)),
         );
       }
     } catch (e) {
@@ -237,7 +237,7 @@ class _Scrollback extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            'Type a command below.\nTry: ls, pwd, git status, cat README.md',
+            context.l10n.terminalHint,
             textAlign: TextAlign.center,
             style: AppTheme.code.copyWith(color: scheme.outline),
           ),

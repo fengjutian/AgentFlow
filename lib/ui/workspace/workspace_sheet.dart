@@ -96,7 +96,7 @@ class _WorkspaceSheet extends ConsumerWidget {
                               <PopupMenuEntry<String>>[
                                 PopupMenuItem<String>(
                                   value: 'runtime',
-                                  child: Text('Runtime: ${w.runtimeId}'),
+                                  child: Text(context.l10n.runtimeLabel(w.runtimeId)),
                                 ),
                                 PopupMenuItem<String>(
                                   value: 'delete',
@@ -183,14 +183,14 @@ class _WorkspaceSheet extends ConsumerWidget {
     final selected = await showDialog<String>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Select runtime'),
+        title: Text(context.l10n.selectRuntime),
         children: [
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'local'),
             child: ListTile(
               leading: const Icon(Icons.computer),
               title: const Text('Local'),
-              subtitle: const Text('Run on this device'),
+              subtitle: Text(context.l10n.runOnThisDevice),
               selected: w.runtimeId == 'local',
             ),
           ),
@@ -287,7 +287,7 @@ class _CreateWorkspaceDialogState extends ConsumerState<CreateWorkspaceDialog> {
             autofocus: true,
             decoration: InputDecoration(
               labelText: context.l10n.workspaceName,
-              hintText: 'My Project',
+              hintText: context.l10n.workspaceNameHint,
             ),
           ),
           const SizedBox(height: 12),

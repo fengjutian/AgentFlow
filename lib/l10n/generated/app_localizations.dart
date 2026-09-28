@@ -1159,6 +1159,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} sections'**
   String sectionsCount(int count);
+
+  /// No description provided for @terminalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a command below.\nTry: ls, pwd, git status, cat README.md'**
+  String get terminalHint;
+
+  /// No description provided for @running.
+  ///
+  /// In en, this message translates to:
+  /// **'(running…)'**
+  String get running;
+
+  /// No description provided for @timedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'(timed out)'**
+  String get timedOut;
+
+  /// No description provided for @exitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'(exit {code})'**
+  String exitCode(int code);
+
+  /// No description provided for @finishedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'(finished in {elapsed})'**
+  String finishedIn(String elapsed);
+
+  /// No description provided for @runtimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Runtime: {id}'**
+  String runtimeLabel(String id);
+
+  /// No description provided for @selectRuntime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select runtime'**
+  String get selectRuntime;
+
+  /// No description provided for @runOnThisDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Run on this device'**
+  String get runOnThisDevice;
+
+  /// No description provided for @workspaceNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'My Project'**
+  String get workspaceNameHint;
+
+  /// No description provided for @deleteSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{title}\"?'**
+  String deleteSessionTitle(String title);
+
+  /// No description provided for @deleteSessionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This session and its messages will be permanently deleted.'**
+  String get deleteSessionDescription;
+
+  /// No description provided for @noExtractableText.
+  ///
+  /// In en, this message translates to:
+  /// **'(No extractable text for this section.)'**
+  String get noExtractableText;
+
+  /// No description provided for @cannotListFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot list folder: {error}'**
+  String cannotListFolder(Object error);
+
+  /// No description provided for @fileTooLargeToPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is too large to preview ({size}).'**
+  String fileTooLargeToPreview(String name, String size);
 }
 
 class _AppLocalizationsDelegate

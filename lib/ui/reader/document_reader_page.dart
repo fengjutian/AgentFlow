@@ -43,7 +43,7 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
       final doc = await store.byId(widget.documentId);
       if (doc == null) {
         setState(() {
-          _error = 'Document not found.';
+          _error = context.l10n.documentNotFound;
           _loading = false;
         });
         return;
@@ -179,7 +179,7 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
           const SizedBox(height: 12),
           SelectableText(
             section.plainText.isEmpty
-                ? '(No extractable text for this section.)'
+                ? context.l10n.noExtractableText
                 : section.plainText,
             style: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
           ),

@@ -587,4 +587,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String sectionsCount(int count) {
     return '$count 个章节';
   }
+
+  @override
+  String get terminalHint => '在下方输入命令。\n试试：ls, pwd, git status, cat README.md';
+
+  @override
+  String get running => '（运行中…）';
+
+  @override
+  String get timedOut => '（超时）';
+
+  @override
+  String exitCode(int code) {
+    return '（退出码 $code）';
+  }
+
+  @override
+  String finishedIn(String elapsed) {
+    return '（耗时 $elapsed）';
+  }
+
+  @override
+  String runtimeLabel(String id) {
+    return '运行环境：$id';
+  }
+
+  @override
+  String get selectRuntime => '选择运行环境';
+
+  @override
+  String get runOnThisDevice => '在本设备运行';
+
+  @override
+  String get workspaceNameHint => '我的项目';
+
+  @override
+  String deleteSessionTitle(String title) {
+    return '删除“$title”？';
+  }
+
+  @override
+  String get deleteSessionDescription => '此会话及其消息将被永久删除。';
+
+  @override
+  String get noExtractableText => '（此章节无可提取的文本。）';
+
+  @override
+  String cannotListFolder(Object error) {
+    return '无法列出文件夹：$error';
+  }
+
+  @override
+  String fileTooLargeToPreview(String name, String size) {
+    return '$name 太大无法预览（$size）。';
+  }
 }

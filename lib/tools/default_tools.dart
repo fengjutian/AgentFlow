@@ -10,15 +10,19 @@ import 'tool_registry.dart';
 import 'code/code_tools.dart';
 import 'filesystem/file_tools.dart';
 import 'git/git_tools.dart';
+import 'memory/memory_tools.dart';
 import 'shell/shell_tool.dart';
+import '../core/memory/memory_manager.dart';
 
 /// All tools AgentFlow ships in the MVP.
-List<AgentTool> allTools() => <AgentTool>[
+List<AgentTool> allTools({MemoryManager? memoryManager}) => <AgentTool>[
       ...fileTools(),
       ...codeTools(),
       ...gitTools(),
       ...shellTools(),
+      if (memoryManager != null) ...memoryTools(memoryManager),
     ];
 
 /// A registry pre-populated with [allTools].
-ToolRegistry defaultToolRegistry() => ToolRegistry(tools: allTools());
+ToolRegistry defaultToolRegistry({MemoryManager? memoryManager}) =>
+    ToolRegistry(tools: allTools(memoryManager: memoryManager));

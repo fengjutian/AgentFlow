@@ -601,4 +601,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String sectionsCount(int count) {
     return '$count sections';
   }
+
+  @override
+  String get terminalHint =>
+      'Type a command below.\nTry: ls, pwd, git status, cat README.md';
+
+  @override
+  String get running => '(running…)';
+
+  @override
+  String get timedOut => '(timed out)';
+
+  @override
+  String exitCode(int code) {
+    return '(exit $code)';
+  }
+
+  @override
+  String finishedIn(String elapsed) {
+    return '(finished in $elapsed)';
+  }
+
+  @override
+  String runtimeLabel(String id) {
+    return 'Runtime: $id';
+  }
+
+  @override
+  String get selectRuntime => 'Select runtime';
+
+  @override
+  String get runOnThisDevice => 'Run on this device';
+
+  @override
+  String get workspaceNameHint => 'My Project';
+
+  @override
+  String deleteSessionTitle(String title) {
+    return 'Delete \"$title\"?';
+  }
+
+  @override
+  String get deleteSessionDescription =>
+      'This session and its messages will be permanently deleted.';
+
+  @override
+  String get noExtractableText => '(No extractable text for this section.)';
+
+  @override
+  String cannotListFolder(Object error) {
+    return 'Cannot list folder: $error';
+  }
+
+  @override
+  String fileTooLargeToPreview(String name, String size) {
+    return '$name is too large to preview ($size).';
+  }
 }
