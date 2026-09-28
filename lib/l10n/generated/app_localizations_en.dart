@@ -898,4 +898,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get version => 'Version';
+
+  @override
+  String get quickOpen => 'Quick open';
+
+  @override
+  String get searchFiles => 'Search files';
+
+  @override
+  String get noFiles => 'No files found';
 }

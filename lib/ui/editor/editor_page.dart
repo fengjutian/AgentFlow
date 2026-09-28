@@ -13,6 +13,7 @@ import '../../app/providers.dart';
 import '../../app/theme.dart';
 import '../../core/editor/editor_document.dart';
 import '../../core/editor/editor_search.dart';
+import '../../core/editor/editor_workspace.dart';
 import '../../core/editor/syntax_highlighter.dart';
 import '../../l10n/l10n.dart';
 
@@ -625,23 +626,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Container(
-                width: 54,
-                color: scheme.surfaceContainerLow,
-                child: SingleChildScrollView(
-                  controller: _lineScroll,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    List<String>.generate(
-                      _lineCount,
-                      (index) => '${index + 1}',
-                    ).join('\n'),
-                    textAlign: TextAlign.right,
-                    style: AppTheme.code.copyWith(color: scheme.outline),
-                  ),
-                ),
-              ),
+              _buildGutter(scheme),
               const VerticalDivider(width: 1),
               Expanded(
                 child: TextField(
@@ -667,6 +652,81 @@ class _EditorPageState extends ConsumerState<EditorPage>
       ],
     );
   }
+
+  /// Builds the line-number gutter with diagnostic markers (DIAG-03).
+  Widget _buildGutter(ColorScheme scheme) {
+    final allDiagnostics = ref.watch(editorDiagnosticsProvider);
+    final normalizedPath = widget.path.replaceAll('\\', '/');
+    final fileDiagnostics = allDiagnostics
+        .where(
+          (d) =>
+              d.location.path.replaceAll('\\', '/') == normalizedPath ||
+              d.location.path == widget.path,
+        )
+        .toList(growable: false);
+
+    // Map line -> highest severity on that line.
+    final lineSeverity = <int, DiagnosticSeverity>{};
+    for (final d in fileDiagnostics) {
+      final line = d.location.line;
+      final current = lineSeverity[line];
+      if (current == null || d.severity.index < current.index) {
+        lineSeverity[line] = d.severity;
+      }
+    }
+
+    return Container(
+      width: 58,
+      color: scheme.surfaceContainerLow,
+      child: SingleChildScrollView(
+        controller: _lineScroll,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            for (var i = 1; i <= _lineCount; i++)
+              SizedBox(
+                height: 20,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Text(
+                          '$i',
+                          textAlign: TextAlign.right,
+                          style: AppTheme.code.copyWith(
+                            color: scheme.outline,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 12,
+                      child: lineSeverity.containsKey(i)
+                          ? Icon(
+                              Icons.circle,
+                              size: 8,
+                              color: _diagnosticColor(lineSeverity[i]!),
+                            )
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _diagnosticColor(DiagnosticSeverity severity) => switch (severity) {
+        DiagnosticSeverity.error => Colors.red,
+        DiagnosticSeverity.warning => Colors.orange,
+        DiagnosticSeverity.information => Colors.blue,
+      };
 
   Widget _buildSearchPanel(ColorScheme scheme) {
     final matchLabel = _matches.isEmpty

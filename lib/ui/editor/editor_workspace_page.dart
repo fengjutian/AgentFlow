@@ -108,7 +108,7 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
       showDragHandle: true,
       builder: (context) => SafeArea(
         child: diagnostics.isEmpty
-            ? Center(child: Text(_label(context, 'noDiagnostics')))
+            ? Center(child: Text(context.l10n.noDiagnostics))
             : ListView.builder(
                 itemCount: diagnostics.length,
                 itemBuilder: (context, index) {
@@ -155,15 +155,15 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
     final diagnostics = ref.watch(editorDiagnosticsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text(_label(context, 'openFiles')),
+        title: Text(context.l10n.openFiles),
         actions: <Widget>[
           IconButton(
-            tooltip: _label(context, 'quickOpen'),
+            tooltip: context.l10n.quickOpen,
             onPressed: _showQuickOpen,
             icon: const Icon(Icons.find_in_page_outlined),
           ),
           PopupMenuButton<String>(
-            tooltip: _label(context, 'recentFiles'),
+            tooltip: context.l10n.recentFiles,
             icon: const Icon(Icons.history),
             onSelected: (path) => _open(
               EditorLocation(path: path),
@@ -190,7 +190,7 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
             isLabelVisible: diagnostics.isNotEmpty,
             label: Text('${diagnostics.length}'),
             child: IconButton(
-              tooltip: _label(context, 'diagnostics'),
+              tooltip: context.l10n.diagnostics,
               onPressed: _showDiagnostics,
               icon: const Icon(Icons.rule_folder_outlined),
             ),
@@ -273,7 +273,7 @@ class _QuickOpenDialogState extends State<_QuickOpenDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(_label(context, 'quickOpen')),
+      title: Text(context.l10n.quickOpen),
       content: SizedBox(
         width: 560,
         height: 480,
@@ -284,7 +284,7 @@ class _QuickOpenDialogState extends State<_QuickOpenDialog> {
               autofocus: true,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                labelText: _label(context, 'searchFiles'),
+                labelText: context.l10n.searchFiles,
               ),
               onChanged: (_) => setState(() {}),
             ),
@@ -308,7 +308,7 @@ class _QuickOpenDialogState extends State<_QuickOpenDialog> {
                       .take(200)
                       .toList(growable: false);
                   if (matches.isEmpty) {
-                    return Center(child: Text(_label(context, 'noFiles')));
+                    return Center(child: Text(context.l10n.noFiles));
                   }
                   return ListView.builder(
                     itemCount: matches.length,
@@ -353,17 +353,3 @@ IconData _diagnosticIcon(DiagnosticSeverity severity) => switch (severity) {
       DiagnosticSeverity.warning => Icons.warning_amber_outlined,
       DiagnosticSeverity.information => Icons.info_outline,
     };
-
-String _label(BuildContext context, String key) {
-  final zh = Localizations.localeOf(context).languageCode == 'zh';
-  return switch (key) {
-    'openFiles' => zh ? '打开的文件' : 'Open files',
-    'recentFiles' => zh ? '最近文件' : 'Recent files',
-    'diagnostics' => zh ? '诊断' : 'Diagnostics',
-    'noDiagnostics' => zh ? '暂无诊断' : 'No diagnostics',
-    'quickOpen' => zh ? '快速打开' : 'Quick open',
-    'searchFiles' => zh ? '搜索文件' : 'Search files',
-    'noFiles' => zh ? '未找到文件' : 'No files found',
-    _ => key,
-  };
-}

@@ -878,4 +878,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get version => '版本';
+
+  @override
+  String get quickOpen => '快速打开';
+
+  @override
+  String get searchFiles => '搜索文件';
+
+  @override
+  String get noFiles => '未找到文件';
 }

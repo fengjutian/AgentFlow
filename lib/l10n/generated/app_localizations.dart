@@ -1669,6 +1669,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version'**
   String get version;
+
+  /// No description provided for @quickOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick open'**
+  String get quickOpen;
+
+  /// No description provided for @searchFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Search files'**
+  String get searchFiles;
+
+  /// No description provided for @noFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No files found'**
+  String get noFiles;
 }
 
 class _AppLocalizationsDelegate

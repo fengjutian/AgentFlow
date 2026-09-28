@@ -300,5 +300,8 @@
   "modelHint": "gpt-4o-mini / deepseek-chat",
   "copyDiagnostics": "Copy diagnostics",
   "diagnosticsCopied": "Diagnostics copied to clipboard",
-  "version": "Version"
+  "version": "Version",
+  "quickOpen": "Quick open",
+  "searchFiles": "Search files",
+  "noFiles": "No files found"
 }
