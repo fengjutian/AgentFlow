@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../core/editor/editor_diagnostics.dart';
 import '../../l10n/l10n.dart';
 import '../../app/theme.dart';
 import '../../runtime/runtime.dart';
@@ -165,6 +166,12 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       if (!streamedStderr && result.stderr.trim().isNotEmpty) {
         _append(_LineKind.stderr, result.stderr.trimRight());
       }
+      final diagnostics = parseEditorDiagnostics(
+        '${result.stdout}\n${result.stderr}',
+        source: command,
+        basePath: _cwd,
+      );
+      ref.read(editorDiagnosticsProvider.notifier).replace(diagnostics);
       if (!mounted) return;
       if (result.timedOut) {
         _append(_LineKind.info, context.l10n.timedOut);

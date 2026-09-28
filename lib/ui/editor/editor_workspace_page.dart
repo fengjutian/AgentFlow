@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../core/editor/editor_file_index.dart';
 import '../../core/editor/editor_workspace.dart';
 import '../../l10n/l10n.dart';
+import '../../runtime/runtime.dart';
 import 'editor_page.dart';
 
 class EditorWorkspacePage extends ConsumerStatefulWidget {
@@ -130,6 +132,23 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
     );
   }
 
+  Future<void> _showQuickOpen() async {
+    final runtime = await ref.read(runtimeProvider.future);
+    if (!mounted || runtime == null) return;
+    final entry = await showDialog<FileEntry>(
+      context: context,
+      builder: (context) => _QuickOpenDialog(
+        files: EditorFileIndex(runtime.listFiles).scan(),
+      ),
+    );
+    if (!mounted || entry == null) return;
+    _open(
+      EditorLocation(path: entry.path),
+      name: entry.name,
+      persist: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = _controller.state;
@@ -138,6 +157,11 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
       appBar: AppBar(
         title: Text(_label(context, 'openFiles')),
         actions: <Widget>[
+          IconButton(
+            tooltip: _label(context, 'quickOpen'),
+            onPressed: _showQuickOpen,
+            icon: const Icon(Icons.find_in_page_outlined),
+          ),
           PopupMenuButton<String>(
             tooltip: _label(context, 'recentFiles'),
             icon: const Icon(Icons.history),
@@ -224,6 +248,97 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
             )
             .toList(growable: false),
       ),
+    );
+  }
+}
+
+class _QuickOpenDialog extends StatefulWidget {
+  const _QuickOpenDialog({required this.files});
+
+  final Future<List<FileEntry>> files;
+
+  @override
+  State<_QuickOpenDialog> createState() => _QuickOpenDialogState();
+}
+
+class _QuickOpenDialogState extends State<_QuickOpenDialog> {
+  final TextEditingController _query = TextEditingController();
+
+  @override
+  void dispose() {
+    _query.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(_label(context, 'quickOpen')),
+      content: SizedBox(
+        width: 560,
+        height: 480,
+        child: Column(
+          children: <Widget>[
+            TextField(
+              controller: _query,
+              autofocus: true,
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
+                labelText: _label(context, 'searchFiles'),
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: FutureBuilder<List<FileEntry>>(
+                future: widget.files,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('${snapshot.error}'));
+                  }
+                  final query = _query.text.trim().toLowerCase();
+                  final matches = (snapshot.data ?? const <FileEntry>[])
+                      .where(
+                        (entry) => query.isEmpty ||
+                            entry.path.toLowerCase().contains(query),
+                      )
+                      .take(200)
+                      .toList(growable: false);
+                  if (matches.isEmpty) {
+                    return Center(child: Text(_label(context, 'noFiles')));
+                  }
+                  return ListView.builder(
+                    itemCount: matches.length,
+                    itemBuilder: (context, index) {
+                      final entry = matches[index];
+                      return ListTile(
+                        dense: true,
+                        leading: const Icon(Icons.insert_drive_file_outlined),
+                        title: Text(entry.name),
+                        subtitle: Text(
+                          entry.path,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () => Navigator.pop(context, entry),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.cancel),
+        ),
+      ],
     );
   }
 }

@@ -97,7 +97,7 @@ class McpSettingsTab extends ConsumerWidget {
     final status = state?.status ?? McpConnectionStatus.disconnected;
     final theme = Theme.of(context);
     final statusColor = _statusColor(status, theme);
-    final statusLabel = _statusLabel(status);
+    final statusLabel = _statusLabel(status, context);
     final subtitle = server.transport == 'stdio'
         ? 'stdio · ${server.command}'
         : '${server.transport.toUpperCase()} · ${server.endpoint}';
@@ -183,18 +183,18 @@ class McpSettingsTab extends ConsumerWidget {
                     }
                   },
                   itemBuilder: (_) => [
-                    const PopupMenuItem(
-                        value: 'test', child: Text('Test connection')),
+                    PopupMenuItem(
+                        value: 'test', child: Text(context.l10n.testConnection)),
                     if (status != McpConnectionStatus.connected)
-                      const PopupMenuItem(value: 'connect', child: Text('Connect')),
+                      PopupMenuItem(value: 'connect', child: Text(context.l10n.connect)),
                     if (status == McpConnectionStatus.connected) ...[
-                      const PopupMenuItem(
-                          value: 'disconnect', child: Text('Disconnect')),
-                      const PopupMenuItem(
-                          value: 'refresh', child: Text('Refresh tools')),
+                      PopupMenuItem(
+                          value: 'disconnect', child: Text(context.l10n.disconnect)),
+                      PopupMenuItem(
+                          value: 'refresh', child: Text(context.l10n.refreshTools)),
                     ],
-                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                    PopupMenuItem(value: 'edit', child: Text(context.l10n.edit)),
+                    PopupMenuItem(value: 'delete', child: Text(context.l10n.delete)),
                   ],
                 ),
               ],
@@ -215,7 +215,7 @@ class McpSettingsTab extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${tools.length} tool${tools.length == 1 ? '' : 's'} available',
+                    context.l10n.toolsAvailable(tools.length),
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
@@ -265,16 +265,16 @@ class McpSettingsTab extends ConsumerWidget {
     }
   }
 
-  String _statusLabel(McpConnectionStatus status) {
+  String _statusLabel(McpConnectionStatus status, BuildContext context) {
     switch (status) {
       case McpConnectionStatus.connected:
-        return 'Connected';
+        return context.l10n.mcpConnected;
       case McpConnectionStatus.connecting:
-        return 'Connecting';
+        return context.l10n.mcpConnecting;
       case McpConnectionStatus.error:
-        return 'Error';
+        return context.l10n.phaseError;
       case McpConnectionStatus.disconnected:
-        return 'Disconnected';
+        return context.l10n.mcpDisconnected;
     }
   }
 
@@ -322,16 +322,16 @@ class McpSettingsTab extends ConsumerWidget {
               color: success ? Colors.green : theme.colorScheme.error,
             ),
             const SizedBox(width: 8),
-            Text(success ? 'Connection successful' : 'Connection failed'),
+            Text(success ? context.l10n.connectionSuccessful : context.l10n.connectionFailedTitle),
           ],
         ),
         content: success
-            ? Text('Connected successfully. Found $toolCount tool(s).')
-            : Text(error ?? 'Unknown error.'),
+            ? Text(context.l10n.connectionSuccessfulDetail(toolCount))
+            : Text(error ?? context.l10n.unknownError),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('OK'),
+            child: Text(context.l10n.accept),
           ),
         ],
       ),
@@ -346,15 +346,15 @@ class McpSettingsTab extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Delete "${server.name}"?'),
-        content: const Text('This MCP server will be removed.'),
+        title: Text(context.l10n.deleteMcpConfigTitle(server.name)),
+        content: Text(context.l10n.deleteMcpConfigDescription),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+              child: Text(context.l10n.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete')),
+              child: Text(context.l10n.delete)),
         ],
       ),
     );
