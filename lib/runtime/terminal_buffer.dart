@@ -266,6 +266,43 @@ class TerminalRow {
   }
 }
 
+/// A range of selected cells in the terminal, expressed as absolute row indices
+/// (scrollback + grid). [startRow] is always <= [endRow].
+class TerminalSelection {
+  const TerminalSelection({
+    required this.startRow,
+    required this.startCol,
+    required this.endRow,
+    required this.endCol,
+  });
+
+  final int startRow;
+  final int startCol;
+  final int endRow;
+  final int endCol;
+
+  /// Returns true if [row]/[col] falls within this selection.
+  bool contains(int row, int col) {
+    if (row < startRow || row > endRow) return false;
+    if (row == startRow && col < startCol) return false;
+    if (row == endRow && col > endCol) return false;
+    return true;
+  }
+
+  /// Normalised copy: ensures start <= end.
+  TerminalSelection get normalised {
+    if (startRow < endRow || (startRow == endRow && startCol <= endCol)) {
+      return this;
+    }
+    return TerminalSelection(
+      startRow: endRow,
+      startCol: endCol,
+      endRow: startRow,
+      endCol: startCol,
+    );
+  }
+}
+
 /// The terminal screen state: a grid of [rows] x [cols] cells plus a cursor
 /// position and current text attributes.
 class TerminalBuffer {
