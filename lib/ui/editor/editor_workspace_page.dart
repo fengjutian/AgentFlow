@@ -1,5 +1,7 @@
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -42,15 +44,23 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
             .toList(growable: false)
         : const <EditorTab>[];
     _controller = EditorWorkspaceController(recentFiles: recent);
-    _open(
+    final rawOpenFiles = workspace?.settings['openEditorFiles'];
+    if (rawOpenFiles is List) {
+      for (final path in rawOpenFiles.whereType<String>()) {
+        if (path != widget.path) {
+          _controller.open(EditorLocation(path: path));
+        }
+      }
+    }
+    _controller.open(
       EditorLocation(
         path: widget.path,
         line: widget.line,
         column: widget.column,
       ),
       name: widget.name,
-      persist: true,
     );
+    unawaited(_persistEditorState());
   }
 
   void _open(
@@ -60,14 +70,17 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
   }) {
     _controller.open(location, name: name);
     if (mounted) setState(() {});
-    if (persist) _persistRecentFiles();
+    if (persist) unawaited(_persistEditorState());
   }
 
-  Future<void> _persistRecentFiles() async {
+  Future<void> _persistEditorState() async {
     final workspace = ref.read(currentWorkspaceProvider);
     if (workspace == null) return;
     final settings = <String, dynamic>{...workspace.settings};
     settings['recentFiles'] = _controller.state.recentFiles
+        .map((tab) => tab.path)
+        .toList(growable: false);
+    settings['openEditorFiles'] = _controller.state.tabs
         .map((tab) => tab.path)
         .toList(growable: false);
     await ref
@@ -78,6 +91,7 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
 
   void _close(int index) {
     _controller.close(index);
+    unawaited(_persistEditorState());
     if (_controller.state.tabs.isEmpty) {
       Navigator.of(context).pop();
       return;

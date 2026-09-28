@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
 import '../../data/models.dart';
+import '../../l10n/l10n.dart';
 import '../../runtime/ssh/ssh_runtime.dart';
 
 /// SSH configs provider — filters runtime configs by kind='ssh'.
@@ -30,7 +31,7 @@ class SshSettingsTab extends ConsumerWidget {
     return configsAsync.when(
       loading: () =>
           const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(child: Text(context.l10n.errorGeneric(e))),
       data: (configs) {
         if (configs.isEmpty) {
           return ListView(

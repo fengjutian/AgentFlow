@@ -110,7 +110,7 @@ class _EditorPageState extends ConsumerState<EditorPage>
 
   @override
   void dispose() {
-    if (_dirty) unawaited(_saveDraft());
+    if (_dirty) unawaited(_saveDraft(_text.text));
     WidgetsBinding.instance.removeObserver(this);
     _text
       ..removeListener(_onTextChanged)
@@ -252,10 +252,11 @@ class _EditorPageState extends ConsumerState<EditorPage>
     return io.File('${draftsDir.path}/$hash.txt');
   }
 
-  Future<void> _saveDraft() async {
+  Future<void> _saveDraft([String? draft]) async {
+    final content = draft ?? _text.text;
     try {
       final file = await _draftFile();
-      await file.writeAsString(_text.text);
+      await file.writeAsString(content);
     } catch (_) {
       // Draft save is best-effort; never block the UI or surface errors.
     }
