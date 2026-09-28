@@ -8,6 +8,8 @@ library;
 
 import 'dart:ui';
 
+import 'package:flutter/painting.dart' show TextSpan, TextStyle;
+
 import 'ansi_parser.dart';
 
 /// Text attributes applied to subsequent characters.
@@ -123,6 +125,134 @@ class TerminalRow {
       buffer.write(_cells[i].char);
     }
     return lastNonSpace < 0 ? '' : buffer.toString().substring(0, lastNonSpace + 1);
+  }
+
+  /// Builds a list of [TextSpan]s by merging consecutive cells that share the
+  /// same visual attributes. This dramatically reduces the number of spans
+  /// compared to rendering one span per cell (typically 5-10 vs 80 per row).
+  ///
+  /// [base] is the monospaced [TextStyle] for the terminal font.
+  /// [defaultFg] and [defaultBg] are the fallback colours when a cell has no
+  /// explicit attribute set. When [isCursorRow] is true the cell at
+  /// [cursorCol] is rendered with inverted colours (block cursor) and the
+  /// [cursorVisible] flag controls whether the inversion is applied.
+  ///
+  /// When [selectionStart] and [selectionEnd] are provided, cells within
+  /// that column range receive a highlight background.
+  List<TextSpan> buildSpans(
+    TextStyle base,
+    Color defaultFg,
+    Color defaultBg, {
+    bool isCursorRow = false,
+    int cursorCol = -1,
+    bool cursorVisible = true,
+    int? selectionStart,
+    int? selectionEnd,
+  }) {
+    _ensureSize();
+    final spans = <TextSpan>[];
+    var runStart = 0;
+
+    for (var col = 0; col <= cols; col++) {
+      if (col == cols) {
+        // Flush the final run.
+        if (runStart < cols) {
+          spans.add(_buildSpan(runStart, col, base, defaultFg, defaultBg,
+              isCursorRow: isCursorRow, cursorCol: cursorCol,
+              cursorVisible: cursorVisible,
+              selectionStart: selectionStart, selectionEnd: selectionEnd));
+        }
+        break;
+      }
+
+      // Check if this cell breaks the current run.
+      if (col > runStart && _cellBreaksRun(col, runStart, isCursorRow,
+          cursorCol, cursorVisible, selectionStart, selectionEnd)) {
+        spans.add(_buildSpan(runStart, col, base, defaultFg, defaultBg,
+            isCursorRow: isCursorRow, cursorCol: cursorCol,
+            cursorVisible: cursorVisible,
+            selectionStart: selectionStart, selectionEnd: selectionEnd));
+        runStart = col;
+      }
+    }
+    return spans;
+  }
+
+  /// Returns true if cell [col] has different visual attributes from the
+  /// cell at [runStart], meaning a new span must begin.
+  bool _cellBreaksRun(int col, int runStart, bool isCursorRow, int cursorCol,
+      bool cursorVisible, int? selStart, int? selEnd) {
+    final a = _cells[col].attributes;
+    final b = _cells[runStart].attributes;
+
+    // Cursor cell always breaks the run so it can be styled independently.
+    if (isCursorRow && cursorVisible) {
+      if (col == cursorCol || runStart == cursorCol) return true;
+    }
+
+    // Selection boundary breaks the run.
+    if (selStart != null && selEnd != null) {
+      final inSelA = col >= selStart && col <= selEnd;
+      final inSelB = runStart >= selStart && runStart <= selEnd;
+      if (inSelA != inSelB) return true;
+    }
+
+    return a.foreground != b.foreground ||
+        a.background != b.background ||
+        a.bold != b.bold ||
+        a.italic != b.italic ||
+        a.underline != b.underline ||
+        a.inverse != b.inverse;
+  }
+
+  TextSpan _buildSpan(int from, int to, TextStyle base, Color defaultFg,
+      Color defaultBg, {
+    required bool isCursorRow,
+    required int cursorCol,
+    required bool cursorVisible,
+    int? selectionStart,
+    int? selectionEnd,
+  }) {
+    final buf = StringBuffer();
+    for (var i = from; i < to; i++) {
+      buf.write(_cells[i].char);
+    }
+
+    // Use the attributes of the first cell in the run.
+    final attrs = _cells[from].attributes;
+    Color fg = attrs.foreground ?? defaultFg;
+    Color bg = attrs.background ?? defaultBg;
+
+    // Apply cursor inversion.
+    if (isCursorRow && cursorVisible && from <= cursorCol && cursorCol < to) {
+      final tmp = fg;
+      fg = bg;
+      bg = tmp;
+    }
+
+    // Apply inverse attribute.
+    if (attrs.inverse) {
+      final tmp = fg;
+      fg = bg;
+      bg = tmp;
+    }
+
+    // Apply selection highlight.
+    if (selectionStart != null && selectionEnd != null &&
+        from <= selectionEnd && selectionStart < to) {
+      bg = const Color(0xFF4488FF).withAlpha(100);
+    }
+
+    return TextSpan(
+      text: buf.toString(),
+      style: base.copyWith(
+        color: fg,
+        backgroundColor: bg,
+        fontWeight: attrs.bold ? FontWeight.bold : FontWeight.normal,
+        fontStyle: attrs.italic ? FontStyle.italic : FontStyle.normal,
+        decoration: attrs.underline ? TextDecoration.underline : TextDecoration.none,
+      ),
+    );
   }
 
   void resize(int newCols) {

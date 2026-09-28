@@ -36,6 +36,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clear => 'Clear';
 
   @override
+  String get scrollToBottom => 'Scroll to bottom';
+
+  @override
   String get refresh => 'Refresh';
 
   @override

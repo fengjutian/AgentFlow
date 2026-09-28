@@ -9,6 +9,7 @@
   "newSession": "新建会话",
   "newLabel": "新建",
   "clear": "清空",
+    "scrollToBottom": "滚动到底部",
   "refresh": "刷新",
   "retry": "重试",
   "cancel": "取消",

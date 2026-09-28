@@ -9,6 +9,7 @@
   "newSession": "New session",
   "newLabel": "New",
   "clear": "Clear",
+    "scrollToBottom": "Scroll to bottom",
   "refresh": "Refresh",
   "retry": "Retry",
   "cancel": "Cancel",

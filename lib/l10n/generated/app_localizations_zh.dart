@@ -36,6 +36,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clear => '清空';
 
   @override
+  String get scrollToBottom => '滚动到底部';
+
+  @override
   String get refresh => '刷新';
 
   @override
