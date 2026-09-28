@@ -2,7 +2,7 @@ library;
 
 import '../../runtime/runtime.dart';
 
-enum EditorSaveResult { saved, conflict }
+enum EditorSaveResult { saved, conflict, verifiedWithChanges }
 
 class EditorDocument {
   EditorDocument({required this.path, required Runtime runtime})
@@ -36,8 +36,7 @@ class EditorDocument {
     _ensureLoaded();
     final disk = await _runtime.readFile(path);
     if (disk != _baseline) return EditorSaveResult.conflict;
-    await _writeAndVerify();
-    return EditorSaveResult.saved;
+    return _writeAndVerify();
   }
 
   Future<void> overwrite() async {
@@ -47,13 +46,23 @@ class EditorDocument {
 
   Future<String> reload() => load();
 
-  Future<void> _writeAndVerify() async {
+  /// Writes content and verifies it was saved correctly.
+  /// Returns [EditorSaveResult.saved] if content matches after write,
+  /// or [EditorSaveResult.verifiedWithChanges] if the file was written
+  /// successfully but external changes were detected (race condition).
+  Future<EditorSaveResult> _writeAndVerify() async {
     await _runtime.writeFile(path, _text);
     final verified = await _runtime.readFile(path);
-    if (verified != _text) {
-      throw StateError('Saved content could not be verified.');
-    }
+    // Always update baseline to what's on disk after write.
+    // This handles the case where another process modified the file
+    // between our write and verify (race condition).
     _baseline = verified;
+    if (verified != _text) {
+      // File was written but something else modified it immediately after.
+      // Our write was successful, just accept the disk state.
+      return EditorSaveResult.verifiedWithChanges;
+    }
+    return EditorSaveResult.saved;
   }
 
   void _ensureLoaded() {

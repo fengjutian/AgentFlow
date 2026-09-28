@@ -314,7 +314,9 @@ class DriftMemoryStore implements MemoryStore {
 
   @override
   Future<void> delete(String workspaceId, String id) =>
-      (_db.delete(_db.memoryNotes)..where((t) => t.id.equals(id))).go();
+      (_db.delete(_db.memoryNotes)
+            ..where((t) => t.id.equals(id) & t.workspaceId.equals(workspaceId)))
+          .go();
 }
 
 Map<String, dynamic> _decodeMap(String? source) {

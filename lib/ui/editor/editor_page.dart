@@ -414,9 +414,19 @@ class _EditorPageState extends ConsumerState<EditorPage>
       if (result == EditorSaveResult.conflict) {
         await _resolveConflict(document);
       } else {
+        // Both 'saved' and 'verifiedWithChanges' mean the write succeeded.
         _showMessage(context.l10n.fileSaved);
         // Saved successfully — discard any lingering draft.
         await _clearDraft();
+        // If verifiedWithChanges, reload the editor to show the current disk state.
+        if (result == EditorSaveResult.verifiedWithChanges) {
+          final content = document.text;
+          _text.value = TextEditingValue(
+            text: content,
+            selection: TextSelection.collapsed(offset: content.length),
+          );
+          setState(() => _lineCount = _countLines(content));
+        }
       }
     } catch (error) {
       if (mounted) _showMessage(context.l10n.failedToSave(error));

@@ -106,7 +106,7 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
         ],
       ),
       body: _sections.isEmpty
-          ? const Center(child: Text(''))
+          ? Center(child: Text(context.l10n.noExtractedText))
           : _buildSectionView(),
       bottomNavigationBar: _sections.length > 1
           ? BottomAppBar(
@@ -140,7 +140,7 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
           : null,
       floatingActionButton: FloatingActionButton.small(
         onPressed: _showAgentActions,
-        tooltip: 'Ask Agent about this section',
+        tooltip: context.l10n.askAgentAboutSection,
         child: const Icon(Icons.smart_toy_outlined),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -243,42 +243,41 @@ class _DocumentReaderPageState extends ConsumerState<DocumentReaderPage> {
         : _document!.title;
     showModalBottomSheet<void>(
       context: context,
-      builder: (context) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.smart_toy_outlined),
-              title: const Text('Ask about this section'),
-              subtitle: const Text('Send section text to the Agent'),
+              title: Text(context.l10n.askAboutThisSection),
+              subtitle: Text(context.l10n.sendSectionToAgent),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetContext);
                 _sendToChat(
                   docTitle: docTitle,
-                  instruction: 'Please explain this section.',
+                  instruction: context.l10n.explainThisSection,
                 );
               },
             ),
             ListTile(
               leading: const Icon(Icons.summarize_outlined),
-              title: const Text('Summarize this section'),
+              title: Text(context.l10n.summarizeThisSection),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetContext);
                 _sendToChat(
                   docTitle: docTitle,
-                  instruction: 'Please summarize this section concisely.',
+                  instruction: context.l10n.summarizeSectionConcisely,
                 );
               },
             ),
             ListTile(
               leading: const Icon(Icons.lightbulb_outline),
-              title: const Text('Extract key concepts'),
+              title: Text(context.l10n.extractKeyConcepts),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetContext);
                 _sendToChat(
                   docTitle: docTitle,
-                  instruction:
-                      'Extract the key concepts and terms from this section.',
+                  instruction: context.l10n.extractKeyConceptsDescription,
                 );
               },
             ),
