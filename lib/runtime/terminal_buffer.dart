@@ -208,12 +208,18 @@ class TerminalBuffer {
         switch (type) {
           case EraseType.display:
             if (mode == 2) {
-              for (final row in _grid) row.clearAll();
+              for (final row in _grid) {
+                row.clearAll();
+              }
             } else if (mode == 0) {
               _grid[cursorRow].clearFrom(cursorCol);
-              for (var i = cursorRow + 1; i < rows; i++) _grid[i].clearAll();
+              for (var i = cursorRow + 1; i < rows; i++) {
+                _grid[i].clearAll();
+              }
             } else if (mode == 1) {
-              for (var i = 0; i < cursorRow; i++) _grid[i].clearAll();
+              for (var i = 0; i < cursorRow; i++) {
+                _grid[i].clearAll();
+              }
               _grid[cursorRow].clearTo(cursorCol);
             }
           case EraseType.line:

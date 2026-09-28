@@ -16,16 +16,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
-import '../../core/editor/editor_diagnostics.dart';
 import '../../l10n/l10n.dart';
 import '../../app/theme.dart';
 import '../../runtime/local_shell_session.dart';
 import '../../runtime/shell_session.dart';
 import '../../runtime/terminal_buffer.dart';
-
-/// Provider that manages the current [ShellSession] lifecycle.
-final shellSessionProvider =
-    StateProvider<ShellSession?>((ref) => null);
 
 class TerminalPage extends ConsumerStatefulWidget {
   const TerminalPage({super.key});
@@ -42,12 +37,6 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
   final ScrollController _scroll = ScrollController();
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _input = TextEditingController();
-
-  /// Whether the terminal is in "line mode" (user types a full line and
-  /// presses Enter) vs "raw mode" (each keystroke is forwarded immediately).
-  /// Starts in line mode for simplicity; switches to raw mode when the
-  /// shell emits a prompt-like output.
-  bool _rawMode = false;
 
   @override
   void initState() {
@@ -88,7 +77,6 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
         return;
       }
       _session = session;
-      ref.read(shellSessionProvider.notifier).state = session;
 
       _outputSub = session.output.listen(
         (String chunk) {
@@ -124,7 +112,6 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
     setState(() {
       _buffer.feed('\r\n[Shell exited]\r\n');
     });
-    ref.read(shellSessionProvider.notifier).state = null;
   }
 
   void _updateTerminalSize() {
@@ -173,7 +160,6 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
   @override
   Widget build(BuildContext context) {
     final workspace = ref.watch(currentWorkspaceProvider);
-    final scheme = Theme.of(context).colorScheme;
 
     ref.listen<String?>(activeWorkspaceProvider, (
       String? previous,
@@ -182,7 +168,6 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
       if (previous == next) return;
       _session?.close();
       _session = null;
-      ref.read(shellSessionProvider.notifier).state = null;
       setState(() {
         _buffer.feed('[Workspace changed, restarting shell...]\r\n');
       });
