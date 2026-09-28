@@ -100,4 +100,89 @@ void main() {
     expect(await documents.byId('document'), isNull);
     expect(await documents.sections('document'), isEmpty);
   });
+
+  group('reading position persistence (DOC-07)', () {
+    test('saveReadingPosition stores and retrieves last section index',
+        () async {
+      final now = DateTime.utc(2026);
+      final document = AgentDocument(
+        id: 'document',
+        workspaceId: 'workspace',
+        displayName: 'Book.epub',
+        sourceUri: '/source/Book.epub',
+        localPath: '/cache/book.epub',
+        type: DocumentType.epub,
+        fileSize: 100,
+        contentHash: 'hash',
+        createdAt: now,
+        updatedAt: now,
+      );
+      await documents.saveParsed(document, const <DocumentSection>[
+        DocumentSection(
+          id: 's1',
+          documentId: 'document',
+          index: 0,
+          kind: 'chapter',
+          locator: 'ch1',
+          plainText: 'Chapter 1',
+        ),
+        DocumentSection(
+          id: 's2',
+          documentId: 'document',
+          index: 1,
+          kind: 'chapter',
+          locator: 'ch2',
+          plainText: 'Chapter 2',
+        ),
+        DocumentSection(
+          id: 's3',
+          documentId: 'document',
+          index: 2,
+          kind: 'chapter',
+          locator: 'ch3',
+          plainText: 'Chapter 3',
+        ),
+      ]);
+
+      // Initially no position saved.
+      expect((await documents.byId('document'))!.lastSectionIndex, isNull);
+
+      // Save position to chapter 2 (index 1).
+      await documents.saveReadingPosition('document', 1);
+      expect((await documents.byId('document'))!.lastSectionIndex, 1);
+
+      // Update position to chapter 3 (index 2).
+      await documents.saveReadingPosition('document', 2);
+      expect((await documents.byId('document'))!.lastSectionIndex, 2);
+    });
+
+    test('lastSectionIndex is preserved through copyWith', () {
+      final now = DateTime.utc(2026);
+      final document = AgentDocument(
+        id: 'doc',
+        workspaceId: 'ws',
+        displayName: 'test.pdf',
+        sourceUri: '/test.pdf',
+        localPath: '/cache/test.pdf',
+        type: DocumentType.pdf,
+        fileSize: 100,
+        contentHash: 'hash',
+        lastSectionIndex: 5,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      // copyWith preserves lastSectionIndex by default.
+      expect(document.copyWith().lastSectionIndex, 5);
+
+      // copyWith can update lastSectionIndex.
+      expect(document.copyWith(lastSectionIndex: 10).lastSectionIndex, 10);
+
+      // copyWith can clear lastSectionIndex.
+      expect(
+        document.copyWith(clearLastSectionIndex: true).lastSectionIndex,
+        isNull,
+      );
+    });
+  });
 }
