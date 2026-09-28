@@ -14,6 +14,7 @@
   "retry": "Retry",
   "cancel": "Cancel",
   "delete": "Delete",
+    "copy": "Copy",
   "create": "Create",
   "save": "Save",
   "undo": "Undo",

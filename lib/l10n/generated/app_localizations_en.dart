@@ -51,6 +51,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
+  String get copy => 'Copy';
+
+  @override
   String get create => 'Create';
 
   @override

@@ -60,6 +60,15 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
   double _charHeight = 16.0;
   bool _fontMeasured = false;
 
+  // --- Sprint 4: Text selection ---
+  TerminalSelection? _selection;
+
+  // --- Sprint 5: Scrollback search ---
+  bool _searchVisible = false;
+  final TextEditingController _searchController = TextEditingController();
+  List<int> _searchMatches = <int>[]; // absolute row indices of matches
+  int _currentMatchIndex = -1;
+
   @override
   void initState() {
     super.initState();
@@ -252,6 +261,65 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
     _session?.writeStdin(key);
   }
 
+  // --- Sprint 4: Text selection ---
+
+  /// Converts a tap position to an absolute row (scrollback + grid) and column.
+  ({int row, int col})? _positionToCell(Offset local) {
+    if (!_fontMeasured) return null;
+    final col = (local.dx / _charWidth).floor().clamp(0, _buffer.cols - 1);
+    final row = (local.dy / _charHeight).floor();
+    final totalRows = _buffer.scrollback.length + _buffer.rows;
+    // Account for scroll offset.
+    final scrollOffset = _scroll.hasClients
+        ? (_scroll.offset / _charHeight).floor()
+        : 0;
+    final absoluteRow = (row + scrollOffset).clamp(0, totalRows - 1);
+    return (row: absoluteRow, col: col);
+  }
+
+  void _onLongPressStart(LongPressStartDetails details) {
+    final cell = _positionToCell(details.localPosition);
+    if (cell == null) return;
+    setState(() {
+      _selection = TerminalSelection(
+        startRow: cell.row,
+        startCol: cell.col,
+        endRow: cell.row,
+        endCol: cell.col,
+      );
+    });
+  }
+
+  void _onPanUpdate(DragUpdateDetails details) {
+    if (_selection == null) return;
+    final cell = _positionToCell(details.localPosition);
+    if (cell == null) return;
+    setState(() {
+      _selection = TerminalSelection(
+        startRow: _selection!.startRow,
+        startCol: _selection!.startCol,
+        endRow: cell.row,
+        endCol: cell.col,
+      );
+    });
+  }
+
+  void _clearSelection() {
+    if (_selection != null) {
+      setState(() => _selection = null);
+    }
+  }
+
+  void _copySelection() {
+    final sel = _selection;
+    if (sel == null) return;
+    final text = _buffer.selectedText(sel);
+    if (text.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: text));
+    }
+    _clearSelection();
+  }
+
   // --- Build ---
 
   @override
@@ -279,6 +347,13 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
               : '${context.l10n.terminal} · ${workspace.name}',
         ),
         actions: <Widget>[
+          // Sprint 4: Copy button when selection is active.
+          if (_selection != null)
+            IconButton(
+              tooltip: context.l10n.copy,
+              icon: const Icon(Icons.copy),
+              onPressed: _copySelection,
+            ),
           IconButton(
             tooltip: 'Ctrl+C',
             icon: const Icon(Icons.stop_circle_outlined),
@@ -294,6 +369,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
                 _buffer.grid[i].clearAll();
               }
               _buffer.scrollback.clear();
+              _selection = null;
             }),
           ),
         ],
@@ -310,11 +386,18 @@ class _TerminalPageState extends ConsumerState<TerminalPage>
                     children: <Widget>[
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => _focusNode.requestFocus(),
+                          onTap: () {
+                            _clearSelection();
+                            _focusNode.requestFocus();
+                          },
+                          onLongPressStart: _onLongPressStart,
+                          onPanUpdate: _onPanUpdate,
+                          onPanEnd: (_) {},
                           child: _TerminalView(
                             buffer: _buffer,
                             scroll: _scroll,
                             cursorVisible: _cursorVisible,
+                            selection: _selection,
                           ),
                         ),
                       ),
@@ -375,11 +458,13 @@ class _TerminalView extends StatelessWidget {
     required this.buffer,
     required this.scroll,
     required this.cursorVisible,
+    this.selection,
   });
 
   final TerminalBuffer buffer;
   final ScrollController scroll;
   final bool cursorVisible;
+  final TerminalSelection? selection;
 
   @override
   Widget build(BuildContext context) {
@@ -401,6 +486,17 @@ class _TerminalView extends StatelessWidget {
               : buffer.grid[i - buffer.scrollback.length];
           final gridIndex = isScrollback ? -1 : i - buffer.scrollback.length;
 
+          // Sprint 4: Compute selection column range for this row.
+          int? selStart;
+          int? selEnd;
+          if (selection != null) {
+            final s = selection!.normalised;
+            if (i >= s.startRow && i <= s.endRow) {
+              selStart = (i == s.startRow) ? s.startCol : 0;
+              selEnd = (i == s.endRow) ? s.endCol : buffer.cols - 1;
+            }
+          }
+
           return RichText(
             text: TextSpan(
               children: row.buildSpans(
@@ -410,6 +506,8 @@ class _TerminalView extends StatelessWidget {
                 isCursorRow: gridIndex == buffer.cursorRow,
                 cursorCol: buffer.cursorCol,
                 cursorVisible: cursorVisible,
+                selectionStart: selStart,
+                selectionEnd: selEnd,
               ),
             ),
           );

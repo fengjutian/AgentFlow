@@ -521,6 +521,31 @@ class TerminalBuffer {
     cursorCol = cursorCol.clamp(0, cols - 1);
   }
 
+  /// Extracts the text content of the given [selection] from scrollback + grid.
+  /// Rows are indexed as: scrollback rows first, then grid rows.
+  String selectedText(TerminalSelection sel) {
+    final s = sel.normalised;
+    final buf = StringBuffer();
+    for (var row = s.startRow; row <= s.endRow; row++) {
+      final r = _rowAtIndex(row);
+      if (r == null) continue;
+      final startCol = (row == s.startRow) ? s.startCol : 0;
+      final endCol = (row == s.endRow) ? s.endCol : cols - 1;
+      for (var col = startCol; col <= endCol && col < cols; col++) {
+        buf.write(r.cellAt(col).char);
+      }
+      if (row < s.endRow) buf.write('\n');
+    }
+    return buf.toString().trimRight();
+  }
+
+  TerminalRow? _rowAtIndex(int absoluteRow) {
+    if (absoluteRow < scrollback.length) return scrollback[absoluteRow];
+    final gridIndex = absoluteRow - scrollback.length;
+    if (gridIndex >= 0 && gridIndex < _grid.length) return _grid[gridIndex];
+    return null;
+  }
+
   /// Standard 16 ANSI colors.
   static Color _ansi16Color(int index) {
     const colors = <Color>[
