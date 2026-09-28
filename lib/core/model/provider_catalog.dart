@@ -24,17 +24,10 @@ class ProviderPreset {
 
 const List<ProviderPreset> providerCatalog = <ProviderPreset>[
   ProviderPreset(
-    id: 'minimax',
-    displayName: 'MiniMax',
-    baseUrl: 'https://api.minimaxi.com/v1',
-    defaultModel: 'MiniMax-M2.5',
-    contextWindow: 204800,
-  ),
-  ProviderPreset(
     id: 'deepseek',
     displayName: 'DeepSeek',
     baseUrl: 'https://api.deepseek.com/v1',
-    defaultModel: 'deepseek-flash',
+    defaultModel: 'deepseek-v4-pro',
     contextWindow: 1000000,
   ),
   ProviderPreset(
@@ -48,8 +41,22 @@ const List<ProviderPreset> providerCatalog = <ProviderPreset>[
     id: 'kimi',
     displayName: 'Kimi',
     baseUrl: 'https://api.moonshot.cn/v1',
-    defaultModel: 'kimi-k2.5',
-    contextWindow: 262144,
+    defaultModel: 'kimi-k3',
+    contextWindow: 1000000,
+  ),
+  ProviderPreset(
+    id: 'minimax',
+    displayName: 'MiniMax',
+    baseUrl: 'https://api.minimaxi.com/v1',
+    defaultModel: 'MiniMax-M3',
+    contextWindow: 1000000,
+  ),
+  ProviderPreset(
+    id: 'zhipu',
+    displayName: 'Zhipu（智谱清言）',
+    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    defaultModel: 'glm-4-plus',
+    contextWindow: 128000,
   ),
   ProviderPreset(
     id: 'openai',
@@ -68,13 +75,6 @@ const List<ProviderPreset> providerCatalog = <ProviderPreset>[
     displayName: 'Local',
     baseUrl: 'http://localhost:1234/v1',
     defaultModel: '',
-    requiresApiKey: false,
-  ),
-  ProviderPreset(
-    id: 'mock',
-    displayName: 'Demo (offline)',
-    baseUrl: '',
-    defaultModel: 'mock-agent',
     requiresApiKey: false,
   ),
 ];

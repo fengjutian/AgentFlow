@@ -338,13 +338,12 @@ class _ProviderTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isMock = config.provider == 'mock';
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         onTap: onTap,
         leading: Icon(
-          isMock ? Icons.science_outlined : Icons.cloud_outlined,
+          Icons.cloud_outlined,
           color: config.isDefault ? scheme.primary : scheme.outline,
         ),
         title: Row(
@@ -375,7 +374,7 @@ class _ProviderTile extends StatelessWidget {
           ],
         ),
         subtitle: Text(
-          isMock ? 'offline mock' : '${config.provider} · ${config.model}',
+          '${config.provider} · ${config.model}',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -769,7 +768,6 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isMock = _provider == 'mock';
     return AlertDialog(
       title: Text(
         widget.existing == null
@@ -819,9 +817,8 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                     labelText: context.l10n.model,
                     hintText: context.l10n.modelHint,
                   ),
-                  enabled: !isMock,
                   validator: (String? v) =>
-                      !isMock && (v == null || v.trim().isEmpty)
+                      (v == null || v.trim().isEmpty)
                       ? context.l10n.requiredField
                       : null,
                 ),
@@ -832,14 +829,13 @@ class _ProviderEditorDialogState extends ConsumerState<ProviderEditorDialog> {
                     labelText: context.l10n.baseUrl,
                     hintText: 'https://api.example.com/v1',
                   ),
-                  enabled: !isMock,
                   keyboardType: TextInputType.url,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _apiKey,
                   obscureText: _obscureKey,
-                  enabled: !isMock,
+                  enabled: providerPresetById(_provider)?.requiresApiKey ?? true,
                   decoration: InputDecoration(
                     labelText: context.l10n.apiKey,
                     suffixIcon: IconButton(
