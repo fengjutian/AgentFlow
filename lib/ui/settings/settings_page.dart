@@ -24,6 +24,7 @@ import '../../storage/mcp_server_repository.dart';
 import '../legal/privacy_policy_page.dart';
 import 'ssh_settings.dart';
 import 'mcp_settings.dart';
+import 'lsp_settings_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -39,7 +40,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this)
+    _tabController = TabController(length: 6, vsync: this)
       ..addListener(_handleTabChanged);
   }
 
@@ -79,6 +80,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             ),
             Tab(icon: const Icon(Icons.cloud_outlined), text: 'SSH'),
             Tab(icon: const Icon(Icons.extension_outlined), text: 'MCP'),
+            Tab(icon: const Icon(Icons.code_outlined), text: 'LSP'),
             Tab(icon: const Icon(Icons.info_outline), text: context.l10n.about),
           ],
         ),
@@ -159,6 +161,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           ),
           const SshSettingsTab(),
           const McpSettingsTab(),
+          const LspSettingsTab(),
           ListView(
             key: const PageStorageKey<String>('settings-about'),
             padding: const EdgeInsets.all(16),

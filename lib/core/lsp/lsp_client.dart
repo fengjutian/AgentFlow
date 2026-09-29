@@ -4,7 +4,7 @@
 /// intelligence requests (completion, definition, hover, diagnostics).
 ///
 /// Unlike MCP stdio (newline-delimited JSON), LSP uses HTTP-style framing:
-///   Content-Length: <N>\r\n\r\n<JSON body of N UTF-8 bytes>
+///   `Content-Length: <N>\r\n\r\n<JSON body of N UTF-8 bytes>`
 library;
 
 import 'dart:async';
@@ -630,9 +630,9 @@ class LspClient {
   /// Processes the receive buffer, extracting complete LSP messages.
   ///
   /// LSP messages use HTTP-style framing:
-  ///   Content-Length: <N>\r\n
-  ///   \r\n
-  ///   <JSON body of N UTF-8 bytes>
+  ///   `Content-Length: <N>\r\n`
+  ///   `\r\n`
+  ///   `<JSON body of N UTF-8 bytes>`
   void _processBuffer() {
     while (true) {
       // Find end of headers.
