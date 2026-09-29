@@ -184,6 +184,30 @@ class McpServers extends Table {
   Set<Column> get primaryKey => <Column>{id};
 }
 
+@DataClassName('LspServerConfigRow')
+class LspServerConfigs extends Table {
+  TextColumn get id => text()();
+  TextColumn get workspaceId =>
+      text().references(Workspaces, #id, onDelete: KeyAction.cascade)();
+  TextColumn get languageId => text()();
+  TextColumn get command => text()();
+  TextColumn get argumentsJson => text().withDefault(const Constant('[]'))();
+  TextColumn get environmentJson => text().withDefault(const Constant('{}'))();
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+  TextColumn get initializationOptionsJson =>
+      text().withDefault(const Constant('{}'))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => <Column>{id};
+
+  @override
+  List<Set<Column>> get uniqueKeys => <Set<Column>>[
+    <Column>{workspaceId, languageId},
+  ];
+}
+
 @DriftDatabase(
   tables: <Type>[
     Workspaces,
@@ -195,6 +219,7 @@ class McpServers extends Table {
     Documents,
     DocumentSections,
     McpServers,
+    LspServerConfigs,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -205,8 +230,8 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.connect(super.executor);
 
   @override
-  int get schemaVersion => 4;
-  
+  int get schemaVersion => 5;
+
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) async {
@@ -228,6 +253,9 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'ALTER TABLE documents ADD COLUMN last_section_index INTEGER',
         );
+      }
+      if (from < 5) {
+        await m.createTable(lspServerConfigs);
       }
     },
   );

@@ -25,6 +25,8 @@ import '../core/document/epub_parser.dart';
 import '../core/document/pdf_parser.dart';
 import '../core/editor/agent_modifications.dart';
 import '../core/editor/editor_workspace.dart';
+import '../core/lsp/lsp_client.dart';
+import '../core/lsp/lsp_client_manager.dart';
 import '../data/models.dart';
 import '../runtime/bridge_runtime.dart';
 import '../runtime/local_runtime.dart';
@@ -154,6 +156,28 @@ class EditorDiagnosticsNotifier extends Notifier<List<EditorDiagnostic>> {
   }
 
   void clear() => state = const <EditorDiagnostic>[];
+
+  /// Merges LSP diagnostics for a specific file URI.
+  ///
+  /// Removes any previous LSP diagnostics from the same URI, then appends
+  /// the new ones. Non-LSP diagnostics (from terminal parsers) are preserved.
+  void addLspDiagnostics(String uri, List<EditorDiagnostic> diagnostics) {
+    final path = _uriToPath(uri);
+    // Remove old LSP diagnostics for this file.
+    final remaining = state
+        .where((d) => !(d.source == 'LSP' && d.location.path == path))
+        .toList();
+    remaining.addAll(diagnostics);
+    state = List<EditorDiagnostic>.unmodifiable(remaining);
+  }
+
+  /// Removes all LSP diagnostics for a specific file URI.
+  void removeLspDiagnostics(String uri) {
+    final path = _uriToPath(uri);
+    state = List<EditorDiagnostic>.unmodifiable(
+      state.where((d) => !(d.source == 'LSP' && d.location.path == path)),
+    );
+  }
 }
 
 final NotifierProvider<EditorDiagnosticsNotifier, List<EditorDiagnostic>>
@@ -169,6 +193,56 @@ final Provider<AgentModificationStore> agentModificationProvider =
   ref.onDispose(store.dispose);
   return store;
 });
+
+/// LSP client manager — one server per language per workspace.
+///
+/// The manager is created once and configured with the active workspace's
+/// runtime via [initializeLspForWorkspace]. Diagnostics from all connected
+/// language servers are forwarded to [editorDiagnosticsProvider].
+final Provider<LspClientManager> lspClientManagerProvider =
+    Provider<LspClientManager>((Ref ref) {
+  final manager = LspClientManager();
+  ref.onDispose(manager.shutdownAll);
+
+  // Wire LSP diagnostics into the editor diagnostic provider.
+  manager.diagnostics.listen((LspDiagnosticsEvent event) {
+    final editorDiags = event.diagnostics
+        .map((LspDiagnostic d) => EditorDiagnostic(
+              message: d.message,
+              location: EditorLocation(
+                path: _uriToPath(event.uri),
+                line: d.range.start.line + 1, // LSP 0-based -> editor 1-based
+                column: d.range.start.character + 1,
+              ),
+              severity: switch (d.severity) {
+                LspDiagnosticSeverity.warning => DiagnosticSeverity.warning,
+                LspDiagnosticSeverity.information ||
+                LspDiagnosticSeverity.hint =>
+                  DiagnosticSeverity.information,
+                _ => DiagnosticSeverity.error,
+              },
+              source: d.source ?? 'LSP',
+            ))
+        .toList();
+
+    // Merge with existing diagnostics (from terminal parsers, etc.)
+    ref.read(editorDiagnosticsProvider.notifier).addLspDiagnostics(
+          event.uri,
+          editorDiags,
+        );
+  });
+
+  return manager;
+});
+
+/// Converts a file:// URI to a path string.
+String _uriToPath(String uri) {
+  try {
+    return Uri.parse(uri).toFilePath();
+  } catch (_) {
+    return uri;
+  }
+}
 
 final Provider<ApprovalManager> approvalManagerProvider =
     Provider<ApprovalManager>((Ref ref) {

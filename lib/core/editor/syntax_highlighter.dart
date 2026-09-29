@@ -625,6 +625,17 @@ class SyntaxTextEditingController extends TextEditingController {
   SyntaxColors colors;
   TextStyle baseStyle;
 
+  /// Cursor offset for bracket matching (-1 means no matching).
+  int _cursorOffset = -1;
+
+  /// Sets the cursor offset for bracket matching highlight.
+  void setCursorOffset(int offset) {
+    if (_cursorOffset != offset) {
+      _cursorOffset = offset;
+      notifyListeners();
+    }
+  }
+
   /// Forces a rebuild of the text span (e.g. when the theme changes).
   void rebuildHighlight() => notifyListeners();
 
@@ -635,14 +646,169 @@ class SyntaxTextEditingController extends TextEditingController {
     required bool withComposing,
   }) {
     final mergedBase = baseStyle.merge(style);
-    if (language == CodeLanguage.unknown || text.isEmpty) {
+    if (text.isEmpty) {
       return TextSpan(text: text, style: mergedBase);
     }
-    return highlightSource(
-      source: text,
-      baseStyle: mergedBase,
-      language: language,
-      colors: colors,
+
+    TextSpan base;
+    if (language == CodeLanguage.unknown) {
+      base = TextSpan(text: text, style: mergedBase);
+    } else {
+      base = highlightSource(
+        source: text,
+        baseStyle: mergedBase,
+        language: language,
+        colors: colors,
+      );
+    }
+
+    // Apply bracket matching highlight if cursor is near a bracket.
+    if (_cursorOffset >= 0 && _cursorOffset < text.length) {
+      return _applyBracketHighlight(base, mergedBase);
+    }
+
+    return base;
+  }
+
+  /// Wraps the base TextSpan with bracket match highlights.
+  TextSpan _applyBracketHighlight(TextSpan base, TextStyle mergedBase) {
+    final match = findMatchingBracket(text, _cursorOffset);
+    if (match == null) return base;
+
+    final bracketColor = colors.keyword;
+    final children = <TextSpan>[];
+    final plain = base.toPlainText();
+    final positions = [match.openIndex, match.closeIndex]..sort();
+
+    var lastEnd = 0;
+    for (final pos in positions) {
+      if (pos > lastEnd) {
+        children.add(_extractSpan(base, lastEnd, pos));
+      }
+      children.add(TextSpan(
+        text: plain[pos],
+        style: mergedBase.copyWith(
+          backgroundColor: bracketColor.withValues(alpha: 0.3),
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+      lastEnd = pos + 1;
+    }
+    if (lastEnd < plain.length) {
+      children.add(_extractSpan(base, lastEnd, plain.length));
+    }
+
+    return TextSpan(children: children, style: mergedBase);
+  }
+
+  /// Extracts a substring span from a TextSpan tree.
+  TextSpan _extractSpan(TextSpan span, int start, int end) {
+    final plain = span.toPlainText();
+    if (start >= plain.length || end > plain.length) {
+      return TextSpan(text: '');
+    }
+    // For simplicity, use plain text with the base style for bracket regions.
+    // A full implementation would walk the TextSpan tree to preserve styling.
+    return TextSpan(
+      text: plain.substring(start, end),
+      style: span.style,
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Bracket matching
+// ---------------------------------------------------------------------------
+
+/// Result of finding a matching bracket pair.
+class BracketMatch {
+  const BracketMatch({
+    required this.openIndex,
+    required this.closeIndex,
+    required this.openChar,
+    required this.closeChar,
+  });
+
+  final int openIndex;
+  final int closeIndex;
+  final String openChar;
+  final String closeChar;
+}
+
+/// Finds the matching bracket for the character at or before [cursorOffset].
+///
+/// Returns null if no matching bracket is found.
+BracketMatch? findMatchingBracket(String text, int cursorOffset) {
+  if (text.isEmpty || cursorOffset < 0) return null;
+
+  // Check character at cursor and before cursor.
+  for (final offset in [cursorOffset, cursorOffset - 1]) {
+    if (offset < 0 || offset >= text.length) continue;
+    final c = text[offset];
+
+    if (c == '(' || c == '[' || c == '{') {
+      final result = _findForward(text, offset, c, _closingBracket(c));
+      if (result != null) return result;
+    } else if (c == ')' || c == ']' || c == '}') {
+      final result = _findBackward(text, offset, _openingBracket(c), c);
+      if (result != null) return result;
+    }
+  }
+  return null;
+}
+
+String _closingBracket(String open) => switch (open) {
+      '(' => ')',
+      '[' => ']',
+      '{' => '}',
+      _ => '',
+    };
+
+String _openingBracket(String close) => switch (close) {
+      ')' => '(',
+      ']' => '[',
+      '}' => '{',
+      _ => '',
+    };
+
+BracketMatch? _findForward(
+    String text, int start, String open, String close) {
+  var depth = 0;
+  for (var i = start; i < text.length; i++) {
+    if (text[i] == open) {
+      depth++;
+    } else if (text[i] == close) {
+      depth--;
+      if (depth == 0) {
+        return BracketMatch(
+          openIndex: start,
+          closeIndex: i,
+          openChar: open,
+          closeChar: close,
+        );
+      }
+    }
+  }
+  return null;
+}
+
+BracketMatch? _findBackward(
+    String text, int start, String open, String close) {
+  var depth = 0;
+  for (var i = start; i >= 0; i--) {
+    if (text[i] == close) {
+      depth++;
+    } else if (text[i] == open) {
+      depth--;
+      if (depth == 0) {
+        return BracketMatch(
+          openIndex: i,
+          closeIndex: start,
+          openChar: open,
+          closeChar: close,
+        );
+      }
+    }
+  }
+  return null;
 }

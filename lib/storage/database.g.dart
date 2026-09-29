@@ -5485,6 +5485,650 @@ class McpServersCompanion extends UpdateCompanion<McpServerRow> {
   }
 }
 
+class $LspServerConfigsTable extends LspServerConfigs
+    with TableInfo<$LspServerConfigsTable, LspServerConfigRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LspServerConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _workspaceIdMeta = const VerificationMeta(
+    'workspaceId',
+  );
+  @override
+  late final GeneratedColumn<String> workspaceId = GeneratedColumn<String>(
+    'workspace_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES workspaces (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _languageIdMeta = const VerificationMeta(
+    'languageId',
+  );
+  @override
+  late final GeneratedColumn<String> languageId = GeneratedColumn<String>(
+    'language_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _commandMeta = const VerificationMeta(
+    'command',
+  );
+  @override
+  late final GeneratedColumn<String> command = GeneratedColumn<String>(
+    'command',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _argumentsJsonMeta = const VerificationMeta(
+    'argumentsJson',
+  );
+  @override
+  late final GeneratedColumn<String> argumentsJson = GeneratedColumn<String>(
+    'arguments_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _environmentJsonMeta = const VerificationMeta(
+    'environmentJson',
+  );
+  @override
+  late final GeneratedColumn<String> environmentJson = GeneratedColumn<String>(
+    'environment_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _enabledMeta = const VerificationMeta(
+    'enabled',
+  );
+  @override
+  late final GeneratedColumn<bool> enabled = GeneratedColumn<bool>(
+    'enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _initializationOptionsJsonMeta =
+      const VerificationMeta('initializationOptionsJson');
+  @override
+  late final GeneratedColumn<String> initializationOptionsJson =
+      GeneratedColumn<String>(
+        'initialization_options_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('{}'),
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    workspaceId,
+    languageId,
+    command,
+    argumentsJson,
+    environmentJson,
+    enabled,
+    initializationOptionsJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'lsp_server_configs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LspServerConfigRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('workspace_id')) {
+      context.handle(
+        _workspaceIdMeta,
+        workspaceId.isAcceptableOrUnknown(
+          data['workspace_id']!,
+          _workspaceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_workspaceIdMeta);
+    }
+    if (data.containsKey('language_id')) {
+      context.handle(
+        _languageIdMeta,
+        languageId.isAcceptableOrUnknown(data['language_id']!, _languageIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_languageIdMeta);
+    }
+    if (data.containsKey('command')) {
+      context.handle(
+        _commandMeta,
+        command.isAcceptableOrUnknown(data['command']!, _commandMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_commandMeta);
+    }
+    if (data.containsKey('arguments_json')) {
+      context.handle(
+        _argumentsJsonMeta,
+        argumentsJson.isAcceptableOrUnknown(
+          data['arguments_json']!,
+          _argumentsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('environment_json')) {
+      context.handle(
+        _environmentJsonMeta,
+        environmentJson.isAcceptableOrUnknown(
+          data['environment_json']!,
+          _environmentJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enabled')) {
+      context.handle(
+        _enabledMeta,
+        enabled.isAcceptableOrUnknown(data['enabled']!, _enabledMeta),
+      );
+    }
+    if (data.containsKey('initialization_options_json')) {
+      context.handle(
+        _initializationOptionsJsonMeta,
+        initializationOptionsJson.isAcceptableOrUnknown(
+          data['initialization_options_json']!,
+          _initializationOptionsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {workspaceId, languageId},
+  ];
+  @override
+  LspServerConfigRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LspServerConfigRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      workspaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}workspace_id'],
+      )!,
+      languageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language_id'],
+      )!,
+      command: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}command'],
+      )!,
+      argumentsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}arguments_json'],
+      )!,
+      environmentJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}environment_json'],
+      )!,
+      enabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enabled'],
+      )!,
+      initializationOptionsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}initialization_options_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LspServerConfigsTable createAlias(String alias) {
+    return $LspServerConfigsTable(attachedDatabase, alias);
+  }
+}
+
+class LspServerConfigRow extends DataClass
+    implements Insertable<LspServerConfigRow> {
+  final String id;
+  final String workspaceId;
+  final String languageId;
+  final String command;
+  final String argumentsJson;
+  final String environmentJson;
+  final bool enabled;
+  final String initializationOptionsJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const LspServerConfigRow({
+    required this.id,
+    required this.workspaceId,
+    required this.languageId,
+    required this.command,
+    required this.argumentsJson,
+    required this.environmentJson,
+    required this.enabled,
+    required this.initializationOptionsJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['workspace_id'] = Variable<String>(workspaceId);
+    map['language_id'] = Variable<String>(languageId);
+    map['command'] = Variable<String>(command);
+    map['arguments_json'] = Variable<String>(argumentsJson);
+    map['environment_json'] = Variable<String>(environmentJson);
+    map['enabled'] = Variable<bool>(enabled);
+    map['initialization_options_json'] = Variable<String>(
+      initializationOptionsJson,
+    );
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LspServerConfigsCompanion toCompanion(bool nullToAbsent) {
+    return LspServerConfigsCompanion(
+      id: Value(id),
+      workspaceId: Value(workspaceId),
+      languageId: Value(languageId),
+      command: Value(command),
+      argumentsJson: Value(argumentsJson),
+      environmentJson: Value(environmentJson),
+      enabled: Value(enabled),
+      initializationOptionsJson: Value(initializationOptionsJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LspServerConfigRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LspServerConfigRow(
+      id: serializer.fromJson<String>(json['id']),
+      workspaceId: serializer.fromJson<String>(json['workspaceId']),
+      languageId: serializer.fromJson<String>(json['languageId']),
+      command: serializer.fromJson<String>(json['command']),
+      argumentsJson: serializer.fromJson<String>(json['argumentsJson']),
+      environmentJson: serializer.fromJson<String>(json['environmentJson']),
+      enabled: serializer.fromJson<bool>(json['enabled']),
+      initializationOptionsJson: serializer.fromJson<String>(
+        json['initializationOptionsJson'],
+      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'workspaceId': serializer.toJson<String>(workspaceId),
+      'languageId': serializer.toJson<String>(languageId),
+      'command': serializer.toJson<String>(command),
+      'argumentsJson': serializer.toJson<String>(argumentsJson),
+      'environmentJson': serializer.toJson<String>(environmentJson),
+      'enabled': serializer.toJson<bool>(enabled),
+      'initializationOptionsJson': serializer.toJson<String>(
+        initializationOptionsJson,
+      ),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LspServerConfigRow copyWith({
+    String? id,
+    String? workspaceId,
+    String? languageId,
+    String? command,
+    String? argumentsJson,
+    String? environmentJson,
+    bool? enabled,
+    String? initializationOptionsJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => LspServerConfigRow(
+    id: id ?? this.id,
+    workspaceId: workspaceId ?? this.workspaceId,
+    languageId: languageId ?? this.languageId,
+    command: command ?? this.command,
+    argumentsJson: argumentsJson ?? this.argumentsJson,
+    environmentJson: environmentJson ?? this.environmentJson,
+    enabled: enabled ?? this.enabled,
+    initializationOptionsJson:
+        initializationOptionsJson ?? this.initializationOptionsJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LspServerConfigRow copyWithCompanion(LspServerConfigsCompanion data) {
+    return LspServerConfigRow(
+      id: data.id.present ? data.id.value : this.id,
+      workspaceId: data.workspaceId.present
+          ? data.workspaceId.value
+          : this.workspaceId,
+      languageId: data.languageId.present
+          ? data.languageId.value
+          : this.languageId,
+      command: data.command.present ? data.command.value : this.command,
+      argumentsJson: data.argumentsJson.present
+          ? data.argumentsJson.value
+          : this.argumentsJson,
+      environmentJson: data.environmentJson.present
+          ? data.environmentJson.value
+          : this.environmentJson,
+      enabled: data.enabled.present ? data.enabled.value : this.enabled,
+      initializationOptionsJson: data.initializationOptionsJson.present
+          ? data.initializationOptionsJson.value
+          : this.initializationOptionsJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LspServerConfigRow(')
+          ..write('id: $id, ')
+          ..write('workspaceId: $workspaceId, ')
+          ..write('languageId: $languageId, ')
+          ..write('command: $command, ')
+          ..write('argumentsJson: $argumentsJson, ')
+          ..write('environmentJson: $environmentJson, ')
+          ..write('enabled: $enabled, ')
+          ..write('initializationOptionsJson: $initializationOptionsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    workspaceId,
+    languageId,
+    command,
+    argumentsJson,
+    environmentJson,
+    enabled,
+    initializationOptionsJson,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LspServerConfigRow &&
+          other.id == this.id &&
+          other.workspaceId == this.workspaceId &&
+          other.languageId == this.languageId &&
+          other.command == this.command &&
+          other.argumentsJson == this.argumentsJson &&
+          other.environmentJson == this.environmentJson &&
+          other.enabled == this.enabled &&
+          other.initializationOptionsJson == this.initializationOptionsJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LspServerConfigsCompanion extends UpdateCompanion<LspServerConfigRow> {
+  final Value<String> id;
+  final Value<String> workspaceId;
+  final Value<String> languageId;
+  final Value<String> command;
+  final Value<String> argumentsJson;
+  final Value<String> environmentJson;
+  final Value<bool> enabled;
+  final Value<String> initializationOptionsJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LspServerConfigsCompanion({
+    this.id = const Value.absent(),
+    this.workspaceId = const Value.absent(),
+    this.languageId = const Value.absent(),
+    this.command = const Value.absent(),
+    this.argumentsJson = const Value.absent(),
+    this.environmentJson = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.initializationOptionsJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LspServerConfigsCompanion.insert({
+    required String id,
+    required String workspaceId,
+    required String languageId,
+    required String command,
+    this.argumentsJson = const Value.absent(),
+    this.environmentJson = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.initializationOptionsJson = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       workspaceId = Value(workspaceId),
+       languageId = Value(languageId),
+       command = Value(command),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<LspServerConfigRow> custom({
+    Expression<String>? id,
+    Expression<String>? workspaceId,
+    Expression<String>? languageId,
+    Expression<String>? command,
+    Expression<String>? argumentsJson,
+    Expression<String>? environmentJson,
+    Expression<bool>? enabled,
+    Expression<String>? initializationOptionsJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (workspaceId != null) 'workspace_id': workspaceId,
+      if (languageId != null) 'language_id': languageId,
+      if (command != null) 'command': command,
+      if (argumentsJson != null) 'arguments_json': argumentsJson,
+      if (environmentJson != null) 'environment_json': environmentJson,
+      if (enabled != null) 'enabled': enabled,
+      if (initializationOptionsJson != null)
+        'initialization_options_json': initializationOptionsJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LspServerConfigsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? workspaceId,
+    Value<String>? languageId,
+    Value<String>? command,
+    Value<String>? argumentsJson,
+    Value<String>? environmentJson,
+    Value<bool>? enabled,
+    Value<String>? initializationOptionsJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LspServerConfigsCompanion(
+      id: id ?? this.id,
+      workspaceId: workspaceId ?? this.workspaceId,
+      languageId: languageId ?? this.languageId,
+      command: command ?? this.command,
+      argumentsJson: argumentsJson ?? this.argumentsJson,
+      environmentJson: environmentJson ?? this.environmentJson,
+      enabled: enabled ?? this.enabled,
+      initializationOptionsJson:
+          initializationOptionsJson ?? this.initializationOptionsJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (workspaceId.present) {
+      map['workspace_id'] = Variable<String>(workspaceId.value);
+    }
+    if (languageId.present) {
+      map['language_id'] = Variable<String>(languageId.value);
+    }
+    if (command.present) {
+      map['command'] = Variable<String>(command.value);
+    }
+    if (argumentsJson.present) {
+      map['arguments_json'] = Variable<String>(argumentsJson.value);
+    }
+    if (environmentJson.present) {
+      map['environment_json'] = Variable<String>(environmentJson.value);
+    }
+    if (enabled.present) {
+      map['enabled'] = Variable<bool>(enabled.value);
+    }
+    if (initializationOptionsJson.present) {
+      map['initialization_options_json'] = Variable<String>(
+        initializationOptionsJson.value,
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LspServerConfigsCompanion(')
+          ..write('id: $id, ')
+          ..write('workspaceId: $workspaceId, ')
+          ..write('languageId: $languageId, ')
+          ..write('command: $command, ')
+          ..write('argumentsJson: $argumentsJson, ')
+          ..write('environmentJson: $environmentJson, ')
+          ..write('enabled: $enabled, ')
+          ..write('initializationOptionsJson: $initializationOptionsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5501,6 +6145,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $McpServersTable mcpServers = $McpServersTable(this);
+  late final $LspServerConfigsTable lspServerConfigs = $LspServerConfigsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5515,6 +6162,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     documents,
     documentSections,
     mcpServers,
+    lspServerConfigs,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -5552,6 +6200,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('mcp_servers', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'workspaces',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('lsp_server_configs', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -5630,6 +6285,26 @@ final class $$WorkspacesTableReferences
     ).filter((f) => f.workspaceId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_mcpServersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$LspServerConfigsTable, List<LspServerConfigRow>>
+  _lspServerConfigsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.lspServerConfigs,
+    aliasName: 'workspaces__id__lsp_server_configs__workspace_id',
+  );
+
+  $$LspServerConfigsTableProcessedTableManager get lspServerConfigsRefs {
+    final manager = $$LspServerConfigsTableTableManager(
+      $_db,
+      $_db.lspServerConfigs,
+    ).filter((f) => f.workspaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _lspServerConfigsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -5741,6 +6416,31 @@ class $$WorkspacesTableFilterComposer
           }) => $$McpServersTableFilterComposer(
             $db: $db,
             $table: $db.mcpServers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> lspServerConfigsRefs(
+    Expression<bool> Function($$LspServerConfigsTableFilterComposer f) f,
+  ) {
+    final $$LspServerConfigsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.lspServerConfigs,
+      getReferencedColumn: (t) => t.workspaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LspServerConfigsTableFilterComposer(
+            $db: $db,
+            $table: $db.lspServerConfigs,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5896,6 +6596,31 @@ class $$WorkspacesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> lspServerConfigsRefs<T extends Object>(
+    Expression<T> Function($$LspServerConfigsTableAnnotationComposer a) f,
+  ) {
+    final $$LspServerConfigsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.lspServerConfigs,
+      getReferencedColumn: (t) => t.workspaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LspServerConfigsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.lspServerConfigs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$WorkspacesTableTableManager
@@ -5915,6 +6640,7 @@ class $$WorkspacesTableTableManager
             bool sessionsRefs,
             bool documentsRefs,
             bool mcpServersRefs,
+            bool lspServerConfigsRefs,
           })
         > {
   $$WorkspacesTableTableManager(_$AppDatabase db, $WorkspacesTable table)
@@ -5977,6 +6703,7 @@ class $$WorkspacesTableTableManager
                 sessionsRefs = false,
                 documentsRefs = false,
                 mcpServersRefs = false,
+                lspServerConfigsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -5984,6 +6711,7 @@ class $$WorkspacesTableTableManager
                     if (sessionsRefs) db.sessions,
                     if (documentsRefs) db.documents,
                     if (mcpServersRefs) db.mcpServers,
+                    if (lspServerConfigsRefs) db.lspServerConfigs,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -6051,6 +6779,27 @@ class $$WorkspacesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (lspServerConfigsRefs)
+                        await $_getPrefetchedData<
+                          WorkspaceRow,
+                          $WorkspacesTable,
+                          LspServerConfigRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorkspacesTableReferences
+                              ._lspServerConfigsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorkspacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).lspServerConfigsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workspaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -6075,6 +6824,7 @@ typedef $$WorkspacesTableProcessedTableManager =
         bool sessionsRefs,
         bool documentsRefs,
         bool mcpServersRefs,
+        bool lspServerConfigsRefs,
       })
     >;
 typedef $$SessionsTableCreateCompanionBuilder =
@@ -9343,6 +10093,441 @@ typedef $$McpServersTableProcessedTableManager =
       McpServerRow,
       PrefetchHooks Function({bool workspaceId})
     >;
+typedef $$LspServerConfigsTableCreateCompanionBuilder =
+    LspServerConfigsCompanion Function({
+      required String id,
+      required String workspaceId,
+      required String languageId,
+      required String command,
+      Value<String> argumentsJson,
+      Value<String> environmentJson,
+      Value<bool> enabled,
+      Value<String> initializationOptionsJson,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LspServerConfigsTableUpdateCompanionBuilder =
+    LspServerConfigsCompanion Function({
+      Value<String> id,
+      Value<String> workspaceId,
+      Value<String> languageId,
+      Value<String> command,
+      Value<String> argumentsJson,
+      Value<String> environmentJson,
+      Value<bool> enabled,
+      Value<String> initializationOptionsJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$LspServerConfigsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $LspServerConfigsTable,
+          LspServerConfigRow
+        > {
+  $$LspServerConfigsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $WorkspacesTable _workspaceIdTable(_$AppDatabase db) => db.workspaces
+      .createAlias('lsp_server_configs__workspace_id__workspaces__id');
+
+  $$WorkspacesTableProcessedTableManager get workspaceId {
+    final $_column = $_itemColumn<String>('workspace_id')!;
+
+    final manager = $$WorkspacesTableTableManager(
+      $_db,
+      $_db.workspaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workspaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$LspServerConfigsTableFilterComposer
+    extends Composer<_$AppDatabase, $LspServerConfigsTable> {
+  $$LspServerConfigsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get languageId => $composableBuilder(
+    column: $table.languageId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get command => $composableBuilder(
+    column: $table.command,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get argumentsJson => $composableBuilder(
+    column: $table.argumentsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get environmentJson => $composableBuilder(
+    column: $table.environmentJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get initializationOptionsJson => $composableBuilder(
+    column: $table.initializationOptionsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorkspacesTableFilterComposer get workspaceId {
+    final $$WorkspacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableFilterComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LspServerConfigsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LspServerConfigsTable> {
+  $$LspServerConfigsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get languageId => $composableBuilder(
+    column: $table.languageId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get command => $composableBuilder(
+    column: $table.command,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get argumentsJson => $composableBuilder(
+    column: $table.argumentsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get environmentJson => $composableBuilder(
+    column: $table.environmentJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get initializationOptionsJson => $composableBuilder(
+    column: $table.initializationOptionsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorkspacesTableOrderingComposer get workspaceId {
+    final $$WorkspacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LspServerConfigsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LspServerConfigsTable> {
+  $$LspServerConfigsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get languageId => $composableBuilder(
+    column: $table.languageId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get command =>
+      $composableBuilder(column: $table.command, builder: (column) => column);
+
+  GeneratedColumn<String> get argumentsJson => $composableBuilder(
+    column: $table.argumentsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get environmentJson => $composableBuilder(
+    column: $table.environmentJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enabled =>
+      $composableBuilder(column: $table.enabled, builder: (column) => column);
+
+  GeneratedColumn<String> get initializationOptionsJson => $composableBuilder(
+    column: $table.initializationOptionsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$WorkspacesTableAnnotationComposer get workspaceId {
+    final $$WorkspacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LspServerConfigsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LspServerConfigsTable,
+          LspServerConfigRow,
+          $$LspServerConfigsTableFilterComposer,
+          $$LspServerConfigsTableOrderingComposer,
+          $$LspServerConfigsTableAnnotationComposer,
+          $$LspServerConfigsTableCreateCompanionBuilder,
+          $$LspServerConfigsTableUpdateCompanionBuilder,
+          (LspServerConfigRow, $$LspServerConfigsTableReferences),
+          LspServerConfigRow,
+          PrefetchHooks Function({bool workspaceId})
+        > {
+  $$LspServerConfigsTableTableManager(
+    _$AppDatabase db,
+    $LspServerConfigsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LspServerConfigsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LspServerConfigsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LspServerConfigsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> workspaceId = const Value.absent(),
+                Value<String> languageId = const Value.absent(),
+                Value<String> command = const Value.absent(),
+                Value<String> argumentsJson = const Value.absent(),
+                Value<String> environmentJson = const Value.absent(),
+                Value<bool> enabled = const Value.absent(),
+                Value<String> initializationOptionsJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LspServerConfigsCompanion(
+                id: id,
+                workspaceId: workspaceId,
+                languageId: languageId,
+                command: command,
+                argumentsJson: argumentsJson,
+                environmentJson: environmentJson,
+                enabled: enabled,
+                initializationOptionsJson: initializationOptionsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String workspaceId,
+                required String languageId,
+                required String command,
+                Value<String> argumentsJson = const Value.absent(),
+                Value<String> environmentJson = const Value.absent(),
+                Value<bool> enabled = const Value.absent(),
+                Value<String> initializationOptionsJson = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LspServerConfigsCompanion.insert(
+                id: id,
+                workspaceId: workspaceId,
+                languageId: languageId,
+                command: command,
+                argumentsJson: argumentsJson,
+                environmentJson: environmentJson,
+                enabled: enabled,
+                initializationOptionsJson: initializationOptionsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LspServerConfigsTable, LspServerConfigRow>(
+                    table,
+                  ),
+                  $$LspServerConfigsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workspaceId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workspaceId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.workspaceId,
+                                referencedTable:
+                                    $$LspServerConfigsTableReferences
+                                        ._workspaceIdTable(db),
+                                referencedColumn:
+                                    $$LspServerConfigsTableReferences
+                                        ._workspaceIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LspServerConfigsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LspServerConfigsTable,
+      LspServerConfigRow,
+      $$LspServerConfigsTableFilterComposer,
+      $$LspServerConfigsTableOrderingComposer,
+      $$LspServerConfigsTableAnnotationComposer,
+      $$LspServerConfigsTableCreateCompanionBuilder,
+      $$LspServerConfigsTableUpdateCompanionBuilder,
+      (LspServerConfigRow, $$LspServerConfigsTableReferences),
+      LspServerConfigRow,
+      PrefetchHooks Function({bool workspaceId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9365,4 +10550,6 @@ class $AppDatabaseManager {
       $$DocumentSectionsTableTableManager(_db, _db.documentSections);
   $$McpServersTableTableManager get mcpServers =>
       $$McpServersTableTableManager(_db, _db.mcpServers);
+  $$LspServerConfigsTableTableManager get lspServerConfigs =>
+      $$LspServerConfigsTableTableManager(_db, _db.lspServerConfigs);
 }

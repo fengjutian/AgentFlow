@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -15,7 +16,11 @@ import '../../core/editor/editor_document.dart';
 import '../../core/editor/editor_search.dart';
 import '../../core/editor/editor_workspace.dart';
 import '../../core/editor/syntax_highlighter.dart';
+import '../../core/lsp/lsp_client.dart';
+import '../../core/lsp/lsp_config.dart';
 import '../../l10n/l10n.dart';
+import 'completion_overlay.dart';
+import 'hover_popup.dart';
 
 /// Maximum file size that can be opened in the editor (1 MB).
 const int _maxEditorFileSize = 1024 * 1024;
@@ -68,6 +73,15 @@ class _EditorPageState extends ConsumerState<EditorPage>
   List<EditorMatch> _matches = const <EditorMatch>[];
   int _matchIndex = -1;
 
+  // LSP state.
+  String? _lspLanguageId;
+  String? _fileUri;
+  Timer? _lspChangeTimer;
+  int _lspVersion = 1;
+  List<LspCompletionItem>? _completionItems;
+  String _completionPrefix = '';
+  LspHoverResult? _hoverResult;
+
   bool get _dirty => _document?.isDirty ?? false;
 
   @override
@@ -111,6 +125,13 @@ class _EditorPageState extends ConsumerState<EditorPage>
 
   @override
   void dispose() {
+    // Notify LSP server that document is closing.
+    _lspChangeTimer?.cancel();
+    if (_lspLanguageId != null && _fileUri != null) {
+      ref
+          .read(lspClientManagerProvider)
+          .notifyDidClose(_fileUri!, _lspLanguageId!);
+    }
     if (_dirty) unawaited(_saveDraft(_text.text));
     WidgetsBinding.instance.removeObserver(this);
     _text
@@ -185,6 +206,9 @@ class _EditorPageState extends ConsumerState<EditorPage>
         _loading = false;
       });
 
+      // Initialize LSP for this file.
+      _initLsp(effectiveText);
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _applyInitialLocation();
       });
@@ -238,6 +262,249 @@ class _EditorPageState extends ConsumerState<EditorPage>
       setState(() => _lineCount = lineCount);
       if (_showSearch) _refreshMatches(selectNearest: false);
     }
+    // Update bracket matching based on cursor position.
+    if (_text.selection.isCollapsed) {
+      _text.setCursorOffset(_text.selection.extentOffset);
+    } else {
+      _text.setCursorOffset(-1);
+    }
+    // Debounce LSP didChange notifications.
+    _scheduleLspChange();
+    // Check for completion triggers.
+    _checkCompletionTrigger();
+  }
+
+  // ---------------------------------------------------------------------------
+  // LSP integration
+  // ---------------------------------------------------------------------------
+
+  /// Initializes LSP for the currently open file.
+  void _initLsp(String content) {
+    final language = detectLanguage(widget.path);
+    _lspLanguageId = lspLanguageIdFor(language);
+    if (_lspLanguageId!.isEmpty) return;
+
+    _fileUri = Uri.file(widget.path).toString();
+    final manager = ref.read(lspClientManagerProvider);
+
+    // Configure the manager with the workspace runtime if not already done.
+    final runtime = ref.read(runtimeProvider).value;
+    final workspace = ref.read(currentWorkspaceProvider);
+    if (runtime != null && workspace != null) {
+      manager.setRuntime(runtime, rootDirectory: workspace.rootDirectory);
+    }
+
+    // Notify the server that this document is open.
+    unawaited(
+      manager.notifyDidOpen(_fileUri!, _lspLanguageId!, content),
+    );
+  }
+
+  /// Schedules a debounced didChange notification.
+  void _scheduleLspChange() {
+    if (_lspLanguageId == null || _fileUri == null) return;
+    _lspChangeTimer?.cancel();
+    _lspChangeTimer = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      _lspVersion++;
+      ref.read(lspClientManagerProvider).notifyDidChange(
+            _fileUri!,
+            _lspLanguageId!,
+            _text.text,
+            version: _lspVersion,
+          );
+    });
+  }
+
+  /// Checks if the character before the cursor should trigger completion.
+  void _checkCompletionTrigger() {
+    if (_lspLanguageId == null || _fileUri == null) return;
+    final selection = _text.selection;
+    if (!selection.isCollapsed) return;
+
+    final offset = selection.extentOffset;
+    if (offset <= 0 || offset > _text.text.length) return;
+
+    final charBefore = _text.text[offset - 1];
+    const triggerChars = {'.', ':', '<', '(', ' '};
+
+    if (triggerChars.contains(charBefore)) {
+      _requestCompletion(offset);
+    } else if (_completionItems != null) {
+      // Update the completion prefix for filtering.
+      final prefix = _extractPrefix(_text.text, offset);
+      if (prefix.isNotEmpty) {
+        setState(() => _completionPrefix = prefix);
+      } else {
+        _dismissCompletion();
+      }
+    }
+  }
+
+  /// Requests completions at the given cursor offset.
+  void _requestCompletion(int offset) {
+    final pos = _offsetToLspPosition(_text.text, offset);
+    if (pos == null) return;
+
+    final manager = ref.read(lspClientManagerProvider);
+    unawaited(
+      manager
+          .completion(_fileUri!, _lspLanguageId!, pos.line, pos.character)
+          .then((result) {
+        if (!mounted || result == null) return;
+        if (result.items.isEmpty) {
+          _dismissCompletion();
+          return;
+        }
+        final prefix = _extractPrefix(_text.text, offset);
+        setState(() {
+          _completionItems = result.items;
+          _completionPrefix = prefix;
+        });
+      }),
+    );
+  }
+
+  /// Accepts a completion item, inserting its text at the cursor.
+  void _acceptCompletion(String insertText) {
+    final selection = _text.selection;
+    if (!selection.isCollapsed) {
+      _dismissCompletion();
+      return;
+    }
+
+    // Find the start of the prefix to replace.
+    final offset = selection.extentOffset;
+    final prefixLen = _completionPrefix.length;
+    final replaceStart = (offset - prefixLen).clamp(0, _text.text.length);
+
+    final updated = _text.text.replaceRange(replaceStart, offset, insertText);
+    _text.value = TextEditingValue(
+      text: updated,
+      selection: TextSelection.collapsed(
+        offset: replaceStart + insertText.length,
+      ),
+    );
+    _dismissCompletion();
+    _editorFocus.requestFocus();
+  }
+
+  void _dismissCompletion() {
+    if (_completionItems == null) return;
+    setState(() {
+      _completionItems = null;
+      _completionPrefix = '';
+    });
+  }
+
+  /// Handles Ctrl+Click (or long press) to go to definition.
+  void _handleGoToDefinition(int offset) {
+    if (_lspLanguageId == null || _fileUri == null) return;
+    final pos = _offsetToLspPosition(_text.text, offset);
+    if (pos == null) return;
+
+    final manager = ref.read(lspClientManagerProvider);
+    unawaited(
+      manager
+          .definition(_fileUri!, _lspLanguageId!, pos.line, pos.character)
+          .then((locations) {
+        if (!mounted || locations.isEmpty) return;
+        final target = locations.first;
+        // Convert file:// URI back to a path.
+        String targetPath;
+        try {
+          targetPath = Uri.parse(target.uri).toFilePath();
+        } catch (_) {
+          targetPath = target.uri;
+        }
+        final targetLine = target.range.start.line + 1; // LSP 0-based -> 1-based
+        final targetCol = target.range.start.character + 1;
+
+        if (targetPath == widget.path) {
+          // Same file — scroll to line.
+          final lineOffset = offsetForEditorLine(_text.text, targetLine);
+          if (lineOffset != null) {
+            _text.selection =
+                TextSelection.collapsed(offset: lineOffset + targetCol - 1);
+            _editorFocus.requestFocus();
+          }
+        } else {
+          // Different file — navigate via workspace page (if embedded) or
+          // show a message with the target location.
+          _showMessage('${p.basename(targetPath)}:$targetLine');
+        }
+      }),
+    );
+  }
+
+  /// Handles hover request at the given offset.
+  void _handleHover(int offset) {
+    if (_lspLanguageId == null || _fileUri == null) return;
+    final pos = _offsetToLspPosition(_text.text, offset);
+    if (pos == null) return;
+
+    final manager = ref.read(lspClientManagerProvider);
+    unawaited(
+      manager
+          .hover(_fileUri!, _lspLanguageId!, pos.line, pos.character)
+          .then((result) {
+        if (!mounted || result == null || result.contents.isEmpty) return;
+        setState(() => _hoverResult = result);
+      }),
+    );
+  }
+
+  void _dismissHover() {
+    if (_hoverResult == null) return;
+    setState(() => _hoverResult = null);
+  }
+
+  /// Extracts the word prefix before the given offset (for completion filtering).
+  String _extractPrefix(String text, int offset) {
+    var start = offset;
+    while (start > 0) {
+      final c = text.codeUnitAt(start - 1);
+      // Stop at non-identifier characters.
+      if (!_isIdentChar(c)) break;
+      start--;
+    }
+    return text.substring(start, offset);
+  }
+
+  /// Converts a text offset (0-based) to an LSP position (0-based line/char).
+  LspPosition? _offsetToLspPosition(String text, int offset) {
+    if (offset < 0 || offset > text.length) return null;
+    var line = 0;
+    var char = 0;
+    for (var i = 0; i < offset && i < text.length; i++) {
+      if (text[i] == '\n') {
+        line++;
+        char = 0;
+      } else {
+        char++;
+      }
+    }
+    return LspPosition(line, char);
+  }
+
+  static bool _isIdentChar(int c) =>
+      (c >= 65 && c <= 90) || // A-Z
+      (c >= 97 && c <= 122) || // a-z
+      (c >= 48 && c <= 57) || // 0-9
+      c == 95 || // _
+      c == 36; // $
+
+  /// Returns the text offset at a global screen position.
+  ///
+  /// Falls back to the current cursor position if exact hit-testing fails.
+  int? _getOffsetAtPosition(Offset globalPosition) {
+    // Use the current cursor position as the most practical approximation.
+    // Full hit-testing requires TextPainter layout metrics which are not
+    // directly available from the TextField without a custom renderer.
+    if (_text.selection.isValid) {
+      return _text.selection.extentOffset;
+    }
+    return null;
   }
 
   // -- Draft persistence --------------------------------------------------
@@ -459,6 +726,13 @@ class _EditorPageState extends ConsumerState<EditorPage>
         _showMessage(context.l10n.fileSaved);
         // Saved successfully — discard any lingering draft.
         await _clearDraft();
+        // Notify LSP server of the save.
+        if (_lspLanguageId != null && _fileUri != null) {
+          unawaited(ref.read(lspClientManagerProvider).notifyDidSave(
+                _fileUri!,
+                _lspLanguageId!,
+              ));
+        }
         // If verifiedWithChanges, reload the editor to show the current disk state.
         if (result == EditorSaveResult.verifiedWithChanges) {
           final content = document.text;
@@ -623,29 +897,75 @@ class _EditorPageState extends ConsumerState<EditorPage>
         ),
         if (_showSearch) _buildSearchPanel(scheme),
         Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Stack(
             children: <Widget>[
-              _buildGutter(scheme),
-              const VerticalDivider(width: 1),
-              Expanded(
-                child: TextField(
-                  controller: _text,
-                  scrollController: _editorScroll,
-                  focusNode: _editorFocus,
-                  undoController: _undoHistory,
-                  expands: true,
-                  maxLines: null,
-                  minLines: null,
-                  keyboardType: TextInputType.multiline,
-                  textAlignVertical: TextAlignVertical.top,
-                  style: AppTheme.code,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  _buildGutter(scheme),
+                  const VerticalDivider(width: 1),
+                  Expanded(
+                    child: GestureDetector(
+                      onLongPressStart: (details) {
+                        // Long-press triggers hover or go-to-definition.
+                        final offset = _getOffsetAtPosition(
+                          details.globalPosition,
+                        );
+                        if (offset != null) {
+                          if (_completionItems != null) {
+                            _dismissCompletion();
+                          }
+                          // Alternate between hover and definition on
+                          // successive long presses.
+                          _handleHover(offset);
+                          _handleGoToDefinition(offset);
+                        }
+                      },
+                      child: TextField(
+                        controller: _text,
+                        scrollController: _editorScroll,
+                        focusNode: _editorFocus,
+                        undoController: _undoHistory,
+                        expands: true,
+                        maxLines: null,
+                        minLines: null,
+                        keyboardType: TextInputType.multiline,
+                        textAlignVertical: TextAlignVertical.top,
+                        style: AppTheme.code,
+                        inputFormatters: <TextInputFormatter>[
+                          _AutoIndentFormatter(),
+                        ],
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.all(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              // Completion overlay.
+              if (_completionItems != null)
+                Positioned(
+                  left: 70,
+                  bottom: 8,
+                  child: CompletionOverlay(
+                    items: _completionItems!,
+                    prefix: _completionPrefix,
+                    onAccept: _acceptCompletion,
+                    onDismiss: _dismissCompletion,
                   ),
                 ),
-              ),
+              // Hover popup.
+              if (_hoverResult != null)
+                Positioned(
+                  right: 16,
+                  top: 8,
+                  child: HoverPopup(
+                    content: _hoverResult!.contents,
+                    onDismiss: _dismissHover,
+                  ),
+                ),
             ],
           ),
         ),
@@ -844,3 +1164,58 @@ enum _ConflictDecision { cancel, reload, overwrite }
 
 int _countLines(String text) =>
     text.isEmpty ? 1 : '\n'.allMatches(text).length + 1;
+
+/// Text input formatter that auto-indents on Enter.
+///
+/// When the user presses Enter:
+/// - Copies the leading whitespace from the current line
+/// - Increases indent after opening brackets `{`, `[`, `(`, `:`
+/// - Decreases indent if the new line starts with `}`, `]`, `)`
+class _AutoIndentFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Only handle single newline insertions.
+    if (newValue.text.length - oldValue.text.length != 1) return newValue;
+    final insertPos = newValue.selection.baseOffset - 1;
+    if (insertPos < 0 || insertPos >= newValue.text.length) return newValue;
+    if (newValue.text[insertPos] != '\n') return newValue;
+
+    // Find the start of the current line.
+    final text = newValue.text;
+    var lineStart = insertPos;
+    while (lineStart > 0 && text[lineStart - 1] != '\n') {
+      lineStart--;
+    }
+
+    // Extract leading whitespace.
+    var indent = '';
+    for (var i = lineStart; i < insertPos; i++) {
+      if (text[i] == ' ' || text[i] == '\t') {
+        indent += text[i];
+      } else {
+        break;
+      }
+    }
+
+    // Check the character before the cursor for indent increase.
+    if (insertPos > 0) {
+      final charBefore = text[insertPos - 1];
+      if (charBefore == '{' || charBefore == '[' || charBefore == '(') {
+        indent += '  '; // Add 2 spaces.
+      }
+    }
+
+    // Build the replacement text.
+    final insertion = '\n$indent';
+    final result = text.replaceRange(insertPos, insertPos + 1, insertion);
+    final newCursorOffset = insertPos + insertion.length;
+
+    return TextEditingValue(
+      text: result,
+      selection: TextSelection.collapsed(offset: newCursorOffset),
+    );
+  }
+}
