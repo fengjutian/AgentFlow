@@ -435,7 +435,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get done => 'done';
 
   @override
-  String get search => 'Find';
+  String get search => 'Search';
 
   @override
   String get replace => 'Replace';
@@ -923,4 +923,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copiedToClipboard => 'Copied to clipboard';
+
+  @override
+  String get gitStatus => 'Git Status';
+
+  @override
+  String get switchBranch => 'Switch branch';
+
+  @override
+  String get createBranch => 'Create branch';
+
+  @override
+  String get branchName => 'Branch name';
+
+  @override
+  String get pushToRemote => 'Push to Remote';
+
+  @override
+  String get branch => 'Branch';
+
+  @override
+  String get commitsToPush => 'Commits to push';
+
+  @override
+  String get pushWarning => 'This will push commits to the remote repository.';
+
+  @override
+  String get push => 'Push';
+
+  @override
+  String get changes => 'Changes';
+
+  @override
+  String get staged => 'Staged';
+
+  @override
+  String get modified => 'Modified';
+
+  @override
+  String get untracked => 'Untracked';
+
+  @override
+  String get conflicts => 'Conflicts';
+
+  @override
+  String get noChanges => 'No changes';
+
+  @override
+  String get recentCommits => 'Recent Commits';
+
+  @override
+  String get noCommits => 'No commits';
+
+  @override
+  String get abort => 'Abort';
+
+  @override
+  String get searchWorkspace => 'Search workspace...';
+
+  @override
+  String get enterSearchQuery => 'Enter a search query';
+
+  @override
+  String get noResultsFound => 'No results found';
+
+  @override
+  String get indexing => 'Indexing';
+
+  @override
+  String get indexedFiles => 'Indexed files';
+
+  @override
+  String get indexedChunks => 'Indexed chunks';
+
+  @override
+  String get lastIndexed => 'Last indexed';
+
+  @override
+  String get reindexNow => 'Re-index now';
+
+  @override
+  String get reindexing => 'Re-indexing...';
+
+  @override
+  String get never => 'Never';
 }

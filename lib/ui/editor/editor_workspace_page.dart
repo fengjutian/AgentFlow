@@ -10,7 +10,9 @@ import '../../core/editor/editor_file_index.dart';
 import '../../core/editor/editor_workspace.dart';
 import '../../l10n/l10n.dart';
 import '../../runtime/runtime.dart';
+import '../search/search_page.dart';
 import 'editor_page.dart';
+import 'git_panel.dart';
 
 class EditorWorkspacePage extends ConsumerStatefulWidget {
   const EditorWorkspacePage({
@@ -161,6 +163,16 @@ class _EditorWorkspacePageState extends ConsumerState<EditorWorkspacePage> {
             tooltip: context.l10n.quickOpen,
             onPressed: _showQuickOpen,
             icon: const Icon(Icons.find_in_page_outlined),
+          ),
+          IconButton(
+            tooltip: context.l10n.search,
+            onPressed: () => showSearchPage(context),
+            icon: const Icon(Icons.travel_explore_outlined),
+          ),
+          IconButton(
+            tooltip: context.l10n.gitStatus,
+            onPressed: () => showGitPanel(context),
+            icon: const Icon(Icons.source_outlined),
           ),
           PopupMenuButton<String>(
             tooltip: context.l10n.recentFiles,

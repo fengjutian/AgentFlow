@@ -19,6 +19,8 @@ import '../core/model/model_provider.dart';
 import '../core/model/provider_factory.dart';
 import '../core/context/context_manager.dart';
 import '../core/document/document_context_builder.dart';
+import '../core/search/code_indexer.dart';
+import '../core/search/semantic_search_service.dart';
 import '../core/document/document_parser.dart';
 import '../core/document/document_service.dart';
 import '../core/document/epub_parser.dart';
@@ -194,6 +196,17 @@ final Provider<AgentModificationStore> agentModificationProvider =
   return store;
 });
 
+/// Background code indexer for BM25 semantic search.
+final Provider<CodeIndexer> codeIndexerProvider = Provider<CodeIndexer>(
+  (Ref ref) => CodeIndexer(db: ref.watch(databaseProvider)),
+);
+
+/// Unified semantic search service (BM25 over FTS5).
+final Provider<SemanticSearchService> semanticSearchServiceProvider =
+    Provider<SemanticSearchService>(
+  (Ref ref) => SemanticSearchService(db: ref.watch(databaseProvider)),
+);
+
 /// LSP client manager — one server per language per workspace.
 ///
 /// The manager is created once and configured with the active workspace's
@@ -263,6 +276,7 @@ final Provider<ToolRegistry> toolRegistryProvider = Provider<ToolRegistry>((
 ) {
   final registry = defaultToolRegistry(
     memoryManager: ref.watch(memoryManagerProvider),
+    database: ref.watch(databaseProvider),
   );
   registry.registerAll(documentTools(ref.watch(documentStoreProvider)));
   return registry;

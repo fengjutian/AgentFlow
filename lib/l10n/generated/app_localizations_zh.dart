@@ -425,7 +425,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get done => '完成';
 
   @override
-  String get search => '查找';
+  String get search => '搜索';
 
   @override
   String get replace => '替换';
@@ -902,4 +902,88 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get copiedToClipboard => '已复制到剪贴板';
+
+  @override
+  String get gitStatus => 'Git 状态';
+
+  @override
+  String get switchBranch => '切换分支';
+
+  @override
+  String get createBranch => '创建分支';
+
+  @override
+  String get branchName => '分支名称';
+
+  @override
+  String get pushToRemote => '推送到远程';
+
+  @override
+  String get branch => '分支';
+
+  @override
+  String get commitsToPush => '待推送提交';
+
+  @override
+  String get pushWarning => '这将把提交推送到远程仓库。';
+
+  @override
+  String get push => '推送';
+
+  @override
+  String get changes => '更改';
+
+  @override
+  String get staged => '已暂存';
+
+  @override
+  String get modified => '已修改';
+
+  @override
+  String get untracked => '未跟踪';
+
+  @override
+  String get conflicts => '冲突';
+
+  @override
+  String get noChanges => '无更改';
+
+  @override
+  String get recentCommits => '最近提交';
+
+  @override
+  String get noCommits => '无提交';
+
+  @override
+  String get abort => '中止';
+
+  @override
+  String get searchWorkspace => '搜索工作区...';
+
+  @override
+  String get enterSearchQuery => '请输入搜索查询';
+
+  @override
+  String get noResultsFound => '未找到结果';
+
+  @override
+  String get indexing => '索引';
+
+  @override
+  String get indexedFiles => '已索引文件';
+
+  @override
+  String get indexedChunks => '已索引块';
+
+  @override
+  String get lastIndexed => '上次索引';
+
+  @override
+  String get reindexNow => '立即重新索引';
+
+  @override
+  String get reindexing => '重新索引中...';
+
+  @override
+  String get never => '从未';
 }

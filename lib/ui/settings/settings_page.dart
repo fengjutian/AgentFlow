@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/providers.dart';
 import '../../core/diagnostics.dart';
+import '../../core/search/semantic_search_service.dart';
 import '../../l10n/l10n.dart';
 import '../../core/model/model_provider.dart';
 import '../../core/model/provider_catalog.dart';
@@ -157,6 +158,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 rootDirectory: workspace?.rootDirectory,
                 runtime: runtimeAsync.value,
               ),
+              const SizedBox(height: 16),
+              _SectionHeader(title: context.l10n.indexing),
+              const _IndexingCard(),
             ],
           ),
           const SshSettingsTab(),
@@ -552,6 +556,132 @@ class _RuntimeCardState extends ConsumerState<_RuntimeCard>
       children: <Widget>[
         SizedBox(
           width: 92,
+          child: Text(
+            k,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
+        ),
+        Expanded(child: SelectableText(v)),
+      ],
+    );
+  }
+}
+
+/// Card showing indexing statistics with a manual re-index button.
+class _IndexingCard extends ConsumerStatefulWidget {
+  const _IndexingCard();
+
+  @override
+  ConsumerState<_IndexingCard> createState() => _IndexingCardState();
+}
+
+class _IndexingCardState extends ConsumerState<_IndexingCard> {
+  IndexingStats? _stats;
+  bool _loading = false;
+  bool _indexing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadStats());
+  }
+
+  Future<void> _loadStats() async {
+    final workspace = ref.read(currentWorkspaceProvider);
+    if (workspace == null) return;
+    setState(() => _loading = true);
+    try {
+      final service = ref.read(semanticSearchServiceProvider);
+      final stats = await service.getStats(workspace.id);
+      if (mounted) setState(() => _stats = stats);
+    } catch (_) {
+      // ignore — stats just won't show
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _reindex() async {
+    final workspace = ref.read(currentWorkspaceProvider);
+    final runtime = ref.read(runtimeProvider).value;
+    if (workspace == null || runtime == null) return;
+    setState(() => _indexing = true);
+    try {
+      final indexer = ref.read(codeIndexerProvider);
+      await indexer.indexWorkspace(
+        runtime: runtime,
+        workspaceId: workspace.id,
+        rootDirectory: workspace.rootDirectory,
+      );
+      await _loadStats();
+    } catch (_) {
+      // ignore — user sees stats stay stale
+    } finally {
+      if (mounted) setState(() => _indexing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final workspace = ref.watch(currentWorkspaceProvider);
+
+    if (workspace == null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            context.l10n.selectWorkspaceFirst,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: scheme.outline),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            if (_loading)
+              const Center(child: CircularProgressIndicator())
+            else ...<Widget>[
+              _kv(context, context.l10n.indexedFiles, '${_stats?.fileCount ?? 0}'),
+              const SizedBox(height: 6),
+              _kv(context, context.l10n.indexedChunks, '${_stats?.chunkCount ?? 0}'),
+              const SizedBox(height: 6),
+              _kv(
+                context,
+                context.l10n.lastIndexed,
+                _stats?.lastIndexed != null
+                    ? _stats!.lastIndexed!.toLocal().toString().substring(0, 19)
+                    : context.l10n.never,
+              ),
+            ],
+            const SizedBox(height: 12),
+            FilledButton.tonal(
+              onPressed: _indexing ? null : _reindex,
+              child: Text(
+                _indexing ? context.l10n.reindexing : context.l10n.reindexNow,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _kv(BuildContext context, String k, String v) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(
+          width: 120,
           child: Text(
             k,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(

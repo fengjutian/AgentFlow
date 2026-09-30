@@ -374,6 +374,513 @@ class GitCommitTool extends _GitTool {
   }
 }
 
+class GitFetchTool extends _GitTool {
+  @override
+  String get name => 'git_fetch';
+
+  @override
+  ToolRisk get risk => ToolRisk.auto;
+
+  @override
+  String get description =>
+      'Fetch references from a remote repository without merging. '
+      'Use all=true to fetch from all remotes.';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'remote': <String, dynamic>{
+        'type': 'string',
+        'description': 'Remote name (default: origin).',
+      },
+      'all': <String, dynamic>{'type': 'boolean'},
+    },
+  };
+
+  @override
+  String describeCall(Map<String, dynamic> arguments) {
+    if (optionalBool(arguments, 'all')) return 'git_fetch --all';
+    final remote = optionalString(arguments, 'remote');
+    return 'git_fetch ${remote.isEmpty ? 'origin' : remote}';
+  }
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) {
+    final args = <String>['fetch'];
+    if (optionalBool(arguments, 'all')) {
+      args.add('--all');
+    } else {
+      final remote = optionalString(arguments, 'remote');
+      if (remote.isNotEmpty) args.add(remote);
+    }
+    return _runGit(args, context, isErrorOnNonZero: true);
+  }
+}
+
+class GitPullTool extends _GitTool {
+  @override
+  String get name => 'git_pull';
+
+  @override
+  ToolRisk get risk => ToolRisk.confirm;
+
+  @override
+  String get description =>
+      'Fetch from remote and merge into the current branch. '
+      'Requires approval as it modifies the working tree.';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'remote': <String, dynamic>{'type': 'string'},
+      'branch': <String, dynamic>{'type': 'string'},
+      'rebase': <String, dynamic>{'type': 'boolean'},
+    },
+  };
+
+  @override
+  String describeCall(Map<String, dynamic> arguments) {
+    final remote = optionalString(arguments, 'remote');
+    final branch = optionalString(arguments, 'branch');
+    final rebase = optionalBool(arguments, 'rebase');
+    final parts = <String>['git_pull'];
+    if (remote.isNotEmpty) parts.add(remote);
+    if (branch.isNotEmpty) parts.add(branch);
+    if (rebase) parts.add('--rebase');
+    return parts.join(' ');
+  }
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) {
+    final args = <String>['pull'];
+    if (optionalBool(arguments, 'rebase')) args.add('--rebase');
+    final remote = optionalString(arguments, 'remote');
+    if (remote.isNotEmpty) args.add(remote);
+    final branch = optionalString(arguments, 'branch');
+    if (branch.isNotEmpty) args.add(branch);
+    return _runGit(args, context, isErrorOnNonZero: true);
+  }
+}
+
+class GitPushTool extends _GitTool {
+  @override
+  String get name => 'git_push';
+
+  @override
+  ToolRisk get risk => ToolRisk.strong;
+
+  @override
+  String get description =>
+      'Push local commits to a remote repository. This is a destructive operation '
+      'that cannot be undone. Requires explicit confirmation showing remote, branch, '
+      'and commit count.';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'remote': <String, dynamic>{
+        'type': 'string',
+        'description': 'Remote name (default: origin).',
+      },
+      'branch': <String, dynamic>{
+        'type': 'string',
+        'description': 'Branch to push (default: current).',
+      },
+      'force': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Force push (dangerous: overwrites remote history).',
+      },
+      'tags': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Push tags along with commits.',
+      },
+    },
+  };
+
+  @override
+  String describeCall(Map<String, dynamic> arguments) {
+    final remote = optionalString(arguments, 'remote');
+    final branch = optionalString(arguments, 'branch');
+    final force = optionalBool(arguments, 'force');
+    final parts = <String>['git_push'];
+    if (force) parts.add('--force');
+    parts.add(remote.isEmpty ? 'origin' : remote);
+    if (branch.isNotEmpty) parts.add(branch);
+    return parts.join(' ');
+  }
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) {
+    final args = <String>['push'];
+    if (optionalBool(arguments, 'force')) args.add('--force');
+    if (optionalBool(arguments, 'tags')) args.add('--tags');
+    final remote = optionalString(arguments, 'remote');
+    args.add(remote.isEmpty ? 'origin' : remote);
+    final branch = optionalString(arguments, 'branch');
+    if (branch.isNotEmpty) args.add(branch);
+    return _runGit(args, context, isErrorOnNonZero: true);
+  }
+}
+
+class GitCheckoutTool extends _GitTool {
+  @override
+  String get name => 'git_checkout';
+
+  @override
+  ToolRisk get risk => ToolRisk.confirm;
+
+  @override
+  String get description =>
+      'Switch branches or create a new branch. Use create=true to create and '
+      'switch to a new branch. Requires approval as it modifies the working tree.';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'branch': <String, dynamic>{
+        'type': 'string',
+        'description': 'Branch name to checkout.',
+      },
+      'create': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Create the branch before switching to it.',
+      },
+      'startPoint': <String, dynamic>{
+        'type': 'string',
+        'description': 'Starting point for new branch (commit, branch, or tag).',
+      },
+    },
+    'required': <String>['branch'],
+  };
+
+  @override
+  String describeCall(Map<String, dynamic> arguments) {
+    final branch = optionalString(arguments, 'branch');
+    final create = optionalBool(arguments, 'create');
+    return create ? 'git_checkout -b $branch' : 'git_checkout $branch';
+  }
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) {
+    final branch = requireString(arguments, 'branch');
+    final create = optionalBool(arguments, 'create');
+    final args = <String>['checkout'];
+    if (create) {
+      args.add('-b');
+      args.add(branch);
+      final startPoint = optionalString(arguments, 'startPoint');
+      if (startPoint.isNotEmpty) args.add(startPoint);
+    } else {
+      args.add(branch);
+    }
+    return _runGit(args, context, isErrorOnNonZero: true);
+  }
+}
+
+class GitMergeTool extends _GitTool {
+  @override
+  String get name => 'git_merge';
+
+  @override
+  ToolRisk get risk => ToolRisk.confirm;
+
+  @override
+  String get description =>
+      'Merge a branch into the current branch. Use no_ff=true to create a merge '
+      'commit even when fast-forward is possible. Requires approval.';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'branch': <String, dynamic>{
+        'type': 'string',
+        'description': 'Branch to merge into current.',
+      },
+      'no_ff': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Always create a merge commit (no fast-forward).',
+      },
+      'abort': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Abort an in-progress merge.',
+      },
+    },
+    'required': <String>['branch'],
+  };
+
+  @override
+  String describeCall(Map<String, dynamic> arguments) {
+    if (optionalBool(arguments, 'abort')) return 'git_merge --abort';
+    final branch = optionalString(arguments, 'branch');
+    final noFf = optionalBool(arguments, 'no_ff');
+    return 'git_merge ${noFf ? '--no-ff ' : ''}$branch';
+  }
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) {
+    if (optionalBool(arguments, 'abort')) {
+      return _runGit(<String>['merge', '--abort'], context, isErrorOnNonZero: true);
+    }
+    final branch = requireString(arguments, 'branch');
+    final args = <String>['merge'];
+    if (optionalBool(arguments, 'no_ff')) args.add('--no-ff');
+    args.add(branch);
+    return _runGit(args, context, isErrorOnNonZero: true);
+  }
+}
+
+class GitStashTool extends _GitTool {
+  @override
+  String get name => 'git_stash';
+
+  @override
+  ToolRisk get risk => ToolRisk.confirm;
+
+  @override
+  String get description =>
+      'Save or restore uncommitted changes. Actions: push (save), pop (restore and remove), '
+      'list (show stashes), drop (remove without applying). Requires approval for mutating actions.';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'action': <String, dynamic>{
+        'type': 'string',
+        'enum': <String>['push', 'pop', 'list', 'drop', 'show', 'apply'],
+        'description': 'Stash action to perform.',
+      },
+      'message': <String, dynamic>{
+        'type': 'string',
+        'description': 'Message for stash push.',
+      },
+      'index': <String, dynamic>{
+        'type': 'integer',
+        'description': 'Stash index for pop/drop/apply (default: 0).',
+      },
+      'includeUntracked': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Include untracked files in stash push.',
+      },
+    },
+    'required': <String>['action'],
+  };
+
+  @override
+  String describeCall(Map<String, dynamic> arguments) {
+    final action = optionalString(arguments, 'action');
+    final index = optionalInt(arguments, 'index');
+    return 'git_stash $action${index > 0 ? ' $index' : ''}';
+  }
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) {
+    final action = requireString(arguments, 'action');
+    final args = <String>['stash'];
+
+    switch (action) {
+      case 'push':
+        args.add('push');
+        if (optionalBool(arguments, 'includeUntracked')) {
+          args.add('--include-untracked');
+        }
+        final message = optionalString(arguments, 'message');
+        if (message.isNotEmpty) {
+          args.addAll(<String>['-m', message]);
+        }
+      case 'pop':
+        args.add('pop');
+        final index = optionalInt(arguments, 'index');
+        if (index > 0) args.add('stash@{$index}');
+      case 'apply':
+        args.add('apply');
+        final index = optionalInt(arguments, 'index');
+        if (index > 0) args.add('stash@{$index}');
+      case 'drop':
+        args.add('drop');
+        final index = optionalInt(arguments, 'index');
+        if (index > 0) args.add('stash@{$index}');
+      case 'list':
+        args.add('list');
+      case 'show':
+        args.add('show');
+        final index = optionalInt(arguments, 'index');
+        if (index > 0) args.add('stash@{$index}');
+      default:
+        throw ToolExecutionException(
+          'Unknown stash action: $action. Use push, pop, apply, drop, list, or show.',
+        );
+    }
+    return _runGit(args, context, isErrorOnNonZero: true);
+  }
+}
+
+class GitRemoteTool extends _GitTool {
+  @override
+  String get name => 'git_remote';
+
+  @override
+  ToolRisk get risk => ToolRisk.confirm;
+
+  @override
+  String get description =>
+      'Manage remote repositories. List remotes (auto), or add/remove (requires approval).';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'action': <String, dynamic>{
+        'type': 'string',
+        'enum': <String>['list', 'add', 'remove', 'rename', 'set-url'],
+        'description': 'Remote action (default: list).',
+      },
+      'name': <String, dynamic>{
+        'type': 'string',
+        'description': 'Remote name.',
+      },
+      'url': <String, dynamic>{
+        'type': 'string',
+        'description': 'Remote URL.',
+      },
+      'newName': <String, dynamic>{
+        'type': 'string',
+        'description': 'New name for rename action.',
+      },
+      'verbose': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Show URLs for list action.',
+      },
+    },
+  };
+
+  @override
+  String describeCall(Map<String, dynamic> arguments) {
+    final action = optionalString(arguments, 'action');
+    final name = optionalString(arguments, 'name');
+    return 'git_remote ${action.isEmpty ? 'list' : action}${name.isNotEmpty ? ' $name' : ''}';
+  }
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) {
+    final action = optionalString(arguments, 'action');
+    final args = <String>['remote'];
+
+    switch (action.isEmpty ? 'list' : action) {
+      case 'list':
+        if (optionalBool(arguments, 'verbose')) args.add('-v');
+      case 'add':
+        final name = requireString(arguments, 'name');
+        final url = requireString(arguments, 'url');
+        args.addAll(<String>['add', name, url]);
+      case 'remove':
+        final name = requireString(arguments, 'name');
+        args.addAll(<String>['remove', name]);
+      case 'rename':
+        final name = requireString(arguments, 'name');
+        final newName = requireString(arguments, 'newName');
+        args.addAll(<String>['rename', name, newName]);
+      case 'set-url':
+        final name = requireString(arguments, 'name');
+        final url = requireString(arguments, 'url');
+        args.addAll(<String>['set-url', name, url]);
+      default:
+        throw ToolExecutionException(
+          'Unknown remote action: $action. Use list, add, remove, rename, or set-url.',
+        );
+    }
+    return _runGit(args, context, isErrorOnNonZero: true);
+  }
+}
+
+class GitCherryPickTool extends _GitTool {
+  @override
+  String get name => 'git_cherry_pick';
+
+  @override
+  ToolRisk get risk => ToolRisk.confirm;
+
+  @override
+  String get description =>
+      'Apply changes from a specific commit to the current branch. '
+      'Use abort=true to cancel an in-progress cherry-pick. Requires approval.';
+
+  @override
+  Map<String, dynamic> get inputSchema => <String, dynamic>{
+    'type': 'object',
+    'properties': <String, dynamic>{
+      'commit': <String, dynamic>{
+        'type': 'string',
+        'description': 'Commit hash or reference to cherry-pick.',
+      },
+      'abort': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Abort an in-progress cherry-pick.',
+      },
+      'continue_': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Continue an in-progress cherry-pick after resolving conflicts.',
+      },
+      'noCommit': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Apply changes without committing.',
+      },
+    },
+  };
+
+  @override
+  String describeCall(Map<String, dynamic> arguments) {
+    if (optionalBool(arguments, 'abort')) return 'git_cherry_pick --abort';
+    if (optionalBool(arguments, 'continue_')) return 'git_cherry_pick --continue';
+    final commit = optionalString(arguments, 'commit');
+    return 'git_cherry_pick $commit';
+  }
+
+  @override
+  Future<ToolResult> execute(
+    Map<String, dynamic> arguments,
+    ToolContext context,
+  ) {
+    if (optionalBool(arguments, 'abort')) {
+      return _runGit(<String>['cherry-pick', '--abort'], context, isErrorOnNonZero: true);
+    }
+    if (optionalBool(arguments, 'continue_')) {
+      return _runGit(<String>['cherry-pick', '--continue'], context, isErrorOnNonZero: true);
+    }
+    final commit = requireString(arguments, 'commit');
+    final args = <String>['cherry-pick'];
+    if (optionalBool(arguments, 'noCommit')) args.add('--no-commit');
+    args.add(commit);
+    return _runGit(args, context, isErrorOnNonZero: true);
+  }
+}
+
 List<String> _stringList(Map<String, dynamic> arguments, String key) {
   final value = arguments[key];
   if (value == null) return const <String>[];
@@ -398,4 +905,12 @@ List<AgentTool> gitTools() => <AgentTool>[
   GitAddTool(),
   GitUnstageTool(),
   GitCommitTool(),
+  GitFetchTool(),
+  GitPullTool(),
+  GitPushTool(),
+  GitCheckoutTool(),
+  GitMergeTool(),
+  GitStashTool(),
+  GitRemoteTool(),
+  GitCherryPickTool(),
 ];

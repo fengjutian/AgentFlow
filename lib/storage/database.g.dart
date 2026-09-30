@@ -6129,6 +6129,610 @@ class LspServerConfigsCompanion extends UpdateCompanion<LspServerConfigRow> {
   }
 }
 
+class $CodeChunksTable extends CodeChunks
+    with TableInfo<$CodeChunksTable, CodeChunkRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CodeChunksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _workspaceIdMeta = const VerificationMeta(
+    'workspaceId',
+  );
+  @override
+  late final GeneratedColumn<String> workspaceId = GeneratedColumn<String>(
+    'workspace_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES workspaces (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _filePathMeta = const VerificationMeta(
+    'filePath',
+  );
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+    'file_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _chunkIndexMeta = const VerificationMeta(
+    'chunkIndex',
+  );
+  @override
+  late final GeneratedColumn<int> chunkIndex = GeneratedColumn<int>(
+    'chunk_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startLineMeta = const VerificationMeta(
+    'startLine',
+  );
+  @override
+  late final GeneratedColumn<int> startLine = GeneratedColumn<int>(
+    'start_line',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endLineMeta = const VerificationMeta(
+    'endLine',
+  );
+  @override
+  late final GeneratedColumn<int> endLine = GeneratedColumn<int>(
+    'end_line',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _languageIdMeta = const VerificationMeta(
+    'languageId',
+  );
+  @override
+  late final GeneratedColumn<String> languageId = GeneratedColumn<String>(
+    'language_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _mtimeMeta = const VerificationMeta('mtime');
+  @override
+  late final GeneratedColumn<int> mtime = GeneratedColumn<int>(
+    'mtime',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _indexedAtMeta = const VerificationMeta(
+    'indexedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> indexedAt = GeneratedColumn<DateTime>(
+    'indexed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    workspaceId,
+    filePath,
+    chunkIndex,
+    startLine,
+    endLine,
+    content,
+    languageId,
+    mtime,
+    indexedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'code_chunks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CodeChunkRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('workspace_id')) {
+      context.handle(
+        _workspaceIdMeta,
+        workspaceId.isAcceptableOrUnknown(
+          data['workspace_id']!,
+          _workspaceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_workspaceIdMeta);
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(
+        _filePathMeta,
+        filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_filePathMeta);
+    }
+    if (data.containsKey('chunk_index')) {
+      context.handle(
+        _chunkIndexMeta,
+        chunkIndex.isAcceptableOrUnknown(data['chunk_index']!, _chunkIndexMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_chunkIndexMeta);
+    }
+    if (data.containsKey('start_line')) {
+      context.handle(
+        _startLineMeta,
+        startLine.isAcceptableOrUnknown(data['start_line']!, _startLineMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startLineMeta);
+    }
+    if (data.containsKey('end_line')) {
+      context.handle(
+        _endLineMeta,
+        endLine.isAcceptableOrUnknown(data['end_line']!, _endLineMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endLineMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('language_id')) {
+      context.handle(
+        _languageIdMeta,
+        languageId.isAcceptableOrUnknown(data['language_id']!, _languageIdMeta),
+      );
+    }
+    if (data.containsKey('mtime')) {
+      context.handle(
+        _mtimeMeta,
+        mtime.isAcceptableOrUnknown(data['mtime']!, _mtimeMeta),
+      );
+    }
+    if (data.containsKey('indexed_at')) {
+      context.handle(
+        _indexedAtMeta,
+        indexedAt.isAcceptableOrUnknown(data['indexed_at']!, _indexedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_indexedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CodeChunkRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CodeChunkRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      workspaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}workspace_id'],
+      )!,
+      filePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_path'],
+      )!,
+      chunkIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}chunk_index'],
+      )!,
+      startLine: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_line'],
+      )!,
+      endLine: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}end_line'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      languageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language_id'],
+      )!,
+      mtime: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}mtime'],
+      )!,
+      indexedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}indexed_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CodeChunksTable createAlias(String alias) {
+    return $CodeChunksTable(attachedDatabase, alias);
+  }
+}
+
+class CodeChunkRow extends DataClass implements Insertable<CodeChunkRow> {
+  final int id;
+  final String workspaceId;
+  final String filePath;
+  final int chunkIndex;
+  final int startLine;
+  final int endLine;
+  final String content;
+  final String languageId;
+  final int mtime;
+  final DateTime indexedAt;
+  const CodeChunkRow({
+    required this.id,
+    required this.workspaceId,
+    required this.filePath,
+    required this.chunkIndex,
+    required this.startLine,
+    required this.endLine,
+    required this.content,
+    required this.languageId,
+    required this.mtime,
+    required this.indexedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['workspace_id'] = Variable<String>(workspaceId);
+    map['file_path'] = Variable<String>(filePath);
+    map['chunk_index'] = Variable<int>(chunkIndex);
+    map['start_line'] = Variable<int>(startLine);
+    map['end_line'] = Variable<int>(endLine);
+    map['content'] = Variable<String>(content);
+    map['language_id'] = Variable<String>(languageId);
+    map['mtime'] = Variable<int>(mtime);
+    map['indexed_at'] = Variable<DateTime>(indexedAt);
+    return map;
+  }
+
+  CodeChunksCompanion toCompanion(bool nullToAbsent) {
+    return CodeChunksCompanion(
+      id: Value(id),
+      workspaceId: Value(workspaceId),
+      filePath: Value(filePath),
+      chunkIndex: Value(chunkIndex),
+      startLine: Value(startLine),
+      endLine: Value(endLine),
+      content: Value(content),
+      languageId: Value(languageId),
+      mtime: Value(mtime),
+      indexedAt: Value(indexedAt),
+    );
+  }
+
+  factory CodeChunkRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CodeChunkRow(
+      id: serializer.fromJson<int>(json['id']),
+      workspaceId: serializer.fromJson<String>(json['workspaceId']),
+      filePath: serializer.fromJson<String>(json['filePath']),
+      chunkIndex: serializer.fromJson<int>(json['chunkIndex']),
+      startLine: serializer.fromJson<int>(json['startLine']),
+      endLine: serializer.fromJson<int>(json['endLine']),
+      content: serializer.fromJson<String>(json['content']),
+      languageId: serializer.fromJson<String>(json['languageId']),
+      mtime: serializer.fromJson<int>(json['mtime']),
+      indexedAt: serializer.fromJson<DateTime>(json['indexedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'workspaceId': serializer.toJson<String>(workspaceId),
+      'filePath': serializer.toJson<String>(filePath),
+      'chunkIndex': serializer.toJson<int>(chunkIndex),
+      'startLine': serializer.toJson<int>(startLine),
+      'endLine': serializer.toJson<int>(endLine),
+      'content': serializer.toJson<String>(content),
+      'languageId': serializer.toJson<String>(languageId),
+      'mtime': serializer.toJson<int>(mtime),
+      'indexedAt': serializer.toJson<DateTime>(indexedAt),
+    };
+  }
+
+  CodeChunkRow copyWith({
+    int? id,
+    String? workspaceId,
+    String? filePath,
+    int? chunkIndex,
+    int? startLine,
+    int? endLine,
+    String? content,
+    String? languageId,
+    int? mtime,
+    DateTime? indexedAt,
+  }) => CodeChunkRow(
+    id: id ?? this.id,
+    workspaceId: workspaceId ?? this.workspaceId,
+    filePath: filePath ?? this.filePath,
+    chunkIndex: chunkIndex ?? this.chunkIndex,
+    startLine: startLine ?? this.startLine,
+    endLine: endLine ?? this.endLine,
+    content: content ?? this.content,
+    languageId: languageId ?? this.languageId,
+    mtime: mtime ?? this.mtime,
+    indexedAt: indexedAt ?? this.indexedAt,
+  );
+  CodeChunkRow copyWithCompanion(CodeChunksCompanion data) {
+    return CodeChunkRow(
+      id: data.id.present ? data.id.value : this.id,
+      workspaceId: data.workspaceId.present
+          ? data.workspaceId.value
+          : this.workspaceId,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      chunkIndex: data.chunkIndex.present
+          ? data.chunkIndex.value
+          : this.chunkIndex,
+      startLine: data.startLine.present ? data.startLine.value : this.startLine,
+      endLine: data.endLine.present ? data.endLine.value : this.endLine,
+      content: data.content.present ? data.content.value : this.content,
+      languageId: data.languageId.present
+          ? data.languageId.value
+          : this.languageId,
+      mtime: data.mtime.present ? data.mtime.value : this.mtime,
+      indexedAt: data.indexedAt.present ? data.indexedAt.value : this.indexedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CodeChunkRow(')
+          ..write('id: $id, ')
+          ..write('workspaceId: $workspaceId, ')
+          ..write('filePath: $filePath, ')
+          ..write('chunkIndex: $chunkIndex, ')
+          ..write('startLine: $startLine, ')
+          ..write('endLine: $endLine, ')
+          ..write('content: $content, ')
+          ..write('languageId: $languageId, ')
+          ..write('mtime: $mtime, ')
+          ..write('indexedAt: $indexedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    workspaceId,
+    filePath,
+    chunkIndex,
+    startLine,
+    endLine,
+    content,
+    languageId,
+    mtime,
+    indexedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CodeChunkRow &&
+          other.id == this.id &&
+          other.workspaceId == this.workspaceId &&
+          other.filePath == this.filePath &&
+          other.chunkIndex == this.chunkIndex &&
+          other.startLine == this.startLine &&
+          other.endLine == this.endLine &&
+          other.content == this.content &&
+          other.languageId == this.languageId &&
+          other.mtime == this.mtime &&
+          other.indexedAt == this.indexedAt);
+}
+
+class CodeChunksCompanion extends UpdateCompanion<CodeChunkRow> {
+  final Value<int> id;
+  final Value<String> workspaceId;
+  final Value<String> filePath;
+  final Value<int> chunkIndex;
+  final Value<int> startLine;
+  final Value<int> endLine;
+  final Value<String> content;
+  final Value<String> languageId;
+  final Value<int> mtime;
+  final Value<DateTime> indexedAt;
+  const CodeChunksCompanion({
+    this.id = const Value.absent(),
+    this.workspaceId = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.chunkIndex = const Value.absent(),
+    this.startLine = const Value.absent(),
+    this.endLine = const Value.absent(),
+    this.content = const Value.absent(),
+    this.languageId = const Value.absent(),
+    this.mtime = const Value.absent(),
+    this.indexedAt = const Value.absent(),
+  });
+  CodeChunksCompanion.insert({
+    this.id = const Value.absent(),
+    required String workspaceId,
+    required String filePath,
+    required int chunkIndex,
+    required int startLine,
+    required int endLine,
+    required String content,
+    this.languageId = const Value.absent(),
+    this.mtime = const Value.absent(),
+    required DateTime indexedAt,
+  }) : workspaceId = Value(workspaceId),
+       filePath = Value(filePath),
+       chunkIndex = Value(chunkIndex),
+       startLine = Value(startLine),
+       endLine = Value(endLine),
+       content = Value(content),
+       indexedAt = Value(indexedAt);
+  static Insertable<CodeChunkRow> custom({
+    Expression<int>? id,
+    Expression<String>? workspaceId,
+    Expression<String>? filePath,
+    Expression<int>? chunkIndex,
+    Expression<int>? startLine,
+    Expression<int>? endLine,
+    Expression<String>? content,
+    Expression<String>? languageId,
+    Expression<int>? mtime,
+    Expression<DateTime>? indexedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (workspaceId != null) 'workspace_id': workspaceId,
+      if (filePath != null) 'file_path': filePath,
+      if (chunkIndex != null) 'chunk_index': chunkIndex,
+      if (startLine != null) 'start_line': startLine,
+      if (endLine != null) 'end_line': endLine,
+      if (content != null) 'content': content,
+      if (languageId != null) 'language_id': languageId,
+      if (mtime != null) 'mtime': mtime,
+      if (indexedAt != null) 'indexed_at': indexedAt,
+    });
+  }
+
+  CodeChunksCompanion copyWith({
+    Value<int>? id,
+    Value<String>? workspaceId,
+    Value<String>? filePath,
+    Value<int>? chunkIndex,
+    Value<int>? startLine,
+    Value<int>? endLine,
+    Value<String>? content,
+    Value<String>? languageId,
+    Value<int>? mtime,
+    Value<DateTime>? indexedAt,
+  }) {
+    return CodeChunksCompanion(
+      id: id ?? this.id,
+      workspaceId: workspaceId ?? this.workspaceId,
+      filePath: filePath ?? this.filePath,
+      chunkIndex: chunkIndex ?? this.chunkIndex,
+      startLine: startLine ?? this.startLine,
+      endLine: endLine ?? this.endLine,
+      content: content ?? this.content,
+      languageId: languageId ?? this.languageId,
+      mtime: mtime ?? this.mtime,
+      indexedAt: indexedAt ?? this.indexedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (workspaceId.present) {
+      map['workspace_id'] = Variable<String>(workspaceId.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (chunkIndex.present) {
+      map['chunk_index'] = Variable<int>(chunkIndex.value);
+    }
+    if (startLine.present) {
+      map['start_line'] = Variable<int>(startLine.value);
+    }
+    if (endLine.present) {
+      map['end_line'] = Variable<int>(endLine.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (languageId.present) {
+      map['language_id'] = Variable<String>(languageId.value);
+    }
+    if (mtime.present) {
+      map['mtime'] = Variable<int>(mtime.value);
+    }
+    if (indexedAt.present) {
+      map['indexed_at'] = Variable<DateTime>(indexedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CodeChunksCompanion(')
+          ..write('id: $id, ')
+          ..write('workspaceId: $workspaceId, ')
+          ..write('filePath: $filePath, ')
+          ..write('chunkIndex: $chunkIndex, ')
+          ..write('startLine: $startLine, ')
+          ..write('endLine: $endLine, ')
+          ..write('content: $content, ')
+          ..write('languageId: $languageId, ')
+          ..write('mtime: $mtime, ')
+          ..write('indexedAt: $indexedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6148,6 +6752,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LspServerConfigsTable lspServerConfigs = $LspServerConfigsTable(
     this,
   );
+  late final $CodeChunksTable codeChunks = $CodeChunksTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6163,6 +6768,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     documentSections,
     mcpServers,
     lspServerConfigs,
+    codeChunks,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -6207,6 +6813,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('lsp_server_configs', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'workspaces',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('code_chunks', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -6305,6 +6918,24 @@ final class $$WorkspacesTableReferences
     final cache = $_typedResult.readTableOrNull(
       _lspServerConfigsRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CodeChunksTable, List<CodeChunkRow>>
+  _codeChunksRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.codeChunks,
+    aliasName: 'workspaces__id__code_chunks__workspace_id',
+  );
+
+  $$CodeChunksTableProcessedTableManager get codeChunksRefs {
+    final manager = $$CodeChunksTableTableManager(
+      $_db,
+      $_db.codeChunks,
+    ).filter((f) => f.workspaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_codeChunksRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -6441,6 +7072,31 @@ class $$WorkspacesTableFilterComposer
           }) => $$LspServerConfigsTableFilterComposer(
             $db: $db,
             $table: $db.lspServerConfigs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> codeChunksRefs(
+    Expression<bool> Function($$CodeChunksTableFilterComposer f) f,
+  ) {
+    final $$CodeChunksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.codeChunks,
+      getReferencedColumn: (t) => t.workspaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CodeChunksTableFilterComposer(
+            $db: $db,
+            $table: $db.codeChunks,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6621,6 +7277,31 @@ class $$WorkspacesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> codeChunksRefs<T extends Object>(
+    Expression<T> Function($$CodeChunksTableAnnotationComposer a) f,
+  ) {
+    final $$CodeChunksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.codeChunks,
+      getReferencedColumn: (t) => t.workspaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CodeChunksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.codeChunks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$WorkspacesTableTableManager
@@ -6641,6 +7322,7 @@ class $$WorkspacesTableTableManager
             bool documentsRefs,
             bool mcpServersRefs,
             bool lspServerConfigsRefs,
+            bool codeChunksRefs,
           })
         > {
   $$WorkspacesTableTableManager(_$AppDatabase db, $WorkspacesTable table)
@@ -6704,6 +7386,7 @@ class $$WorkspacesTableTableManager
                 documentsRefs = false,
                 mcpServersRefs = false,
                 lspServerConfigsRefs = false,
+                codeChunksRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -6712,6 +7395,7 @@ class $$WorkspacesTableTableManager
                     if (documentsRefs) db.documents,
                     if (mcpServersRefs) db.mcpServers,
                     if (lspServerConfigsRefs) db.lspServerConfigs,
+                    if (codeChunksRefs) db.codeChunks,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -6800,6 +7484,27 @@ class $$WorkspacesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (codeChunksRefs)
+                        await $_getPrefetchedData<
+                          WorkspaceRow,
+                          $WorkspacesTable,
+                          CodeChunkRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WorkspacesTableReferences
+                              ._codeChunksRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WorkspacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).codeChunksRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.workspaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -6825,6 +7530,7 @@ typedef $$WorkspacesTableProcessedTableManager =
         bool documentsRefs,
         bool mcpServersRefs,
         bool lspServerConfigsRefs,
+        bool codeChunksRefs,
       })
     >;
 typedef $$SessionsTableCreateCompanionBuilder =
@@ -10528,6 +11234,416 @@ typedef $$LspServerConfigsTableProcessedTableManager =
       LspServerConfigRow,
       PrefetchHooks Function({bool workspaceId})
     >;
+typedef $$CodeChunksTableCreateCompanionBuilder =
+    CodeChunksCompanion Function({
+      Value<int> id,
+      required String workspaceId,
+      required String filePath,
+      required int chunkIndex,
+      required int startLine,
+      required int endLine,
+      required String content,
+      Value<String> languageId,
+      Value<int> mtime,
+      required DateTime indexedAt,
+    });
+typedef $$CodeChunksTableUpdateCompanionBuilder =
+    CodeChunksCompanion Function({
+      Value<int> id,
+      Value<String> workspaceId,
+      Value<String> filePath,
+      Value<int> chunkIndex,
+      Value<int> startLine,
+      Value<int> endLine,
+      Value<String> content,
+      Value<String> languageId,
+      Value<int> mtime,
+      Value<DateTime> indexedAt,
+    });
+
+final class $$CodeChunksTableReferences
+    extends BaseReferences<_$AppDatabase, $CodeChunksTable, CodeChunkRow> {
+  $$CodeChunksTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorkspacesTable _workspaceIdTable(_$AppDatabase db) =>
+      db.workspaces.createAlias('code_chunks__workspace_id__workspaces__id');
+
+  $$WorkspacesTableProcessedTableManager get workspaceId {
+    final $_column = $_itemColumn<String>('workspace_id')!;
+
+    final manager = $$WorkspacesTableTableManager(
+      $_db,
+      $_db.workspaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workspaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CodeChunksTableFilterComposer
+    extends Composer<_$AppDatabase, $CodeChunksTable> {
+  $$CodeChunksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get chunkIndex => $composableBuilder(
+    column: $table.chunkIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get startLine => $composableBuilder(
+    column: $table.startLine,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get endLine => $composableBuilder(
+    column: $table.endLine,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get languageId => $composableBuilder(
+    column: $table.languageId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get mtime => $composableBuilder(
+    column: $table.mtime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get indexedAt => $composableBuilder(
+    column: $table.indexedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WorkspacesTableFilterComposer get workspaceId {
+    final $$WorkspacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableFilterComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CodeChunksTableOrderingComposer
+    extends Composer<_$AppDatabase, $CodeChunksTable> {
+  $$CodeChunksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get chunkIndex => $composableBuilder(
+    column: $table.chunkIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get startLine => $composableBuilder(
+    column: $table.startLine,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get endLine => $composableBuilder(
+    column: $table.endLine,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get languageId => $composableBuilder(
+    column: $table.languageId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get mtime => $composableBuilder(
+    column: $table.mtime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get indexedAt => $composableBuilder(
+    column: $table.indexedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WorkspacesTableOrderingComposer get workspaceId {
+    final $$WorkspacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CodeChunksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CodeChunksTable> {
+  $$CodeChunksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<int> get chunkIndex => $composableBuilder(
+    column: $table.chunkIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get startLine =>
+      $composableBuilder(column: $table.startLine, builder: (column) => column);
+
+  GeneratedColumn<int> get endLine =>
+      $composableBuilder(column: $table.endLine, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get languageId => $composableBuilder(
+    column: $table.languageId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get mtime =>
+      $composableBuilder(column: $table.mtime, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get indexedAt =>
+      $composableBuilder(column: $table.indexedAt, builder: (column) => column);
+
+  $$WorkspacesTableAnnotationComposer get workspaceId {
+    final $$WorkspacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.workspaceId,
+      referencedTable: $db.workspaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WorkspacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.workspaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CodeChunksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CodeChunksTable,
+          CodeChunkRow,
+          $$CodeChunksTableFilterComposer,
+          $$CodeChunksTableOrderingComposer,
+          $$CodeChunksTableAnnotationComposer,
+          $$CodeChunksTableCreateCompanionBuilder,
+          $$CodeChunksTableUpdateCompanionBuilder,
+          (CodeChunkRow, $$CodeChunksTableReferences),
+          CodeChunkRow,
+          PrefetchHooks Function({bool workspaceId})
+        > {
+  $$CodeChunksTableTableManager(_$AppDatabase db, $CodeChunksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CodeChunksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CodeChunksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CodeChunksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> workspaceId = const Value.absent(),
+                Value<String> filePath = const Value.absent(),
+                Value<int> chunkIndex = const Value.absent(),
+                Value<int> startLine = const Value.absent(),
+                Value<int> endLine = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<String> languageId = const Value.absent(),
+                Value<int> mtime = const Value.absent(),
+                Value<DateTime> indexedAt = const Value.absent(),
+              }) => CodeChunksCompanion(
+                id: id,
+                workspaceId: workspaceId,
+                filePath: filePath,
+                chunkIndex: chunkIndex,
+                startLine: startLine,
+                endLine: endLine,
+                content: content,
+                languageId: languageId,
+                mtime: mtime,
+                indexedAt: indexedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String workspaceId,
+                required String filePath,
+                required int chunkIndex,
+                required int startLine,
+                required int endLine,
+                required String content,
+                Value<String> languageId = const Value.absent(),
+                Value<int> mtime = const Value.absent(),
+                required DateTime indexedAt,
+              }) => CodeChunksCompanion.insert(
+                id: id,
+                workspaceId: workspaceId,
+                filePath: filePath,
+                chunkIndex: chunkIndex,
+                startLine: startLine,
+                endLine: endLine,
+                content: content,
+                languageId: languageId,
+                mtime: mtime,
+                indexedAt: indexedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CodeChunksTable, CodeChunkRow>(table),
+                  $$CodeChunksTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({workspaceId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (workspaceId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.workspaceId,
+                                referencedTable: $$CodeChunksTableReferences
+                                    ._workspaceIdTable(db),
+                                referencedColumn: $$CodeChunksTableReferences
+                                    ._workspaceIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CodeChunksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CodeChunksTable,
+      CodeChunkRow,
+      $$CodeChunksTableFilterComposer,
+      $$CodeChunksTableOrderingComposer,
+      $$CodeChunksTableAnnotationComposer,
+      $$CodeChunksTableCreateCompanionBuilder,
+      $$CodeChunksTableUpdateCompanionBuilder,
+      (CodeChunkRow, $$CodeChunksTableReferences),
+      CodeChunkRow,
+      PrefetchHooks Function({bool workspaceId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -10552,4 +11668,6 @@ class $AppDatabaseManager {
       $$McpServersTableTableManager(_db, _db.mcpServers);
   $$LspServerConfigsTableTableManager get lspServerConfigs =>
       $$LspServerConfigsTableTableManager(_db, _db.lspServerConfigs);
+  $$CodeChunksTableTableManager get codeChunks =>
+      $$CodeChunksTableTableManager(_db, _db.codeChunks);
 }

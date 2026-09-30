@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @search.
   ///
   /// In en, this message translates to:
-  /// **'Find'**
+  /// **'Search'**
   String get search;
 
   /// No description provided for @replace.
@@ -1717,6 +1717,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copied to clipboard'**
   String get copiedToClipboard;
+
+  /// No description provided for @gitStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Git Status'**
+  String get gitStatus;
+
+  /// No description provided for @switchBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch branch'**
+  String get switchBranch;
+
+  /// No description provided for @createBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Create branch'**
+  String get createBranch;
+
+  /// No description provided for @branchName.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch name'**
+  String get branchName;
+
+  /// No description provided for @pushToRemote.
+  ///
+  /// In en, this message translates to:
+  /// **'Push to Remote'**
+  String get pushToRemote;
+
+  /// No description provided for @branch.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch'**
+  String get branch;
+
+  /// No description provided for @commitsToPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Commits to push'**
+  String get commitsToPush;
+
+  /// No description provided for @pushWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This will push commits to the remote repository.'**
+  String get pushWarning;
+
+  /// No description provided for @push.
+  ///
+  /// In en, this message translates to:
+  /// **'Push'**
+  String get push;
+
+  /// No description provided for @changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes'**
+  String get changes;
+
+  /// No description provided for @staged.
+  ///
+  /// In en, this message translates to:
+  /// **'Staged'**
+  String get staged;
+
+  /// No description provided for @modified.
+  ///
+  /// In en, this message translates to:
+  /// **'Modified'**
+  String get modified;
+
+  /// No description provided for @untracked.
+  ///
+  /// In en, this message translates to:
+  /// **'Untracked'**
+  String get untracked;
+
+  /// No description provided for @conflicts.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflicts'**
+  String get conflicts;
+
+  /// No description provided for @noChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes'**
+  String get noChanges;
+
+  /// No description provided for @recentCommits.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Commits'**
+  String get recentCommits;
+
+  /// No description provided for @noCommits.
+  ///
+  /// In en, this message translates to:
+  /// **'No commits'**
+  String get noCommits;
+
+  /// No description provided for @abort.
+  ///
+  /// In en, this message translates to:
+  /// **'Abort'**
+  String get abort;
+
+  /// No description provided for @searchWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Search workspace...'**
+  String get searchWorkspace;
+
+  /// No description provided for @enterSearchQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a search query'**
+  String get enterSearchQuery;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
+
+  /// No description provided for @indexing.
+  ///
+  /// In en, this message translates to:
+  /// **'Indexing'**
+  String get indexing;
+
+  /// No description provided for @indexedFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Indexed files'**
+  String get indexedFiles;
+
+  /// No description provided for @indexedChunks.
+  ///
+  /// In en, this message translates to:
+  /// **'Indexed chunks'**
+  String get indexedChunks;
+
+  /// No description provided for @lastIndexed.
+  ///
+  /// In en, this message translates to:
+  /// **'Last indexed'**
+  String get lastIndexed;
+
+  /// No description provided for @reindexNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-index now'**
+  String get reindexNow;
+
+  /// No description provided for @reindexing.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-indexing...'**
+  String get reindexing;
+
+  /// No description provided for @never.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get never;
 }
 
 class _AppLocalizationsDelegate

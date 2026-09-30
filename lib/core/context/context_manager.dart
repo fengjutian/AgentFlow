@@ -19,6 +19,7 @@ class WorkspaceContext {
     required this.runtimeLabel,
     this.projectSummary = '',
     this.memoryBlock = '',
+    this.ragContext = '',
   });
 
   final String workspaceName;
@@ -26,6 +27,9 @@ class WorkspaceContext {
   final String runtimeLabel;
   final String projectSummary;
   final String memoryBlock;
+
+  /// RAG-injected context from semantic search (code/document snippets).
+  final String ragContext;
 }
 
 /// Result of [ContextManager.build]: the assembled request plus any structural
@@ -96,6 +100,11 @@ Rules:
         ..writeln()
         ..writeln('# Memory')
         ..writeln(ctx.memoryBlock.trim());
+    }
+    if (ctx.ragContext.trim().isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln(ctx.ragContext.trim());
     }
     return buffer.toString().trim();
   }

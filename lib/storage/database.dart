@@ -208,6 +208,22 @@ class LspServerConfigs extends Table {
   ];
 }
 
+/// Indexed code chunks for BM25 semantic search over workspace files.
+@DataClassName('CodeChunkRow')
+class CodeChunks extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get workspaceId =>
+      text().references(Workspaces, #id, onDelete: KeyAction.cascade)();
+  TextColumn get filePath => text()();
+  IntColumn get chunkIndex => integer()();
+  IntColumn get startLine => integer()();
+  IntColumn get endLine => integer()();
+  TextColumn get content => text()();
+  TextColumn get languageId => text().withDefault(const Constant(''))();
+  IntColumn get mtime => integer().withDefault(const Constant(0))();
+  DateTimeColumn get indexedAt => dateTime()();
+}
+
 @DriftDatabase(
   tables: <Type>[
     Workspaces,
@@ -220,6 +236,7 @@ class LspServerConfigs extends Table {
     DocumentSections,
     McpServers,
     LspServerConfigs,
+    CodeChunks,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -230,13 +247,13 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.connect(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) async {
       await m.createAll();
-      await _createFtsTable();
+      await _createFtsTables();
     },
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
@@ -246,7 +263,7 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(mcpServers);
       }
       if (from < 3) {
-        await _createFtsTable();
+        await _createDocumentSectionsFts();
       }
       if (from < 4) {
         // Add reading position column (DOC-07).
@@ -257,13 +274,29 @@ class AppDatabase extends _$AppDatabase {
       if (from < 5) {
         await m.createTable(lspServerConfigs);
       }
+      if (from < 6) {
+        await m.createTable(codeChunks);
+        await _createCodeChunksFts();
+      }
     },
   );
 
-  Future<void> _createFtsTable() async {
+  Future<void> _createFtsTables() async {
+    await _createDocumentSectionsFts();
+    await _createCodeChunksFts();
+  }
+
+  Future<void> _createDocumentSectionsFts() async {
     await customStatement(
       'CREATE VIRTUAL TABLE IF NOT EXISTS document_sections_fts '
       'USING fts5(plain_text, content=document_sections, content_rowid=rowid)',
+    );
+  }
+
+  Future<void> _createCodeChunksFts() async {
+    await customStatement(
+      'CREATE VIRTUAL TABLE IF NOT EXISTS code_chunks_fts '
+      'USING fts5(content, content=code_chunks, content_rowid=id, tokenize=unicode61)',
     );
   }
 }
